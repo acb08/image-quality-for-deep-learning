@@ -1,0 +1,1 @@
+{"description": "test of loading and logging resnet18 pre-trained", "artifact_filename": "resnet18_places365.pth.tar", "ROOT_DIR_at_run": "C:\\Users\\acb6595\\Documents\\Research\\places2\\project_portable", "artifact_type": "model", "model_rel_dir": "models/resnet18", "filename": "resnet18_places365.pth.tar", "arch": "resnet18"}

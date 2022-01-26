@@ -1,0 +1,85 @@
+
+wandb: Downloading large artifact train_256_standard:latest, 66.56MB. 1 files... Done. 0:0:0
+Python 3.8.11 (default, Aug  6 2021, 09:57:55) [MSC v.1916 64 bit (AMD64)]
+Type 'copyright', 'credits' or 'license' for more information
+IPython 7.29.0 -- An enhanced Interactive Python. Type '?' for help.
+PyDev console: using IPython 7.29.0
+Traceback (most recent call last):
+  File "C:\Users\acb6595\Anaconda3\envs\research_portable_wds_git\lib\site-packages\IPython\core\interactiveshell.py", line 3444, in run_code
+    exec(code_obj, self.user_global_ns, self.user_ns)
+  File "<ipython-input-1-0bfa3a01daa5>", line 1, in <module>
+    print(json.dump(run_metadata, indent=3))
+NameError: name 'run_metadata' is not defined
+Key disagreement: dir_key 0002 != json_key 0000
+Traceback (most recent call last):
+  File "C:\Users\acb6595\Anaconda3\envs\research_portable_wds_git\lib\site-packages\IPython\core\interactiveshell.py", line 3444, in run_code
+    exec(code_obj, self.user_global_ns, self.user_ns)
+  File "<ipython-input-2-52ef40e0c1c5>", line 1, in <module>
+    run_metadata
+NameError: name 'run_metadata' is not defined
+Out[3]:
+{'parent_dataset_id': 'train_256_standard',
+ 'artifact_type': 'train_dataset',
+ 'num_images': 100,
+ 'images_per_file': 10,
+ 'image_shape': (256, 256, 3),
+ 'datatype': numpy.uint8,
+ 'artifact_filename': 'dataset.json',
+ 'description': 'test of saving dataset in numpy files',
+ 'tags': ['numpy'],
+ 'root_dir_at_run': 'C:\\Users\\acb6595\\Documents\\Research\\places2\\project_portable'}
+Traceback (most recent call last):
+  File "C:\Users\acb6595\Anaconda3\envs\research_portable_wds_git\lib\site-packages\IPython\core\interactiveshell.py", line 3444, in run_code
+    exec(code_obj, self.user_global_ns, self.user_ns)
+  File "<ipython-input-4-05eaadbf4383>", line 1, in <module>
+    json.dump(run_metadata, indent=3)
+TypeError: dump() missing 1 required positional argument: 'fp'
+Out[5]:
+{'parent_dataset_id': 'train_256_standard',
+ 'artifact_type': 'train_dataset',
+ 'num_images': 100,
+ 'images_per_file': 10,
+ 'image_shape': (256, 256, 3),
+ 'datatype': numpy.uint8,
+ 'artifact_filename': 'dataset.json',
+ 'description': 'test of saving dataset in numpy files',
+ 'tags': ['numpy'],
+ 'root_dir_at_run': 'C:\\Users\\acb6595\\Documents\\Research\\places2\\project_portable'}
+Traceback (most recent call last):
+  File "C:\Users\acb6595\Anaconda3\envs\research_portable_wds_git\lib\site-packages\IPython\core\interactiveshell.py", line 3444, in run_code
+    exec(code_obj, self.user_global_ns, self.user_ns)
+  File "<ipython-input-6-f73e9b9dbea7>", line 2, in <module>
+    val = run_metatata[key]
+NameError: name 'run_metatata' is not defined
+Out[7]:
+{'parent_dataset_id': 'train_256_standard',
+ 'artifact_type': 'train_dataset',
+ 'num_images': 100,
+ 'images_per_file': 10,
+ 'image_shape': (256, 256, 3),
+ 'datatype': numpy.uint8,
+ 'artifact_filename': 'dataset.json',
+ 'description': 'test of saving dataset in numpy files',
+ 'tags': ['numpy'],
+ 'root_dir_at_run': 'C:\\Users\\acb6595\\Documents\\Research\\places2\\project_portable'}
+Out[8]:
+{'parent_dataset_id': 'train_256_standard',
+ 'artifact_type': 'train_dataset',
+ 'num_images': 100,
+ 'images_per_file': 10,
+ 'image_shape': (256, 256, 3),
+ 'datatype': numpy.uint8,
+ 'artifact_filename': 'dataset.json',
+ 'description': 'test of saving dataset in numpy files',
+ 'tags': ['numpy'],
+ 'root_dir_at_run': 'C:\\Users\\acb6595\\Documents\\Research\\places2\\project_portable'}
+parent_dataset_id <class 'str'>
+artifact_type <class 'str'>
+num_images <class 'int'>
+images_per_file <class 'int'>
+image_shape <class 'tuple'>
+datatype <class 'type'>
+artifact_filename <class 'str'>
+description <class 'str'>
+tags <class 'list'>
+root_dir_at_run <class 'str'>

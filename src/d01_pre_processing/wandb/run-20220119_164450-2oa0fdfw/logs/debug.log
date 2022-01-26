@@ -1,0 +1,17 @@
+2022-01-19 16:44:50,367 INFO    MainThread:3456 [wandb_setup.py:_flush():71] setting env: {}
+2022-01-19 16:44:50,368 INFO    MainThread:3456 [wandb_setup.py:_flush():71] setting login settings: {}
+2022-01-19 16:44:50,369 INFO    MainThread:3456 [wandb_init.py:_log_setup():371] Logging user logs to C:\Users\acb6595\Documents\Research\places2\project_portable\code\src\d01_pre_processing\wandb\run-20220119_164450-2oa0fdfw\logs\debug.log
+2022-01-19 16:44:50,370 INFO    MainThread:3456 [wandb_init.py:_log_setup():372] Logging internal logs to C:\Users\acb6595\Documents\Research\places2\project_portable\code\src\d01_pre_processing\wandb\run-20220119_164450-2oa0fdfw\logs\debug-internal.log
+2022-01-19 16:44:50,370 INFO    MainThread:3456 [wandb_init.py:_jupyter_setup():321] configuring jupyter hooks <wandb.sdk.wandb_init._WandbInit object at 0x000001FF476FA640>
+2022-01-19 16:44:50,371 INFO    MainThread:3456 [wandb_init.py:init():404] calling init triggers
+2022-01-19 16:44:50,372 INFO    MainThread:3456 [wandb_init.py:init():409] wandb.init called with sweep_config: {}
+config: {}
+2022-01-19 16:44:50,372 INFO    MainThread:3456 [wandb_init.py:init():449] starting backend
+2022-01-19 16:44:50,372 INFO    MainThread:3456 [backend.py:_multiprocessing_setup():95] multiprocessing start_methods=spawn, using: spawn
+2022-01-19 16:44:50,383 INFO    MainThread:3456 [backend.py:ensure_launched():199] starting backend process...
+2022-01-19 16:44:50,712 INFO    MainThread:3456 [backend.py:ensure_launched():204] started backend process with pid: 11380
+2022-01-19 16:44:50,713 INFO    MainThread:3456 [wandb_init.py:init():458] backend started and connected
+2022-01-19 16:44:50,718 INFO    MainThread:3456 [wandb_run.py:_label_probe_notebook():917] probe notebook
+2022-01-19 16:44:50,719 INFO    MainThread:3456 [wandb_run.py:_label_probe_notebook():927] Unable to probe notebook: 'NoneType' object has no attribute 'get'
+2022-01-19 16:44:50,719 INFO    MainThread:3456 [wandb_init.py:init():519] updated telemetry
+2022-01-19 16:44:50,726 INFO    MainThread:3456 [wandb_init.py:init():549] communicating current version

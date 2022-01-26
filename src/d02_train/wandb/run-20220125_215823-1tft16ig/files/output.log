@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "C:\Users\acb6595\Anaconda3\envs\research_portable\lib\site-packages\IPython\core\interactiveshell.py", line 3444, in run_code
+    exec(code_obj, self.user_global_ns, self.user_ns)
+  File "<ipython-input-8-0812617f39c2>", line 1, in <module>
+    print(json.dumps(helpder_data, indent=3))
+NameError: name 'json' is not defined
+Traceback (most recent call last):
+  File "C:\Users\acb6595\Anaconda3\envs\research_portable\lib\site-packages\IPython\core\interactiveshell.py", line 3444, in run_code
+    exec(code_obj, self.user_global_ns, self.user_ns)
+  File "<ipython-input-10-0812617f39c2>", line 1, in <module>
+    print(json.dumps(helpder_data, indent=3))
+NameError: name 'helpder_data' is not defined
+{
+   "description": "test of loading and logging resnet18 pre-trained",
+   "artifact_filename": "resnet18_places365.pth.tar",
+   "ROOT_DIR_at_run": "C:\\Users\\acb6595\\Documents\\Research\\places2\\project_portable",
+   "artifact_type": "model",
+   "model_rel_dir": "models/resnet18",
+   "filename": "resnet18_places365.pth.tar",
+   "arch": "resnet18"
