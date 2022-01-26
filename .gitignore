@@ -42,5 +42,5 @@ Thumbs.db
 
 # Additions from this project to avoid uploading wandb artifacts, run config files, etc. #
 ###########
-*/wandb/*
-*/artifacts/*
+wandb/
+artifacts/
