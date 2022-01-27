@@ -45,10 +45,13 @@ ORIGINAL_DATASETS = {
     # TODO: add train_256_challenge
 }
 
-PRETRAINED_MODELS = {
-    'resnet18_pre_trained': {
-        'model_rel_dir': r'models/resnet18',
-        'filename': 'resnet18_places365.pth.tar',
+# use 'model_file_config' as a standard for saving all models to enable easy loading
+ORIGINAL_PRETRAINED_MODELS = {
+    'resnet18_places365': {
+        'model_file_config': {
+            'model_rel_dir': r'models/resnet18',
+            'filename': 'resnet18_places365.pth.tar',
+        },
         'arch': 'resnet18',
         'artifact_type': 'model'
     }
