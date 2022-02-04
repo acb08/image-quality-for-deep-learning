@@ -6,7 +6,6 @@ import json
 from pathlib import Path
 import yaml
 import numpy as np
-import wandb
 
 
 def load_original_dataset(dataset_id):
@@ -280,11 +279,11 @@ def get_metadata_file_contents(artifact_type):
     return data
 
 
-def load_wandb_artifact(run, artifact_id, artifact_filename):
+def load_wandb_dataset_artifact(run, artifact_id, artifact_filename):
 
     artifact = run.use_artifact(artifact_id)
     artifact_dir = artifact.download()
-    data = read_artifact(artifact_dir, artifact_filename)
+    data = read_json_artifact(artifact_dir, artifact_filename)
 
     return artifact, data
 
@@ -303,7 +302,7 @@ def log_model_helper(model_dir, data):
     return file_path
 
 
-def read_artifact(directory, filename):
+def read_json_artifact(directory, filename):
 
     with open(Path(directory, filename), 'r') as f:
         data = json.load(f)
@@ -316,6 +315,66 @@ def load_npz_data(directory, filename):
     data = np.load(Path(directory, filename))
 
     return data
+
+
+def get_model_path(model_rel_dir, model_filename):
+    """
+    Arguments named so function can be called with to be called with **model_file_config
+    """
+    model_path = Path(ROOT_DIR, model_rel_dir, model_filename)
+    return model_path
+
+
+def save_model(model, model_metadata):
+
+    """
+    Save Pytorch model and its associated metadata and return paths for each. Paths are returned to enable
+    subsequent wandb logging.
+    """
+
+    model_file_config = model_metadata['model_file_config']
+    model_path = get_model_path(**model_file_config)
+    model_dir = model_path.parents[0]
+    if not model_dir.is_dir():
+        Path.mkdir(model_dir)
+
+    torch.save(model.state_dict(), model_path)
+    helper_path = log_model_helper(model_dir, model_metadata)  # save model metadata in json file
+
+    return model_path, helper_path
+
+
+def load_model(model_path, arch):
+
+    model = models.__dict__[arch](num_classes=365)
+    model.load_state_dict(torch.load(model_path))
+
+    return model
+
+
+def load_wandb_model(artifact_dir):
+
+    """
+    loads wandb model ASSUMING(!) helper.json logged with the model artifact.
+    """
+
+    helper_data = read_json_artifact(artifact_dir, 'helper.json')
+    arch = helper_data['arch']
+    model_filename = helper_data['model_file_config']['model_filename']
+    model_path = Path(artifact_dir, model_filename)
+    model = load_model(model_path, arch)
+
+    return model
+
+
+def load_wandb_artifact_model(run, artifact_id):
+
+    artifact = run.use_artifact(artifact_id)
+    artifact_dir = artifact.download()
+    artifact_abs_dir = Path(Path.cwd(), artifact_dir)
+    model = load_wandb_model(artifact_abs_dir)
+
+    return model
 
 
 if __name__ == '__main__':

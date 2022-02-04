@@ -6,7 +6,7 @@ from PIL import Image
 from torchvision import transforms
 from pathlib import Path
 from src.d00_utils.definitions import ROOT_DIR, PROJECT_ID, STANDARD_DATASET_FILENAME, REL_PATHS
-from src.d00_utils.functions import name_from_tags, get_config, read_artifact, log_metadata, string_from_tags
+from src.d00_utils.functions import name_from_tags, get_config, read_json_artifact, log_metadata, string_from_tags
 from distortions import tag_to_func
 
 """
@@ -85,7 +85,7 @@ def distort_and_log(config):
 
             parent_artifact = run.use_artifact(parent_artifact_name)  # fixing name re-assigment
             parent_artifact_dir = parent_artifact.download()
-            parent_dataset = read_artifact(parent_artifact_dir, artifact_filename)
+            parent_dataset = read_json_artifact(parent_artifact_dir, artifact_filename)
 
             # consolidate parent and new distortion information for metadata
             parent_distortion_tags = parent_dataset['distortion_tags']

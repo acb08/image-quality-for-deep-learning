@@ -1,12 +1,14 @@
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
+import torch
+import torch.nn as nn
 import numpy as np
 from pathlib import Path
 import random
 import os
 import argparse
 from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, ROOT_DIR, PROJECT_ID, REL_PATHS
-from src.d00_utils.functions import load_wandb_artifact, load_npz_data
+from src.d00_utils.functions import load_wandb_dataset_artifact, load_npz_data, load_wandb_artifact_model
 from src.d01_pre_processing.distortions import tag_to_func
 import wandb
 
@@ -26,47 +28,18 @@ class NumpyDatasetBatchDistortion(Dataset):
     def __getitem__(self, idx):
         image = self.image_array[idx]
         label = self.label_array[idx]
+        label = label
         if self.transform:
             image = self.transform(image)
         return image, label
 
 
-def train_on_shard(model, shard, batch_size, num_workers, shuffle, pin_memory, device, loss_func, optimizer):
-    """
-    Train model using a single numpy image vector
-    """
-
-    train_loader = get_loader(shard,
-                              batch_size,
-                              num_workers=num_workers,
-                              shuffle=shuffle,
-                              pin_memory=pin_memory)
-
-    for i, (images, labels) in enumerate(train_loader):
-
-        model.zero_grad()
-
-        images, labels = images.to(device), labels.to(device)
-        outputs = model(images)
-        loss = loss_func(labels, outputs)
-
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-
-        return loss
-
-    return 'loss', 'accuracy'
-
-
-def eval_on_shard():
-    """
-    Validate model using a single numpy image vector
-    """
-    return 'loss', 'accuracy'
-
-
 def load_data_vectors(shard_id, directory):
+
+    """
+    Extracts image and data vectors from the .npz file corresponding to shard_id in directory. Intended to provide
+    image/label vectors to create an instance of the NumpyDatasetBatchDistortion class.
+    """
 
     data = load_npz_data(directory, shard_id)
 
@@ -77,6 +50,11 @@ def load_data_vectors(shard_id, directory):
 
 
 def get_transform(distortion_tags):
+
+    """
+    Builds transform from distortion functions brought in by tag_to_func(), which image distortion tags to image
+    distortion functions.
+    """
 
     transform_list = [transforms.ToTensor()]
 
@@ -97,12 +75,18 @@ def get_transform(distortion_tags):
 
 def get_shard(shard_id, directory, transform):
 
+    """
+    Creates/returns a Dataset object built form a single .npz file.
+    """
+
     image_vector, label_vector = load_data_vectors(shard_id, directory)
     shard = NumpyDatasetBatchDistortion(image_vector,
                                         label_vector,
                                         transform)
 
-    return shard
+    shard_length = len(label_vector)
+
+    return shard, shard_length
 
 
 def get_loader(shard, batch_size, shuffle, pin_memory, num_workers):
@@ -122,47 +106,231 @@ def get_mean_accuracy(scaled_accuracies, total_samples):
     by the its underlying sample count, where total samples is the sum of the sample counts for each value in
     scaled_accuracies
     """
-    scaled_accuracies = np.asarray(scaled_accuracies) / total_samples
-    mean_accuracy = float(np.mean(scaled_accuracies))
+    mean_accuracy = np.sum(scaled_accuracies) / total_samples
+    mean_accuracy = float(mean_accuracy)
     return mean_accuracy
 
 
-def train(model, train_shard_ids, transform):
+def get_raw_accuracy(predicts, targets):
+    """
+    :param predicts: list or numpy array
+    :param targets: list or numpy array
+    :return: float
+    """
+
+    predicts = np.asarray(predicts)
+    targets = np.asarray(targets)
+    accuracy = float(np.mean(np.equal(predicts, targets)))
+
+    return accuracy
+
+
+def eval_on_shard(model, shard, batch_size, num_workers, shuffle, pin_memory, device, loss_func):
+    """
+    Validate model using a single numpy image vector
+    """
+
+    loader = get_loader(shard,
+                        batch_size,
+                        num_workers=num_workers,
+                        shuffle=shuffle,
+                        pin_memory=pin_memory)
+
+    running_loss = 0
+    predicts = []
+    labels = []
+
+    model.eval()
+
+    for i, (images, targets) in enumerate(loader):
+
+        images, targets = images.to(device), targets.to(device).long()
+        outputs = model(images)
+        loss = loss_func(outputs, targets)
+
+        predicted_classes = list(torch.max(outputs, 1))[1].cpu()
+        predicts.extend(predicted_classes)
+        labels.extend(list(targets.cpu()))
+
+        running_loss += loss.item() / len(targets)
+
+    accuracy = get_raw_accuracy(predicts, labels)
+
+    return running_loss, accuracy
+
+
+def train_on_shard(model, shard, batch_size, num_workers, shuffle, pin_memory, device, loss_func, optimizer):
+    """
+    Train model on a single shard, where a shard is a Dataset object build from a .npz file consisting of a numpy
+    image vector and its associated numpy label vector.
+    """
+
+    loader = get_loader(shard,
+                        batch_size,
+                        num_workers=num_workers,
+                        shuffle=shuffle,
+                        pin_memory=pin_memory)
+
+    running_loss = 0
+    predicts = []
+    labels = []
+
+    model.train()
+
+    for i, (images, targets) in enumerate(loader):
+
+        model.zero_grad()
+
+        images, targets = images.to(device), targets.to(device).long()
+        outputs = model(images)
+        loss = loss_func(outputs, targets)
+
+        predicted_classes = list(torch.max(outputs, 1))[1].cpu()
+        predicts.extend(predicted_classes)
+        labels.extend(list(targets.cpu()))
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        running_loss += loss.item() / len(targets)
+
+    accuracy = get_raw_accuracy(predicts, labels)
+
+    return running_loss, accuracy
+
+
+def run_shard(model: model_object,
+              train: Bool,
+              shard: Dataset,
+              batch_size: int,
+              num_workers: int,
+              pin_memory: Bool,
+              device: str,
+              loss_func: PyTorch_object,
+              optimizer: PyTorch_object):
+    """
+    Train model on a single shard, where a shard is a Dataset object build from a .npz file consisting of a numpy
+    image vector and its associated numpy label vector.
+    """
+
+    if train:
+        shuffle = True
+        model.train()
+
+    else:
+        shuffle = False
+        model.eval()
+
+    loader = get_loader(shard,
+                        batch_size,
+                        num_workers=num_workers,
+                        shuffle=shuffle,
+                        pin_memory=pin_memory)
+
+    running_loss = 0
+    predicts = []
+    labels = []
+
+    for i, (images, targets) in enumerate(loader):
+
+        model.zero_grad()
+
+        images, targets = images.to(device), targets.to(device).long()
+        outputs = model(images)
+        loss = loss_func(outputs, targets)
+
+        predicted_classes = list(torch.max(outputs, 1))[1].cpu()
+        predicts.extend(predicted_classes)
+        labels.extend(list(targets.cpu()))
+
+        if train:
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+        running_loss += loss.item() / len(targets)
+
+    accuracy = get_raw_accuracy(predicts, labels)
+
+    return running_loss, accuracy
+
+
+def epoch_train(model,
+                train_shard_ids,
+                train_abs_dir,
+                transform,
+                batch_size,
+                num_workers,
+                shuffle,
+                pin_memory,
+                device,
+                loss_func,
+                optimizer):
 
     random.shuffle(train_shard_ids)
 
     running_loss = 0
     total_samples = 0
-    scaled_accuracies = []
+    weighted_accuracies = []
+    shard_lengths = []
+    shard_accuracies = []
+
+    model.train()
 
     for shard_id in train_shard_ids:
 
-        train_shard, shard_length = get_shard(shard_id, transform)
-        train_loader = get_loader(train_shard, 'batch_size')
-        loss, accuracy = train_on_shard(model, train_loader)
+        train_shard, shard_length = get_shard(shard_id, train_abs_dir, transform)
+
+        shard_loss, shard_accuracy = train_on_shard(model=model,
+                                                    shard=train_shard,
+                                                    batch_size=batch_size,
+                                                    num_workers=num_workers,
+                                                    shuffle=shuffle,
+                                                    pin_memory=pin_memory,
+                                                    device=device,
+                                                    loss_func=loss_func,
+                                                    optimizer=optimizer)
+
+        shard_accuracies.append(shard_accuracy)
+        shard_lengths.append(shard_length)
 
         total_samples += shard_length
-        running_loss += loss / shard_length
 
-        scaled_accuracy = shard_length * accuracy
-        scaled_accuracies.append(scaled_accuracy)
+        scaled_loss = shard_loss / shard_length
+        running_loss += scaled_loss
+        weighted_accuracy = shard_length * shard_accuracy
+        weighted_accuracies.append(weighted_accuracy)
 
-    mean_accuracy = get_mean_accuracy(scaled_accuracies, total_samples)
+    mean_accuracy = get_mean_accuracy(weighted_accuracies, total_samples)
 
-    return running_loss, mean_accuracy
+    return running_loss, mean_accuracy, shard_accuracies, shard_lengths
 
 
-def evaluate(model, eval_shard_ids, transform):
+def epoch_eval(model,
+               shard_ids,
+               eval_abs_dir,
+               transform,
+               batch_size,
+               num_workers,
+               pin_memory,
+               device,
+               loss_func):
 
     running_loss = 0
     total_samples = 0
     scaled_accuracies = []
 
-    for shard_id in eval_shard_ids:
+    for shard_id in shard_ids:
 
-        eval_shard, shard_length = get_shard(shard_id, transform)
-        eval_loader = get_loader(eval_shard, 'batch_size')
-        loss, accuracy = eval_on_shard(model, eval_loader)
+        eval_shard, shard_length = get_shard(shard_id, eval_abs_dir, transform)
+        eval_loader = get_loader(eval_shard,
+                                 batch_size=batch_size,
+                                 shuffle=False,
+                                 pin_memory=pin_memory,
+                                 num_workers=num_workers)
+        loss, accuracy = eval_on_shard(model,
+                                       eval_loader)
 
         total_samples += shard_length
         running_loss += loss / shard_length
@@ -176,55 +344,128 @@ def evaluate(model, eval_shard_ids, transform):
     return running_loss, mean_accuracy
 
 
+def load_tune_model():
+
+    return
+
+
 if __name__ == '__main__':
+
+    global model
 
     _manual_config = True
 
     if _manual_config:
 
-        _dataset_id = '0026_numpy'
-        _artifact_alias = 'latest'
+        _dataset_id = '0023_numpy'
+        _dataset_artifact_alias = 'latest'
+        _model_id = 'resnet18_pretrained'
+        _model_artifact_alias = 'latest'
+        _distortion_tags = []
+        _batch_size = 32
+        _num_workers = 0
+        _shuffle = True
+        _pin_memory = True
+        _optimizer = 'Adam'
+        _loss_func = 'CrossEntropyLoss'
 
-        config = {
+        _config = {
             'dataset_id': _dataset_id,
-            'artifact_alias': _artifact_alias
+            'dataset_artifact_alias': _dataset_artifact_alias,
+            'model_id': _model_id,
+            'model_artifact_alias': _model_artifact_alias,
+            'distortion_tags': _distortion_tags,
+            'batch_size': _batch_size,
+            'num_workers': _num_workers,
+            'shuffle': _shuffle,
+            'pin_memory': _pin_memory,
+            'optimizer': _optimizer,
+            'loss_func': _loss_func
         }
 
-    _artifact_id = f'{_dataset_id}:{_artifact_alias}'
+    with wandb.init(project=PROJECT_ID, job_type='train_model', config=_config) as run:
 
-    with wandb.init(project=PROJECT_ID, job_type='transfer_dataset') as run:
+        config = wandb.config
 
-        _artifact, _dataset = load_wandb_artifact(run, _artifact_id, STANDARD_DATASET_FILENAME)
+        dataset_artifact_id = f'{config.dataset_id}:{config.dataset_artifact_alias}'
+        model_artifact_id = f'{config.model_id}:{config.model_artifact_alias}'
 
-        _train_shard_ids = _dataset['train']['image_and_label_filenames']
-        _val_shard_ids = _dataset['val']['image_and_label_filenames']
+        __, dataset = load_wandb_dataset_artifact(run, dataset_artifact_id, STANDARD_DATASET_FILENAME)
 
-    _dataset_rel_dir = _dataset['dataset_rel_dir']
-    _train_rel_dir = Path(_dataset_rel_dir, REL_PATHS['train_vectors'])
-    _val_rel_dir = Path(_dataset_rel_dir, REL_PATHS['val_vectors'])
-    _train_abs_dir = Path(ROOT_DIR, _train_rel_dir)
-    _val_abs_dir = Path(ROOT_DIR, _val_rel_dir)
+        model = load_wandb_artifact_model(run, model_artifact_id)
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        model.to(device)
 
-    _transform = transforms.Compose([
-        transforms.ToTensor()
-    ])
+        batch_size = config.batch_size
+        num_workers = config.num_workers
+        shuffle = config.shuffle
+        pin_memory = config.pin_memory
+        distortion_tags = config.distortion_tags
+        transform = get_transform(distortion_tags)
+        optimizer = getattr(torch.optim, config.optimizer)(model.parameters())
+        loss_function = getattr(nn, config.loss_func)()
 
-    # verify ability to load vectors from shard ids (done)
-    # verify ability to generate shards (really mini datasets) (done)
-    for _shard_id in _train_shard_ids:
-        # _train_images, _train_labels = load_data_vectors(_shard_id, _train_abs_dir)
-        _train_shard = get_shard(_shard_id, _train_abs_dir, _transform)
+        train_shard_ids = dataset['train']['image_and_label_filenames']
+        val_shard_ids = dataset['val']['image_and_label_filenames']
+        dataset_rel_dir = dataset['dataset_rel_dir']
+        train_abs_dir = Path(ROOT_DIR, dataset_rel_dir, REL_PATHS['train_vectors'])
+        val_abs_dir = Path(ROOT_DIR, dataset_rel_dir, REL_PATHS['val_vectors'])
 
-    for _shard_id in _val_shard_ids:
-        _val_images, _val_labels = load_data_vectors(_shard_id, _val_abs_dir)
-        print(_val_labels)
-        _val_shard = get_shard(_shard_id, _val_abs_dir, _transform)
-    #
+        train_losses = []
+        train_accuracies = []
 
-    # verify ability to create dataloader from shards (done)
-    _train_loader = get_loader(_train_shard, 5, shuffle=True, num_workers=0, pin_memory=False)
-    _val_loader = get_loader(_val_shard, 6, shuffle=False, num_workers=0, pin_memory=False)
+        train_loss, train_acc, shard_accuracies, shard_lengths = epoch_train(model,
+                                            train_shard_ids,
+                                            train_abs_dir,
+                                            transform,
+                                            batch_size,
+                                            num_workers,
+                                            shuffle,
+                                            pin_memory,
+                                            device,
+                                            loss_function,
+                                            optimizer)
 
-    for i, batch in enumerate(_train_loader):
 
-        print(type(batch))
+        val_loss, val_ac = epoch_eval(model,
+                                      train_shard_ids,
+                                      transform,
+                                      batch_size,
+                                      num_workers,
+                                      shuffle,
+                                      pin_memory,
+                                      device,
+                                      loss_function,
+                                      optimizer)
+
+
+        # for shard_id in train_shard_ids:
+        #     _train_images, _train_labels = load_data_vectors(shard_id, train_abs_dir)
+        #     train_shard = get_shard(shard_id, train_abs_dir, transform)
+        #     loss, acc = train_on_shard(model=model,
+        #                                shard=train_shard,
+        #                                batch_size=batch_size,
+        #                                num_workers=num_workers,
+        #                                shuffle=shuffle,
+        #                                pin_memory=pin_memory,
+        #                                device=device,
+        #                                loss_func=loss_function,
+        #                                optimizer=optimizer)
+        #
+        #     train_losses.append(loss)
+        #     train_accuracies.append(acc)
+        #
+        # val_losses = []
+        # val_accuracies = []
+        #
+        # for shard_id in val_shard_ids:
+        #     val_images, val_labels = load_data_vectors(shard_id, val_abs_dir)
+        #     val_shard = get_shard(shard_id, val_abs_dir, transform)
+        #
+        # # verify ability to create dataloader from shards (done)
+        # train_loader = get_loader(train_shard, 5, shuffle=True, num_workers=0, pin_memory=False)
+        # val_loader = get_loader(val_shard, 6, shuffle=False, num_workers=0, pin_memory=False)
+        #
+        # print(train_accuracies)
+        # print(np.mean(train_accuracies))
+

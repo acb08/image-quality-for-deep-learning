@@ -1,7 +1,7 @@
 import json
 import wandb
 from src.d00_utils.definitions import STANDARD_DATASET_FILENAME
-from src.d00_utils.functions import read_artifact
+from src.d00_utils.functions import read_json_artifact
 
 if __name__ == '__main__':
 
@@ -10,4 +10,4 @@ if __name__ == '__main__':
     artifact_dir = artifact.download()
     artifact_filename = STANDARD_DATASET_FILENAME
 
-    dataset = read_artifact(artifact_dir, artifact_filename)
+    dataset = read_json_artifact(artifact_dir, artifact_filename)

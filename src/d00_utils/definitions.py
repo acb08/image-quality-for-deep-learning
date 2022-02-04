@@ -47,10 +47,10 @@ ORIGINAL_DATASETS = {
 
 # use 'model_file_config' as a standard for saving all models to enable easy loading
 ORIGINAL_PRETRAINED_MODELS = {
-    'resnet18_places365': {
+    'resnet18_places365_as_downloaded': {
         'model_file_config': {
             'model_rel_dir': r'models/resnet18',
-            'filename': 'resnet18_places365.pth.tar',
+            'model_filename': 'resnet18_places365.pth.tar',
         },
         'arch': 'resnet18',
         'artifact_type': 'model'
