@@ -6,7 +6,7 @@ from PIL import Image
 from torchvision import transforms
 from pathlib import Path
 from src.d00_utils.definitions import ROOT_DIR, PROJECT_ID, STANDARD_DATASET_FILENAME, REL_PATHS
-from src.d00_utils.functions import name_from_tags, get_config, read_json_artifact, log_metadata, string_from_tags
+from src.d00_utils.functions import id_from_tags, get_config, read_json_artifact, string_from_tags
 from distortions import tag_to_func
 
 """
@@ -95,7 +95,7 @@ def distort_and_log(config):
             all_distortion_iterations = list(parent_distortion_iterations)
             all_distortion_iterations.append(num_distortion_iterations)
 
-            new_dataset_id = name_from_tags(artifact_type, all_distortion_tags)
+            new_dataset_id = id_from_tags(artifact_type, all_distortion_tags)
             new_dataset_rel_parent_dir = REL_PATHS[artifact_type]
             new_dataset_rel_dir = Path(new_dataset_rel_parent_dir, new_dataset_id)
 
@@ -117,7 +117,7 @@ def distort_and_log(config):
             }
             run_metadata.update(run_metadata_additions)
 
-            log_metadata(artifact_type, new_dataset_id, run_metadata)
+            # log_metadata(artifact_type, new_dataset_id, run_metadata)  # remove redundant project metadata
             new_dataset_contents.update(run_metadata)
 
             artifact = wandb.Artifact(new_dataset_id,

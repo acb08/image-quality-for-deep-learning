@@ -3,7 +3,7 @@ import numpy as np
 from PIL import Image
 from src.d00_utils.definitions import ROOT_DIR, PROJECT_ID, STANDARD_DATASET_FILENAME
 from src.d00_utils.definitions import REL_PATHS, DATATYPE_MAP
-from src.d00_utils.functions import log_metadata, load_wandb_dataset_artifact, name_from_tags
+from src.d00_utils.functions import load_wandb_dataset_artifact, id_from_tags
 import wandb
 import json
 import random
@@ -142,7 +142,7 @@ def build_log_numpy(config):
 
         parent_artifact, parent_dataset = load_wandb_dataset_artifact(run, parent_artifact_name, artifact_filename)
 
-        new_dataset_id = name_from_tags(artifact_type, tags)
+        new_dataset_id = id_from_tags(artifact_type, tags)
         new_dataset_rel_parent_dir = REL_PATHS[artifact_type]
         new_dataset_rel_dir = Path(new_dataset_rel_parent_dir, new_dataset_id)
 
@@ -189,9 +189,8 @@ def build_log_numpy(config):
             'dataset_rel_dir': str(new_dataset_rel_dir)
         }
         run_metadata.update(run_metadata_additions)
-
-        log_metadata(artifact_type, new_dataset_id, run_metadata)
         new_dataset.update(run_metadata)
+        # log_metadata(artifact_type, new_dataset_id, run_metadata)  # removing redundant project metadata
 
         artifact = wandb.Artifact(new_dataset_id,
                                   type=artifact_type,

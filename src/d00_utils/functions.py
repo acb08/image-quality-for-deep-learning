@@ -1,7 +1,7 @@
 import torchvision.models as models
 import torch
 import os
-from src.d00_utils.definitions import ROOT_DIR, REL_PATHS, ORIGINAL_DATASETS, KEY_LENGTH, METADATA_FILENAMES
+from src.d00_utils.definitions import ROOT_DIR, REL_PATHS, ORIGINAL_DATASETS, KEY_LENGTH  # ,METADATA_FILENAMES
 import json
 from pathlib import Path
 import yaml
@@ -75,6 +75,7 @@ def key_num_from_list(items):
 
             check_string = item[:key_length]
             check_string_ext = item[:key_length + 1]
+
             if len(check_string_ext) != key_length and check_string_ext.isdecimal():
                 problematic_items.append(item)
                 problematic_key_flag = True
@@ -118,28 +119,54 @@ def key_from_dir(parent_dir):
     return key_str.zfill(key_length), problem_key_flag, problematic_items
 
 
-def key_from_json(file_path):
+# removing json project metadata logs (redundant with wandb)
+# def key_from_json(file_path):
+#
+#
+#     key_length = KEY_LENGTH
+#     with open(file_path, 'r') as f:
+#         data = json.load(f)
+#
+#     dict_keys = list(data.keys())
+#     numeric_key_count, key_num, problem_key_flag, problematic_items = key_num_from_list(dict_keys)
+#
+#     if problem_key_flag:
+#         print('potential json key problem(s):')
+#         print(problematic_items)
+#
+#     key_num = max(numeric_key_count, key_num)
+#     key_str = str(key_num)
+#
+#     return key_str.zfill(key_length), problem_key_flag, problematic_items
 
-    # TODO: test this function before using
+# making a v2 below without project metadata complication
+# def get_path_and_keys(artifact_type):
+#
+#     """
+#     Maps use_tags to appropriate directories in project structure to save script output data and provides a sequential
+#     key for both (1) naming new directory to house output data and (2) referencing run information in a json database
+#
+#     :param artifact_type: purpose of the data to be generated
+#
+#     :return:
+#         rel_path: path from root_dir to appropriate target directory based on use_tag
+#         key: unique, sequential key for creating (1) new directory to hold output data and (2) referencing metadata
+#         in a .json file
+#     """
+#
+#     rel_path = REL_PATHS[artifact_type]
+#     target_dir = Path(ROOT_DIR, rel_path)
+#     dir_key_query_result = key_from_dir(target_dir)
+#
+#     metadata_filename = METADATA_FILENAMES[artifact_type]
+#     metadata_rel_path = REL_PATHS['metadata']
+#     target_metadata_file_path = Path(ROOT_DIR, metadata_rel_path, metadata_filename)
+#     metadata_key_query_result = key_from_json(target_metadata_file_path)
+#
+#     return rel_path, dir_key_query_result, metadata_key_query_result
 
-    key_length = KEY_LENGTH
-    with open(file_path, 'r') as f:
-        data = json.load(f)
 
-    dict_keys = list(data.keys())
-    numeric_key_count, key_num, problem_key_flag, problematic_items = key_num_from_list(dict_keys)
-
-    if problem_key_flag:
-        print('potential json key problem(s):')
-        print(problematic_items)
-
-    key_num = max(numeric_key_count, key_num)
-    key_str = str(key_num)
-
-    return key_str.zfill(key_length), problem_key_flag, problematic_items
-
-
-def get_path_and_keys(artifact_type):
+def get_path_and_key(artifact_type):
 
     """
     Maps use_tags to appropriate directories in project structure to save script output data and provides a sequential
@@ -157,46 +184,58 @@ def get_path_and_keys(artifact_type):
     target_dir = Path(ROOT_DIR, rel_path)
     dir_key_query_result = key_from_dir(target_dir)
 
-    metadata_filename = METADATA_FILENAMES[artifact_type]
-    metadata_rel_path = REL_PATHS['metadata']
-    target_metadata_file_path = Path(ROOT_DIR, metadata_rel_path, metadata_filename)
-    metadata_key_query_result = key_from_json(target_metadata_file_path)
-
-    return rel_path, dir_key_query_result, metadata_key_query_result
+    return rel_path, dir_key_query_result
 
 
-def log_metadata(artifact_type, artifact_id, metadata):
+# getting rid of redundant project metadata
+# def log_metadata(artifact_type, artifact_id, metadata):
+#
+#     target_dir_rel_path = REL_PATHS['metadata']
+#     target_dir = Path(ROOT_DIR, target_dir_rel_path)
+#     filename = METADATA_FILENAMES[artifact_type]
+#     file_path = Path(target_dir, filename)
+#     with open(file_path, 'r') as f:
+#         data = json.load(f)
+#
+#     data[artifact_id] = metadata
+#
+#     with open(file_path, 'w') as f:
+#         json.dump(data, f)
 
-    target_dir_rel_path = REL_PATHS['metadata']
-    target_dir = Path(ROOT_DIR, target_dir_rel_path)
-    filename = METADATA_FILENAMES[artifact_type]
-    file_path = Path(target_dir, filename)
-    with open(file_path, 'r') as f:
-        data = json.load(f)
+# making modified version below eliminating redundant project metadata
+# def id_from_tags(artifact_type, tags):
+#
+#     target_dir, dir_key_query_result, json_key_query_result = get_path_and_keys(artifact_type)
+#     dir_key = dir_key_query_result[0]
+#     json_key = json_key_query_result[0]
+#
+#     if dir_key != json_key:
+#         print(f'Key disagreement: dir_key {dir_key} != json_key {json_key}')
+#
+#     # use the greater of the two keys if unequal
+#     dir_key_num = int(dir_key)
+#     json_key_num = int(json_key)
+#
+#     if dir_key_num >= json_key_num:
+#         name = dir_key
+#     else:
+#         name = json_key
+#
+#     if len(tags) > 0:
+#
+#         tag_string = string_from_tags(tags)
+#         name = name + tag_string
+#
+#     return name
 
-    data[artifact_id] = metadata
 
-    with open(file_path, 'w') as f:
-        json.dump(data, f)
+def id_from_tags(artifact_type, tags):
 
-
-def name_from_tags(artifact_type, tags):
-
-    target_dir, dir_key_query_result, json_key_query_result = get_path_and_keys(artifact_type)
+    target_dir, dir_key_query_result = get_path_and_key(artifact_type)
     dir_key = dir_key_query_result[0]
-    json_key = json_key_query_result[0]
 
-    if dir_key != json_key:
-        print(f'Key disagreement: dir_key {dir_key} != json_key {json_key}')
-
-    # use the greater of the two keys if unequal
     dir_key_num = int(dir_key)
-    json_key_num = int(json_key)
-
-    if dir_key_num >= json_key_num:
-        name = dir_key
-    else:
-        name = json_key
+    name = dir_key
 
     if len(tags) > 0:
 
@@ -239,44 +278,46 @@ def get_config(parent_dir, rel_path=r'config', filename='config.txt'):
 def potential_overwrite(path):
     return path.exists()
 
-
-def print_artifact_local_metadata(artifact_type, artifact_id):
-
-    """
-    Convenience function to get artifact metadata as logged locally
-    """
-
-    metadata = get_metadata_file_contents(artifact_type)
-    artifact_metadata = metadata[artifact_id]
-    print('artifact/dataset ID: ', artifact_id)
-    print(json.dumps(artifact_metadata, indent=3))
-
-
-def print_metadata_file(artifact_type):
-
-    """
-    Convenience function to get local metadata file contents
-    """
-
-    file_contents = get_metadata_file_contents(artifact_type)
-    print(f'{artifact_type} metadata')
-    print(json.dumps(file_contents, indent=3))
+# removing redundant project metadata
+# def print_artifact_local_metadata(artifact_type, artifact_id):
+#
+#     """
+#     Convenience function to get artifact metadata as logged locally
+#     """
+#
+#     metadata = get_metadata_file_contents(artifact_type)
+#     artifact_metadata = metadata[artifact_id]
+#     print('artifact/dataset ID: ', artifact_id)
+#     print(json.dumps(artifact_metadata, indent=3))
 
 
-def get_metadata_file_contents(artifact_type):
+# removing redundant project metadata
+# def print_metadata_file(artifact_type):
+#
+#     """
+#     Convenience function to get local metadata file contents
+#     """
+#
+#     file_contents = get_metadata_file_contents(artifact_type)
+#     print(f'{artifact_type} metadata')
+#     print(json.dumps(file_contents, indent=3))
 
-    """
-    Extracts contents of metadata file and returns dictionary
-    """
 
-    target_dir_rel_path = REL_PATHS['metadata']
-    target_dir = Path(ROOT_DIR, target_dir_rel_path)
-    filename = METADATA_FILENAMES[artifact_type]
-    file_path = Path(target_dir, filename)
-    with open(file_path, 'r') as f:
-        data = json.load(f)
-
-    return data
+# removing redundant project metadata
+# def get_metadata_file_contents(artifact_type):
+#
+#     """
+#     Extracts contents of metadata file and returns dictionary
+#     """
+#
+#     target_dir_rel_path = REL_PATHS['metadata']
+#     target_dir = Path(ROOT_DIR, target_dir_rel_path)
+#     filename = METADATA_FILENAMES[artifact_type]
+#     file_path = Path(target_dir, filename)
+#     with open(file_path, 'r') as f:
+#         data = json.load(f)
+#
+#     return data
 
 
 def load_wandb_dataset_artifact(run, artifact_id, artifact_filename):
@@ -341,7 +382,7 @@ def save_model(model, model_metadata):
     torch.save(model.state_dict(), model_path)
     helper_path = log_model_helper(model_dir, model_metadata)  # save model metadata in json file
 
-    return model_path, helper_path
+    return model_path, helper_path  # paths returned for logging
 
 
 def load_model(model_path, arch):
@@ -393,9 +434,9 @@ if __name__ == '__main__':
     # foo = get_path_and_keys('test_dataset')
     # print(foo)
 
-    _name = name_from_tags('test_dataset', ['pan', 'r3', 'b3', 'n3'])
+    _name = id_from_tags('test_dataset', ['pan', 'r3', 'b3', 'n3'])
     print(_name)
 
-    print_artifact_local_metadata('test_dataset', '0003_still_fake_tags_haha')
+
 
 

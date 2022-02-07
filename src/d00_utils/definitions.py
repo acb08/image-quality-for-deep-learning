@@ -23,7 +23,7 @@ REL_PATHS = {
     'images': r'images',
     'train_vectors': r'train_split',
     'val_vectors': r'val_split',
-    'metadata': r'metadata',
+    # 'metadata': r'metadata',  # removing redundant project metadata
     'model': r'models',
     'test_result': r'test_results',
     'analysis': r'analysis'
@@ -68,10 +68,11 @@ DATATYPE_MAP = {
     'np.int64': np.int64,
 }
 
+# removing redundant project metadata
 # maps dataset type to its associated metadata filename located in the metadata dir
-METADATA_FILENAMES = {
-    'model': 'models.json',
-    'train_dataset': 'train_datasets.json',
-    'test_dataset': 'test_datasets.json',
-    'test_result': 'test_results.json'
-}
+# METADATA_FILENAMES = {
+#     'model': 'models.json',
+#     'train_dataset': 'train_datasets.json',
+#     'test_dataset': 'test_datasets.json',
+#     'test_result': 'test_results.json'
+# }

@@ -2,9 +2,10 @@ import torchvision.models as models
 import torch
 from pathlib import Path
 from src.d00_utils.definitions import ROOT_DIR, ORIGINAL_PRETRAINED_MODELS, PROJECT_ID, REL_PATHS
-from src.d00_utils.functions import log_metadata, get_model_path, save_model, read_json_artifact, load_wandb_model
+from src.d00_utils.functions import get_model_path, save_model  # ,read_json_artifact, load_wandb_model
 
 import wandb
+wandb.login()
 
 
 def load_pretrained_model(model_id):
@@ -53,7 +54,7 @@ def load_log_original_model(model_id, new_model_id, new_model_filename, descript
     }
     model_metadata['model_file_config'] = new_model_file_config  # incorporate correct model_file_config
 
-    log_metadata(artifact_type, new_model_id, model_metadata)
+    # log_metadata(artifact_type, new_model_id, model_metadata)  # removing redundant project metadata
     model_path, helper_path = save_model(model, model_metadata)
 
     with wandb.init(project=PROJECT_ID, job_type='log_model') as run:
@@ -80,18 +81,13 @@ if __name__ == '__main__':
 
     load_log_original_model(_model_id, _new_model_id, _new_model_filename, _description)
 
-    run = wandb.init()
-    artifact = run.use_artifact('austinbergstrom/places_dry_run/resnet18_pretrained_copy:v0', type='model')
-    artifact_rel_dir = artifact.download()
-    artifact_dir = Path(Path.cwd(), artifact_rel_dir)
-
-    helper_data = read_json_artifact(artifact_dir, 'helper.json')
-    model_filename = helper_data['model_file_config']['model_filename']
-
-    model = load_wandb_model(artifact_dir)
-
-
-
-
-
-
+    # run = wandb.init()
+    # artifact = run.use_artifact('austinbergstrom/places_dry_run/resnet18_pretrained_copy:v0', type='model')
+    # artifact_rel_dir = artifact.download()
+    # artifact_dir = Path(Path.cwd(), artifact_rel_dir)
+    #
+    # helper_data = read_json_artifact(artifact_dir, 'helper.json')
+    # model_filename = helper_data['model_file_config']['model_filename']
+    #
+    # model = load_wandb_model(artifact_dir)
+    #
