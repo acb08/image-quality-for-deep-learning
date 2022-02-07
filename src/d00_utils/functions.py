@@ -393,13 +393,37 @@ def load_model(model_path, arch):
     return model
 
 
-def load_wandb_model(artifact_dir):
+# def load_wandb_model(artifact_dir):
+#
+#     """
+#     loads wandb model ASSUMING(!) helper.json logged with the model artifact.
+#     """
+#
+#     helper_data = read_json_artifact(artifact_dir, 'helper.json')
+#     arch = helper_data['arch']
+#     model_filename = helper_data['model_file_config']['model_filename']
+#     model_path = Path(artifact_dir, model_filename)
+#     model = load_model(model_path, arch)
+#
+#     return model
 
-    """
-    loads wandb model ASSUMING(!) helper.json logged with the model artifact.
-    """
+# def load_wandb_artifact_model(run, artifact_id):
+#
+#     artifact = run.use_artifact(artifact_id)
+#     artifact_dir = artifact.download()
+#     artifact_abs_dir = Path(Path.cwd(), artifact_dir)
+#     model = load_wandb_model(artifact_abs_dir)
+#
+#     return model
 
-    helper_data = read_json_artifact(artifact_dir, 'helper.json')
+
+def load_wandb_artifact_model(run, artifact_id):
+
+    artifact = run.use_artifact(artifact_id)
+    artifact_dir = artifact.download()
+    artifact_abs_dir = Path(Path.cwd(), artifact_dir)
+
+    helper_data = read_json_artifact(artifact_abs_dir, 'helper.json')
     arch = helper_data['arch']
     model_filename = helper_data['model_file_config']['model_filename']
     model_path = Path(artifact_dir, model_filename)
@@ -408,14 +432,6 @@ def load_wandb_model(artifact_dir):
     return model
 
 
-def load_wandb_artifact_model(run, artifact_id):
-
-    artifact = run.use_artifact(artifact_id)
-    artifact_dir = artifact.download()
-    artifact_abs_dir = Path(Path.cwd(), artifact_dir)
-    model = load_wandb_model(artifact_abs_dir)
-
-    return model
 
 
 if __name__ == '__main__':
