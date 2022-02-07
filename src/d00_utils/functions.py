@@ -432,8 +432,6 @@ def load_wandb_artifact_model(run, artifact_id):
     return model
 
 
-
-
 if __name__ == '__main__':
 
     # foo = key_from_dir(r'C:\Users\acb6595\Documents\Research\places2\project_portable\datasets\test')
