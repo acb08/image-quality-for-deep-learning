@@ -13,6 +13,7 @@ from src.d00_utils.functions import load_wandb_dataset_artifact, load_npz_data, 
 from src.d00_utils.functions import id_from_tags, save_model, get_config, read_json_artifact, string_from_tags
 from src.d01_pre_processing.distortions import tag_to_func
 import wandb
+import json
 
 wandb.login()
 
@@ -121,79 +122,6 @@ def get_raw_accuracy(predicts, targets):
     accuracy = float(np.mean(np.equal(predicts, targets)))
 
     return accuracy
-
-
-# def eval_on_shard(model, shard, batch_size, num_workers, shuffle, pin_memory, device, loss_func):
-#     """
-#     Validate model using a single numpy image vector
-#     """
-#
-#     loader = get_loader(shard,
-#                         batch_size,
-#                         num_workers=num_workers,
-#                         shuffle=shuffle,
-#                         pin_memory=pin_memory)
-#
-#     running_loss = 0
-#     predicts = []
-#     labels = []
-#
-#     model.eval()
-#
-#     for i, (images, targets) in enumerate(loader):
-#         images, targets = images.to(device), targets.to(device).long()
-#         outputs = model(images)
-#         loss = loss_func(outputs, targets)
-#
-#         predicted_classes = list(torch.max(outputs, 1))[1].cpu()
-#         predicts.extend(predicted_classes)
-#         labels.extend(list(targets.cpu()))
-#
-#         running_loss += loss.item() / len(targets)
-#
-#     accuracy = get_raw_accuracy(predicts, labels)
-#
-#     return running_loss, accuracy
-#
-#
-# def train_on_shard(model, shard, batch_size, num_workers, shuffle, pin_memory, device, loss_func, optimizer):
-#     """
-#     Train model on a single shard, where a shard is a Dataset object build from a .npz file consisting of a numpy
-#     image vector and its associated numpy label vector.
-#     """
-#
-#     loader = get_loader(shard,
-#                         batch_size,
-#                         num_workers=num_workers,
-#                         shuffle=shuffle,
-#                         pin_memory=pin_memory)
-#
-#     running_loss = 0
-#     predicts = []
-#     labels = []
-#
-#     model.train()
-#
-#     for i, (images, targets) in enumerate(loader):
-#         model.zero_grad()
-#
-#         images, targets = images.to(device), targets.to(device).long()
-#         outputs = model(images)
-#         loss = loss_func(outputs, targets)
-#
-#         predicted_classes = list(torch.max(outputs, 1))[1].cpu()
-#         predicts.extend(predicted_classes)
-#         labels.extend(list(targets.cpu()))
-#
-#         optimizer.zero_grad()
-#         loss.backward()
-#         optimizer.step()
-#
-#         running_loss += loss.item() / len(targets)
-#
-#     accuracy = get_raw_accuracy(predicts, labels)
-#
-#     return running_loss, accuracy
 
 
 def run_shard(model, train_eval_flag, shard, batch_size, num_workers, pin_memory, device, loss_func, optimizer):
@@ -312,42 +240,8 @@ def propagate(model,
     return model, running_loss, mean_accuracy, shard_accuracies, shard_lengths
 
 
-# def epoch_eval(model,
-#                shard_ids,
-#                eval_abs_dir,
-#                transform,
-#                batch_size,
-#                num_workers,
-#                pin_memory,
-#                device,
-#                loss_func):
-#     running_loss = 0
-#     total_samples = 0
-#     scaled_accuracies = []
-#
-#     for shard_id in shard_ids:
-#         eval_shard, shard_length = get_shard(shard_id, eval_abs_dir, transform)
-#         eval_loader = get_loader(eval_shard,
-#                                  batch_size=batch_size,
-#                                  shuffle=False,
-#                                  pin_memory=pin_memory,
-#                                  num_workers=num_workers)
-#         loss, accuracy = eval_on_shard(model,
-#                                        eval_loader)
-#
-#         total_samples += shard_length
-#         running_loss += loss / shard_length
-#
-#         # scale accuracy by number of samples to get appropriately weighted mean accuracy later
-#         scaled_accuracy = shard_length * accuracy
-#         scaled_accuracies.append(scaled_accuracy)
-#
-#     mean_accuracy = get_mean_accuracy(scaled_accuracies, total_samples)
-#
-#     return running_loss, mean_accuracy
-
-
 def log_epoch_stats(train_loss, train_acc, val_loss, val_acc, train_shard_ct, epoch):
+
     wandb.log({
         'train_loss': train_loss,
         'train_acc': train_acc,
@@ -364,9 +258,27 @@ def log_epoch_stats(train_loss, train_acc, val_loss, val_acc, train_shard_ct, ep
 def log_checkpoint(model, model_metadata, epoch, new_model_artifact, run):
 
     model_path, helper_path = save_model(model, model_metadata)
-    # new_model_artifact.add_file(model_path, name=f'model_epoch_{epoch}')
-    new_model_artifact.add_file(helper_path, name=f'helper_epoch_{epoch}')
+    new_model_artifact.add_file(model_path)
+    new_model_artifact.add_file(helper_path)
     run.log_artifact(new_model_artifact)
+
+
+def save_best_loss_model(model, model_metadata, val_losses, epoch):
+
+    model_file_config = model_metadata['model_file_config']
+    model_rel_dir = model_file_config['model_rel_dir']
+    best_loss_model_rel_dir = str(Path(model_rel_dir, r'best_loss'))
+
+    model_file_config['model_rel_dir'] = best_loss_model_rel_dir
+    model_file_config['model_filename'] = STANDARD_BEST_LOSS_FILENAME
+
+    model_metadata['model_file_config'] = model_file_config  # probably redundant, but explicit update seems safer
+    model_metadata['best_loss_epoch'] = epoch
+    model_metadata['best_loss'] = val_losses[-1]
+
+    model_path, helper_path = save_model(model, model_metadata)
+
+    return model_path, helper_path
 
 
 def load_tune_model(config):
@@ -402,7 +314,7 @@ def load_tune_model(config):
 
         new_model_id = id_from_tags(artifact_type, distortion_tags)
         # new_model_rel_parent_dir = REL_PATHS[artifact_type]
-        new_model_rel_dir = new_model_id
+        new_model_rel_dir = Path(REL_PATHS[artifact_type], new_model_id)
         # new_model_abs_dir = Path(ROOT_DIR, new_model_rel_parent_dir, new_model_rel_dir)
         # Path.mkdir(new_model_abs_dir)
 
@@ -413,12 +325,6 @@ def load_tune_model(config):
         config['model_file_config'] = new_model_checkpoint_file_config
 
         # log all relevant model versions within the artifact created here
-        new_model_artifact = wandb.Artifact(
-            new_model_id,
-            type=artifact_type,
-            metadata=config,
-            description=description
-        )
 
         train_losses = []
         train_accuracies = []
@@ -464,12 +370,33 @@ def load_tune_model(config):
             val_losses.append(val_loss)
             val_accuracies.append(val_acc)
 
+            new_model_artifact = wandb.Artifact(
+                new_model_id,
+                type=artifact_type,
+                metadata=dict(config),
+                description=description
+            )
+
             log_epoch_stats(train_loss, train_acc, val_loss, val_acc, train_shard_ct, epoch)
             log_checkpoint(model, dict(config), epoch, new_model_artifact, run)
 
-    wandb.finish()
+            if val_losses[-1] <= min(val_losses):
 
-    return print('done')
+                best_loss_model_path, best_loss_helper_path = save_best_loss_model(model,
+                                                                                   dict(config),
+                                                                                   val_losses,
+                                                                                   epoch)
+
+    best_loss_model_artifact = wandb.Artifact(
+        f'{new_model_id}_best_loss',
+        type=artifact_type,
+        metadata=dict(config),
+        description=description
+    )
+    best_loss_model_artifact.add_file(str(best_loss_model_path))
+    best_loss_model_artifact.add_file(str(best_loss_helper_path))
+
+    print('done')
 
 
 if __name__ == '__main__':
@@ -511,12 +438,3 @@ if __name__ == '__main__':
 
         load_tune_model(_config)
 
-        # TODO: integrate helper file (helper.json) method for keeping model loading from being hideous
-        # helper file corollary: log best_loss, best_acc model every epoch, basically just following the
-        # approach used in original CIS-linux version of the code. On second thought, log the model every every
-        # epoch with the basic filename of model_<tag1>_<tag2>_etc.pt. In parallel, store best loss/best acc (probably
-        # just best loss) model(s) and log them at the end of training. This approach carries some redundancy, but it's
-        # probably the best bet for ensuring I don't lose anything...
-        # TODO: log trained model as new wandb artifact
-        # TODO: bundle train/val loop in single function
-        # TODO: finalize whether to make model (plus possibly loss_function and optimizer global variables)
