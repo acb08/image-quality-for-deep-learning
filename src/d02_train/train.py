@@ -8,8 +8,9 @@ import random
 import os
 import argparse
 from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, ROOT_DIR, PROJECT_ID, REL_PATHS
+from src.d00_utils.definitions import STANDARD_CHECKPOINT_FILENAME, STANDARD_BEST_LOSS_FILENAME
 from src.d00_utils.functions import load_wandb_dataset_artifact, load_npz_data, load_wandb_artifact_model
-from src.d00_utils.functions import id_from_tags, get_config, read_json_artifact, string_from_tags
+from src.d00_utils.functions import id_from_tags, save_model, get_config, read_json_artifact, string_from_tags
 from src.d01_pre_processing.distortions import tag_to_func
 import wandb
 
@@ -266,7 +267,9 @@ def propagate(model,
               pin_memory,
               device,
               loss_func,
-              optimizer):
+              optimizer,
+              epoch,
+              run):
     if train_eval_flag == 'train':
         random.shuffle(shard_ids)
         model.train()
@@ -306,7 +309,7 @@ def propagate(model,
 
     mean_accuracy = get_mean_accuracy(weighted_accuracies, total_samples)
 
-    return running_loss, mean_accuracy, shard_accuracies, shard_lengths
+    return model, running_loss, mean_accuracy, shard_accuracies, shard_lengths
 
 
 # def epoch_eval(model,
@@ -344,63 +347,45 @@ def propagate(model,
 #     return running_loss, mean_accuracy
 
 
-def load_tune_model():
-    return
+def log_epoch_stats(train_loss, train_acc, val_loss, val_acc, train_shard_ct, epoch):
+    wandb.log({
+        'train_loss': train_loss,
+        'train_acc': train_acc,
+        'val_loss': val_loss,
+        'val_acc': val_acc,
+        'epoch': epoch,
+    }, step=train_shard_ct)
+
+    print('Loss after ' + str(train_shard_ct).zfill(3) + f' train shards: '
+                                                         f'{train_loss:3f} (train), '
+                                                         f'{val_loss:3f} (val)')
 
 
-if __name__ == '__main__':
+def log_checkpoint(model, model_metadata, epoch, new_model_artifact, run):
 
-    global model
+    model_path, helper_path = save_model(model, model_metadata)
+    # new_model_artifact.add_file(model_path, name=f'model_epoch_{epoch}')
+    new_model_artifact.add_file(helper_path, name=f'helper_epoch_{epoch}')
+    run.log_artifact(new_model_artifact)
 
-    _manual_config = True
 
-    if _manual_config:
-        _dataset_id = '0023_numpy'
-        _dataset_artifact_alias = 'latest'
-        _model_id = 'resnet18_pretrained'
-        _model_artifact_alias = 'latest'
-        _distortion_tags = ['pan_c', 'r4', 'b4', 'n4']
-        _batch_size = 32
-        _num_workers = 0
-        _shuffle = True
-        _pin_memory = True
-        _optimizer = 'Adam'
-        _loss_func = 'CrossEntropyLoss'
-        _description = 'dry run of pipeline to train/log models'
-        _artifact_type = 'model'
+def load_tune_model(config):
 
-        _config = {
-            'dataset_id': _dataset_id,
-            'dataset_artifact_alias': _dataset_artifact_alias,
-            'model_id': _model_id,
-            'model_artifact_alias': _model_artifact_alias,
-            'distortion_tags': _distortion_tags,
-            'batch_size': _batch_size,
-            'num_workers': _num_workers,
-            'shuffle': _shuffle,
-            'pin_memory': _pin_memory,
-            'optimizer': _optimizer,
-            'loss_func': _loss_func,
-            'description': _description,
-            'artifact_type': _artifact_type
-        }
-
-    with wandb.init(project=PROJECT_ID, job_type='train_model', config=_config) as run:
+    with wandb.init(project=PROJECT_ID, job_type='train_model', config=config) as run:
 
         config = wandb.config
 
-        dataset_artifact_id = f'{config.dataset_id}:{config.dataset_artifact_alias}'
-        model_artifact_id = f'{config.model_id}:{config.model_artifact_alias}'
+        dataset_artifact_id = f'{config.train_dataset_id}:{config.train_dataset_artifact_alias}'
+        starting_model_artifact_id = f'{config.starting_model_id}:{config.starting_model_artifact_alias}'
 
         __, dataset = load_wandb_dataset_artifact(run, dataset_artifact_id, STANDARD_DATASET_FILENAME)
 
-        model = load_wandb_artifact_model(run, model_artifact_id)
+        model = load_wandb_artifact_model(run, starting_model_artifact_id)
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         model.to(device)
-
+        num_epochs = config.num_epochs
         batch_size = config.batch_size
         num_workers = config.num_workers
-        shuffle = config.shuffle
         pin_memory = config.pin_memory
         distortion_tags = config.distortion_tags
         transform = get_transform(distortion_tags)
@@ -416,36 +401,115 @@ if __name__ == '__main__':
         val_abs_dir = Path(ROOT_DIR, dataset_rel_dir, REL_PATHS['val_vectors'])
 
         new_model_id = id_from_tags(artifact_type, distortion_tags)
-        new_model_rel_parent_dir = REL_PATHS[artifact_type]
-        new_model_abs_dir = Path(ROOT_DIR, new_model_rel_parent_dir, new_model_id)
-        Path.mkdir(new_model_abs_dir)
+        # new_model_rel_parent_dir = REL_PATHS[artifact_type]
+        new_model_rel_dir = new_model_id
+        # new_model_abs_dir = Path(ROOT_DIR, new_model_rel_parent_dir, new_model_rel_dir)
+        # Path.mkdir(new_model_abs_dir)
+
+        new_model_checkpoint_file_config = {
+            'model_rel_dir': new_model_rel_dir,
+            'model_filename': STANDARD_CHECKPOINT_FILENAME
+        }
+        config['model_file_config'] = new_model_checkpoint_file_config
+
+        # log all relevant model versions within the artifact created here
+        new_model_artifact = wandb.Artifact(
+            new_model_id,
+            type=artifact_type,
+            metadata=config,
+            description=description
+        )
 
         train_losses = []
         train_accuracies = []
+        val_losses = []
+        val_accuracies = []
 
-        train_loss, train_acc, shard_accuracies, shard_lengths = propagate(model,
-                                                                           'train',
-                                                                           train_shard_ids,
-                                                                           train_abs_dir,
-                                                                           transform,
-                                                                           batch_size,
-                                                                           num_workers,
-                                                                           pin_memory,
-                                                                           device,
-                                                                           loss_function,
-                                                                           optimizer)
+        train_shard_ct = 0
 
-        val_loss, val_acc, val_shard_accs, val_shard_lengths = propagate(model,
-                                                                         'eval',
-                                                                         val_shard_ids,
-                                                                         val_abs_dir,
-                                                                         transform,
-                                                                         batch_size,
-                                                                         num_workers,
-                                                                         pin_memory,
-                                                                         device,
-                                                                         loss_function,
-                                                                         optimizer)
+        for epoch in range(num_epochs):
+
+            model, train_loss, train_acc, train_shard_accuracies, shard_lengths = propagate(model,
+                                                                                            'train',
+                                                                                            train_shard_ids,
+                                                                                            train_abs_dir,
+                                                                                            transform,
+                                                                                            batch_size,
+                                                                                            num_workers,
+                                                                                            pin_memory,
+                                                                                            device,
+                                                                                            loss_function,
+                                                                                            optimizer,
+                                                                                            epoch,
+                                                                                            run)
+
+            train_losses.append(train_loss)
+            train_accuracies.append(train_acc)
+            train_shard_ct += len(train_shard_accuracies)
+
+            model, val_loss, val_acc, val_shard_accuracies, val_shard_lengths = propagate(model,
+                                                                                          'eval',
+                                                                                          val_shard_ids,
+                                                                                          val_abs_dir,
+                                                                                          transform,
+                                                                                          batch_size,
+                                                                                          num_workers,
+                                                                                          pin_memory,
+                                                                                          device,
+                                                                                          loss_function,
+                                                                                          optimizer,
+                                                                                          epoch,
+                                                                                          run)
+
+            val_losses.append(val_loss)
+            val_accuracies.append(val_acc)
+
+            log_epoch_stats(train_loss, train_acc, val_loss, val_acc, train_shard_ct, epoch)
+            log_checkpoint(model, dict(config), epoch, new_model_artifact, run)
+
+    wandb.finish()
+
+    return print('done')
+
+
+if __name__ == '__main__':
+
+    # global model
+
+    _manual_config = True
+
+    if _manual_config:
+        _train_dataset_id = '0023_numpy'
+        _train_dataset_artifact_alias = 'latest'
+        _starting_model_id = 'resnet18_pretrained'
+        _starting_model_artifact_alias = 'latest'
+        _distortion_tags = ['pan_c', 'r4', 'b4', 'n4']
+        _num_epochs = 2
+        _batch_size = 32
+        _num_workers = 0
+        _pin_memory = True
+        _optimizer = 'Adam'
+        _loss_func = 'CrossEntropyLoss'
+        _description = 'dry run of pipeline to train/log models'
+        _artifact_type = 'model'
+
+        _config = {
+            'train_dataset_id': _train_dataset_id,
+            'train_dataset_artifact_alias': _train_dataset_artifact_alias,
+            'starting_model_id': _starting_model_id,
+            'starting_model_artifact_alias': _starting_model_artifact_alias,
+            'distortion_tags': _distortion_tags,
+            'num_epochs': _num_epochs,
+            'batch_size': _batch_size,
+            'num_workers': _num_workers,
+            'pin_memory': _pin_memory,
+            'optimizer': _optimizer,
+            'loss_func': _loss_func,
+            'description': _description,
+            'artifact_type': _artifact_type
+        }
+
+        load_tune_model(_config)
 
         # TODO: integrate helper file (helper.json) method for keeping model loading from being hideous
         # helper file corollary: log best_loss, best_acc model every epoch, basically just following the

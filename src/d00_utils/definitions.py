@@ -14,6 +14,8 @@ to local image files.
 ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '../../..'))
 PROJECT_ID = 'places_dry_run'
 STANDARD_DATASET_FILENAME = 'dataset.json'
+STANDARD_CHECKPOINT_FILENAME = 'model_cp.pt'
+STANDARD_BEST_LOSS_FILENAME = 'best_loss.pt'
 KEY_LENGTH = 4
 
 # defines standard paths in project structure for different artifact types

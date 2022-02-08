@@ -360,7 +360,7 @@ def load_npz_data(directory, filename):
 
 def get_model_path(model_rel_dir, model_filename):
     """
-    Arguments named so function can be called with to be called with **model_file_config
+    Arguments named so function can be called with **model_file_config
     """
     model_path = Path(ROOT_DIR, model_rel_dir, model_filename)
     return model_path
@@ -373,7 +373,7 @@ def save_model(model, model_metadata):
     subsequent wandb logging.
     """
 
-    model_file_config = model_metadata['model_file_config']
+    model_file_config = model_metadata['model_file_config']  # i.e. {'model_rel_dir': '/foo', 'model_filename': 'bar.pt}
     model_path = get_model_path(**model_file_config)
     model_dir = model_path.parents[0]
     if not model_dir.is_dir():
