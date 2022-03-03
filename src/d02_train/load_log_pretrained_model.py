@@ -3,6 +3,7 @@ import torch
 from pathlib import Path
 from src.d00_utils.definitions import ROOT_DIR, ORIGINAL_PRETRAINED_MODELS, PROJECT_ID, REL_PATHS
 from src.d00_utils.functions import get_model_path, save_model  # ,read_json_artifact, load_wandb_model
+from src.d00_utils.classes import Sat6ResNet
 
 import wandb
 wandb.login()
@@ -19,13 +20,17 @@ def load_pretrained_model(model_id):
     model_file_config = model_metadata['model_file_config']
     model_path = get_model_path(**model_file_config)
 
-    # putting each model inside of an if statement to ensure correct state dict key replacements
+    # putting each model inside an if statement to ensure correct state dict key replacements
     if model_id == 'resnet18_places365_as_downloaded':
         model = models.__dict__[arch](num_classes=365)
         checkpoint = torch.load(model_path, map_location=lambda storage, loc: storage)
         state_dict = {str.replace(k, 'module.', ''): v for k, v in checkpoint['state_dict'].items()}
         model.load_state_dict(state_dict)
 
+        return model
+
+    if model_id == 'resnet18_sat6':
+        model = Sat6ResNet()
         return model
 
 
@@ -74,10 +79,10 @@ def load_log_original_model(model_id, new_model_id, new_model_filename, descript
 
 if __name__ == '__main__':
 
-    _model_id = 'resnet18_places365_as_downloaded'
-    _new_model_id = 'resnet18_pretrained_copy'
+    _model_id = 'resnet18_sat6'
+    _new_model_id = 'resnet18_sat6'
     _new_model_filename = 'resnet18.pt'
-    _description = 'test of loading and logging resnet18 pre-trained'
+    _description = 'test of loading and logging resnet18 pre-trained with sat6 modifications'
 
     load_log_original_model(_model_id, _new_model_id, _new_model_filename, _description)
 

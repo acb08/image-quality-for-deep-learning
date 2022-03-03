@@ -2,13 +2,33 @@ import wandb
 import json
 from pathlib import Path
 from src.d00_utils.definitions import ROOT_DIR, ORIGINAL_DATASETS, PROJECT_ID, STANDARD_DATASET_FILENAME
-from src.d00_utils.functions import load_original_dataset, log_metadata
-
 """
 Logs undistorted datasets as a W&B artifact and puts metadata into .json format 
 """
 
 wandb.login()
+
+
+def load_sat6_original():
+
+    """
+    :param dataset_id: dictionary key for ORIGINAL_DATASETS defined in definitions.py
+    :return: dictionary with the relative path to dataset umbrella, relative path to from dataset to image directory,
+    and list of images names and labels  in format [(image_name.jpg, image_label), ...]
+    """
+
+    dataset_id = 'sat6_full'
+
+    path_info = ORIGINAL_DATASETS[dataset_id]
+    dataset_dir = path_info['rel_path']
+    dataset_filename = path_info['names_labels_filename']
+
+    image_metadata = {
+        'dataset_rel_dir': dataset_dir,
+        'dataset_filename': dataset_filename
+    }
+
+    return image_metadata
 
 
 def main(dataset_id, description=None):
@@ -40,11 +60,9 @@ def main(dataset_id, description=None):
         'ROOT_DIR_at_run': str(ROOT_DIR),
     }
 
-    log_metadata(artifact_type, dataset_id, run_metadata)  # logs in local json file
-
     with wandb.init(project=PROJECT_ID, job_type='load_dataset') as run:
 
-        image_metadata = load_original_dataset(dataset_id)
+        image_metadata = load_sat6_original()
         image_metadata.update(run_metadata)
         dataset = wandb.Artifact(
             dataset_id,
@@ -63,6 +81,6 @@ def main(dataset_id, description=None):
 
 if __name__ == '__main__':
 
-    _description = 'test of ability to log Places365 train_256 as artifact. parent_dataset_id is ' \
+    _description = 'logging original sat6 dataset. parent_dataset_id is ' \
                    'identical to dataset_id when logging initial datasets'
-    main('train_256_standard', description=_description)
+    main('sat6_full', description=_description)

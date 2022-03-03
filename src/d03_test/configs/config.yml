@@ -1,0 +1,16 @@
+---
+
+description: 'test of sat6 model trained on undistorted data'
+descrptive_tags: []
+
+test_dataset_id: 0006_tst_micro
+test_dataset_artifact_alias: latest
+
+model_artifact_id: "0001"
+model_artifact_alias: best # best loss epoch
+
+batch_size: 32
+num_workers: 0
+pin_memory: True
+rgb_flag: 'rgb'
+loss_func: 'CrossEntropyLoss'

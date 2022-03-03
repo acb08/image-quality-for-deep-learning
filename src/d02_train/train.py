@@ -1,40 +1,24 @@
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 from torchvision import transforms
 import torch
 import torch.nn as nn
 import numpy as np
 from pathlib import Path
 import random
-import os
 import argparse
+import copy
 from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, ROOT_DIR, PROJECT_ID, REL_PATHS
 from src.d00_utils.definitions import STANDARD_CHECKPOINT_FILENAME, STANDARD_BEST_LOSS_FILENAME
 from src.d00_utils.functions import load_wandb_dataset_artifact, load_npz_data, load_wandb_artifact_model
 from src.d00_utils.functions import id_from_tags, save_model, get_config, read_json_artifact, string_from_tags
 from src.d01_pre_processing.distortions import tag_to_func
+from src.d00_utils.classes import NumpyDataset
 import wandb
-import json
+import os
+
+os.environ["WANDB_START_MODE"] = 'thread'
 
 wandb.login()
-
-
-class NumpyDatasetBatchDistortion(Dataset):
-
-    def __init__(self, image_array, label_array, transform=None):
-        self.label_array = label_array
-        self.image_array = image_array
-        self.transform = transform
-
-    def __len__(self):
-        return len(self.label_array)
-
-    def __getitem__(self, idx):
-        image = self.image_array[idx]
-        label = self.label_array[idx]
-        label = label
-        if self.transform:
-            image = self.transform(image)
-        return image, label
 
 
 def load_data_vectors(shard_id, directory):
@@ -51,7 +35,7 @@ def load_data_vectors(shard_id, directory):
     return image_vector, label_vector
 
 
-def get_transform(distortion_tags):
+def get_transform(distortion_tags, rgb=True):
     """
     Builds transform from distortion functions brought in by tag_to_func(), which image distortion tags to image
     distortion functions.
@@ -63,13 +47,21 @@ def get_transform(distortion_tags):
         distortion_function = tag_to_func(tag)
         transform_list.append(distortion_function)
 
-    transform_list.extend([
-        transforms.Normalize(
-            [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
-        ),
-        transforms.Resize(256),
-        transforms.CenterCrop(224)
-    ])
+    if rgb:
+        transform_list.extend([
+            transforms.Normalize(
+                [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
+            ),
+            transforms.Resize(256),
+            transforms.CenterCrop(224)
+        ])
+    else:
+        transform_list.extend([
+            transforms.Normalize(
+                (0.5, 0.5, 0.5), (0.25, 25, 0.25)
+            ),
+            transforms.Resize(224),
+        ])
 
     return transforms.Compose(transform_list)
 
@@ -80,9 +72,9 @@ def get_shard(shard_id, directory, transform):
     """
 
     image_vector, label_vector = load_data_vectors(shard_id, directory)
-    shard = NumpyDatasetBatchDistortion(image_vector,
-                                        label_vector,
-                                        transform)
+    shard = NumpyDataset(image_vector,
+                         label_vector,
+                         transform)
 
     shard_length = len(label_vector)
 
@@ -182,7 +174,7 @@ def run_shard(model, train_eval_flag, shard, batch_size, num_workers, pin_memory
 
     accuracy = get_raw_accuracy(predicts, labels)
 
-    return model, running_loss, accuracy
+    return model, running_loss, accuracy, labels, predicts
 
 
 def propagate(model,
@@ -215,15 +207,15 @@ def propagate(model,
     for shard_id in shard_ids:
         shard, shard_length = get_shard(shard_id, data_abs_dir, transform)
 
-        model, shard_loss, shard_accuracy = run_shard(model=model,
-                                                      train_eval_flag=train_eval_flag,
-                                                      shard=shard,
-                                                      batch_size=batch_size,
-                                                      num_workers=num_workers,
-                                                      pin_memory=pin_memory,
-                                                      device=device,
-                                                      loss_func=loss_func,
-                                                      optimizer=optimizer)
+        model, shard_loss, shard_accuracy, __, __ = run_shard(model=model,
+                                                              train_eval_flag=train_eval_flag,
+                                                              shard=shard,
+                                                              batch_size=batch_size,
+                                                              num_workers=num_workers,
+                                                              pin_memory=pin_memory,
+                                                              device=device,
+                                                              loss_func=loss_func,
+                                                              optimizer=optimizer)
 
         shard_accuracies.append(shard_accuracy)
         shard_lengths.append(shard_length)
@@ -241,22 +233,20 @@ def propagate(model,
 
 
 def log_epoch_stats(train_loss, train_acc, val_loss, val_acc, train_shard_ct, epoch):
-
     wandb.log({
         'train_loss': train_loss,
         'train_acc': train_acc,
         'val_loss': val_loss,
         'val_acc': val_acc,
         'epoch': epoch,
-    }, step=train_shard_ct)
+    }, step=epoch)
 
-    print('Loss after ' + str(train_shard_ct).zfill(3) + f' train shards: '
-                                                         f'{train_loss:3f} (train), '
-                                                         f'{val_loss:3f} (val)')
+    print(f'Epoch {epoch} loss after ' + str(train_shard_ct).zfill(3) + f' train shards: '
+                                                                        f'{train_loss:3f} (train), '
+                                                                        f'{val_loss:3f} (val)')
 
 
-def log_checkpoint(model, model_metadata, epoch, new_model_artifact, run):
-
+def log_checkpoint(model, model_metadata, new_model_artifact, run):
     model_path, helper_path = save_model(model, model_metadata)
     new_model_artifact.add_file(model_path)
     new_model_artifact.add_file(helper_path)
@@ -264,6 +254,25 @@ def log_checkpoint(model, model_metadata, epoch, new_model_artifact, run):
 
 
 def save_best_loss_model(model, model_metadata, val_losses, epoch):
+
+    # best_loss_model_metadata = model_metadata.copy.deepcopy()
+    #
+    # best_loss_model_file_config = best_loss_model_metadata['model_file_config']
+    # best_loss_model_rel_dir_parent = best_loss_model_file_config['model_rel_dir']
+    # best_loss_model_rel_dir = str(Path(best_loss_model_rel_dir_parent, r'best_loss'))
+    #
+    # # best_loss_model_file_config = {
+    # #     'model_rel_dir': best_loss_model_rel_dir,
+    # #     'model_filename': STANDARD_BEST_LOSS_FILENAME
+    # # }
+    #
+    # model_metadata['model_file_config'] = model_file_config  # probably redundant, but explicit update seems safer
+    # model_metadata['best_loss_epoch'] = epoch
+    # model_metadata['best_loss'] = val_losses[-1]
+    #
+    # model_path, helper_path = save_model(model, model_metadata)
+    #
+    # return model_path, helper_path
 
     model_file_config = model_metadata['model_file_config']
     model_rel_dir = model_file_config['model_rel_dir']
@@ -283,28 +292,34 @@ def save_best_loss_model(model, model_metadata, val_losses, epoch):
 
 def load_tune_model(config):
 
-    with wandb.init(project=PROJECT_ID, job_type='train_model', config=config) as run:
+    run_tags = copy.deepcopy(config['descriptive_tags'])
+    run_tags.extend(config['distortion_tags'])
 
-        config = wandb.config
+    with wandb.init(project=PROJECT_ID, job_type='train_model', config=config, tags=run_tags) as run:
 
-        dataset_artifact_id = f'{config.train_dataset_id}:{config.train_dataset_artifact_alias}'
-        starting_model_artifact_id = f'{config.starting_model_id}:{config.starting_model_artifact_alias}'
+        config = wandb.config  # allows wandb parameter sweeps
+
+        dataset_artifact_id = f"{config['train_dataset_id']}:{config['train_dataset_artifact_alias']}"
+        starting_model_artifact_id = f"{config['starting_model_id']}:{config['starting_model_artifact_alias']}"
 
         __, dataset = load_wandb_dataset_artifact(run, dataset_artifact_id, STANDARD_DATASET_FILENAME)
 
-        model = load_wandb_artifact_model(run, starting_model_artifact_id)
+        model, arch, __ = load_wandb_artifact_model(run, starting_model_artifact_id, return_configs=True)
+        config['arch'] = arch  # ensures model metadata identifies correct model architecture
+
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         model.to(device)
-        num_epochs = config.num_epochs
-        batch_size = config.batch_size
-        num_workers = config.num_workers
-        pin_memory = config.pin_memory
-        distortion_tags = config.distortion_tags
-        transform = get_transform(distortion_tags)
-        optimizer = getattr(torch.optim, config.optimizer)(model.parameters())
-        loss_function = getattr(nn, config.loss_func)()
-        description = config.description
-        artifact_type = config.artifact_type
+        num_epochs = config['num_epochs']
+        batch_size = config['batch_size']
+        num_workers = config['num_workers']
+        pin_memory = config['pin_memory']
+        distortion_tags = config['distortion_tags']
+        rgb_flag = config['rgb_flag']
+        transform = get_transform(distortion_tags, rgb=rgb_flag)
+        optimizer = getattr(torch.optim, config['optimizer'])(model.parameters())
+        loss_function = getattr(nn, config['loss_func'])()
+        description = config['description']
+        artifact_type = config['artifact_type']
 
         train_shard_ids = dataset['train']['image_and_label_filenames']
         val_shard_ids = dataset['val']['image_and_label_filenames']
@@ -313,13 +328,10 @@ def load_tune_model(config):
         val_abs_dir = Path(ROOT_DIR, dataset_rel_dir, REL_PATHS['val_vectors'])
 
         new_model_id = id_from_tags(artifact_type, distortion_tags)
-        # new_model_rel_parent_dir = REL_PATHS[artifact_type]
         new_model_rel_dir = Path(REL_PATHS[artifact_type], new_model_id)
-        # new_model_abs_dir = Path(ROOT_DIR, new_model_rel_parent_dir, new_model_rel_dir)
-        # Path.mkdir(new_model_abs_dir)
 
         new_model_checkpoint_file_config = {
-            'model_rel_dir': new_model_rel_dir,
+            'model_rel_dir': str(new_model_rel_dir),
             'model_filename': STANDARD_CHECKPOINT_FILENAME
         }
         config['model_file_config'] = new_model_checkpoint_file_config
@@ -370,54 +382,63 @@ def load_tune_model(config):
             val_losses.append(val_loss)
             val_accuracies.append(val_acc)
 
+            artifact_metadata = dict(config)
+            artifact_metadata.update({
+                'epoch': epoch
+            })
+
             new_model_artifact = wandb.Artifact(
                 new_model_id,
                 type=artifact_type,
-                metadata=dict(config),
+                metadata=artifact_metadata,
                 description=description
             )
 
             log_epoch_stats(train_loss, train_acc, val_loss, val_acc, train_shard_ct, epoch)
-            log_checkpoint(model, dict(config), epoch, new_model_artifact, run)
+            log_checkpoint(model, dict(config), new_model_artifact, run)
 
             if val_losses[-1] <= min(val_losses):
 
+                best_loss_model_metadata = copy.deepcopy(dict(config))
                 best_loss_model_path, best_loss_helper_path = save_best_loss_model(model,
-                                                                                   dict(config),
+                                                                                   best_loss_model_metadata,
                                                                                    val_losses,
                                                                                    epoch)
 
-    best_loss_model_artifact = wandb.Artifact(
-        f'{new_model_id}_best_loss',
-        type=artifact_type,
-        metadata=dict(config),
-        description=description
-    )
-    best_loss_model_artifact.add_file(str(best_loss_model_path))
-    best_loss_model_artifact.add_file(str(best_loss_helper_path))
+        best_loss_model_artifact = wandb.Artifact(
+            f'{new_model_id}_best_loss',
+            type=artifact_type,
+            metadata=artifact_metadata,
+            description=description
+        )
+
+        best_loss_model_artifact.add_file(str(best_loss_model_path))
+        best_loss_model_artifact.add_file(str(best_loss_helper_path))
+        run.log_artifact(best_loss_model_artifact)
+        run.name = new_model_id
 
     print('done')
 
 
 if __name__ == '__main__':
 
-    # global model
-
     _manual_config = True
 
     if _manual_config:
-        _train_dataset_id = '0023_numpy'
+        _train_dataset_id = '0003_numpy-micro'
         _train_dataset_artifact_alias = 'latest'
-        _starting_model_id = 'resnet18_pretrained'
+        _starting_model_id = 'resnet18_sat6'
         _starting_model_artifact_alias = 'latest'
-        _distortion_tags = ['pan_c', 'r4', 'b4', 'n4']
-        _num_epochs = 2
-        _batch_size = 32
+        _rgb_flag = True
+        _distortion_tags = []
+        _descriptive_tags = []
+        _num_epochs = 5
+        _batch_size = 8
         _num_workers = 0
         _pin_memory = True
         _optimizer = 'Adam'
         _loss_func = 'CrossEntropyLoss'
-        _description = 'dry run of pipeline to train/log models'
+        _description = 'quick check after updates. best_loss overwritten every epoch'
         _artifact_type = 'model'
 
         _config = {
@@ -425,7 +446,9 @@ if __name__ == '__main__':
             'train_dataset_artifact_alias': _train_dataset_artifact_alias,
             'starting_model_id': _starting_model_id,
             'starting_model_artifact_alias': _starting_model_artifact_alias,
+            'rgb_flag': _rgb_flag,
             'distortion_tags': _distortion_tags,
+            'descriptive_tags': _descriptive_tags,
             'num_epochs': _num_epochs,
             'batch_size': _batch_size,
             'num_workers': _num_workers,

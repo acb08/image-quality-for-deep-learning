@@ -12,10 +12,12 @@ to local image files.
 """
 
 ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '../../..'))
-PROJECT_ID = 'places_dry_run'
+PROJECT_ID = 'sat6'
 STANDARD_DATASET_FILENAME = 'dataset.json'
 STANDARD_CHECKPOINT_FILENAME = 'model_cp.pt'
 STANDARD_BEST_LOSS_FILENAME = 'best_loss.pt'
+STANDARD_TEST_RESULT_FILENAME = 'best_result.json'
+STANDARD_CONFIG_USED_FILENAME = 'config_used.yml'
 KEY_LENGTH = 4
 
 # defines standard paths in project structure for different artifact types
@@ -25,26 +27,27 @@ REL_PATHS = {
     'images': r'images',
     'train_vectors': r'train_split',
     'val_vectors': r'val_split',
-    # 'metadata': r'metadata',  # removing redundant project metadata
     'model': r'models',
     'test_result': r'test_results',
     'analysis': r'analysis'
 }
 
+# ARTIFACT_TYPE_TAGS used to avoid name wandb name collisions
+ARTIFACT_TYPE_TAGS = {
+    'train_dataset': 'trn',
+    'test_dataset': 'tst',
+    'model': r'mdl',
+    'test_result': r'rlt'
+}
+
 # note: val slice in original datasets used for test dataset in this
 # project. Train datasets to have their own val slice carved out.
 ORIGINAL_DATASETS = {
-    'val_256': {
-        'rel_path': r'datasets/test/val_256',
-        'names_labels_filename': 'places365_val.txt',
-        'artifact_type': 'test_dataset'
+    'sat6_full': {
+        'rel_path': r'datasets/original',
+        'names_labels_filename': 'sat-6-full.mat',
+        'artifact_type': 'full_dataset'
     },
-    'train_256_standard': {
-        'rel_path': r'datasets/train/data_256',
-        'names_labels_filename': 'places365_train_standard.txt',
-        'artifact_type': 'train_dataset'
-    }
-    # TODO: add train_256_challenge
 }
 
 # use 'model_file_config' as a standard for saving all models to enable easy loading
@@ -55,6 +58,14 @@ ORIGINAL_PRETRAINED_MODELS = {
             'model_filename': 'resnet18_places365.pth.tar',
         },
         'arch': 'resnet18',
+        'artifact_type': 'model'
+    },
+    'resnet18_sat6': {
+        'model_file_config': {
+            'model_rel_dir': r'none',  # in torchvsion.models library
+            'model_filename': r'none', # stored as string to avoid error in load_pretrained_model()
+        },
+        'arch': 'resnet18_sat6',
         'artifact_type': 'model'
     }
 }

@@ -1,11 +1,13 @@
 import torchvision.models as models
 import torch
 import os
-from src.d00_utils.definitions import ROOT_DIR, REL_PATHS, ORIGINAL_DATASETS, KEY_LENGTH  # ,METADATA_FILENAMES
+from src.d00_utils.definitions import ROOT_DIR, REL_PATHS, ORIGINAL_DATASETS, KEY_LENGTH, ARTIFACT_TYPE_TAGS, \
+    STANDARD_CONFIG_USED_FILENAME
 import json
 from pathlib import Path
-import yaml
+from yaml import safe_load, dump
 import numpy as np
+from src.d00_utils.classes import Sat6ResNet
 
 
 def load_original_dataset(dataset_id):
@@ -234,13 +236,12 @@ def id_from_tags(artifact_type, tags):
     target_dir, dir_key_query_result = get_path_and_key(artifact_type)
     dir_key = dir_key_query_result[0]
 
-    dir_key_num = int(dir_key)
     name = dir_key
+    type_tag = ARTIFACT_TYPE_TAGS[artifact_type]
+    tags.insert(0, type_tag)
 
-    if len(tags) > 0:
-
-        tag_string = string_from_tags(tags)
-        name = name + tag_string
+    tag_string = string_from_tags(tags)
+    name = name + tag_string
 
     return name
 
@@ -254,25 +255,46 @@ def string_from_tags(tags):
     return tag_string
 
 
-def get_config(parent_dir, rel_path=r'config', filename='config.txt'):
+# def get_config(parent_dir, rel_path=r'config', filename='config.txt'):
+#
+#     """
+#     :param parent_dir: directory containing the config dir (typically current working directory)
+#     :param rel_path: path to directory with config file
+#     :param filename: name of config file
+#     :return: Bool, True iff number of files in config_dir == 1
+#     """
+#
+#     target_dir = os.path.join(parent_dir, rel_path)
+#     num_files = len(os.listdir(target_dir))
+#
+#     if num_files != 1:
+#         raise Exception('multiple files in config directory')
+#
+#     with open(Path(parent_dir, rel_path, filename), 'r') as f:
+#         data = yaml.safe_load(f)
+#
+#     return data
 
-    """
-    :param parent_dir: directory containing the config dir (typically current working directory)
-    :param rel_path: path to directory with config file
-    :param filename: name of config file
-    :return: Bool, True iff number of files in config_dir == 1
-    """
 
-    target_dir = os.path.join(parent_dir, rel_path)
-    num_files = len(os.listdir(target_dir))
+def get_config(args):
 
-    if num_files != 1:
-        raise Exception('multiple files in config directory')
+    with open(Path(args.config_dir, args.config_name), 'r') as file:
+        config = safe_load(file)
 
-    with open(Path(parent_dir, rel_path, filename), 'r') as f:
-        data = yaml.safe_load(f)
+    print(json.dumps(config, indent=3))
 
-    return data
+    return config
+
+
+def log_config(output_dir, config, return_path=False):
+
+    log_path = Path(output_dir, STANDARD_CONFIG_USED_FILENAME)
+
+    with open(log_path, 'w') as file:
+        dump(config, file)
+
+    if return_path:
+        return log_path
 
 
 def potential_overwrite(path):
@@ -366,6 +388,18 @@ def get_model_path(model_rel_dir, model_filename):
     return model_path
 
 
+def check_model_metadata(model_metadata):
+
+    """
+    Verifies that model_metadata contains the minimum necessary information for model
+    saving/loading
+    """
+
+    min_key_set = {'model_file_config', 'arch', 'artifact_type'}
+    metadata_key_set = set(model_metadata.keys())
+    return min_key_set.issubset(metadata_key_set)
+
+
 def save_model(model, model_metadata):
 
     """
@@ -373,11 +407,14 @@ def save_model(model, model_metadata):
     subsequent wandb logging.
     """
 
+    if not check_model_metadata(model_metadata):
+        raise Exception("Model metadata lacks a key (one or more of {'model_file_config', 'arch', 'artifact_type'}")
+
     model_file_config = model_metadata['model_file_config']  # i.e. {'model_rel_dir': '/foo', 'model_filename': 'bar.pt}
     model_path = get_model_path(**model_file_config)
     model_dir = model_path.parents[0]
     if not model_dir.is_dir():
-        Path.mkdir(model_dir)
+        Path.mkdir(model_dir, parents=True)
 
     torch.save(model.state_dict(), model_path)
     helper_path = log_model_helper(model_dir, model_metadata)  # save model metadata in json file
@@ -387,7 +424,13 @@ def save_model(model, model_metadata):
 
 def load_model(model_path, arch):
 
-    model = models.__dict__[arch](num_classes=365)
+    if arch == 'resnet18':
+        model = models.__dict__[arch](num_classes=365)
+        # model.load_state_dict(torch.load(model_path))
+
+    if arch == 'resnet18_sat6':
+        model = Sat6ResNet()
+
     model.load_state_dict(torch.load(model_path))
 
     return model
@@ -417,7 +460,7 @@ def load_model(model_path, arch):
 #     return model
 
 
-def load_wandb_artifact_model(run, artifact_id):
+def load_wandb_artifact_model(run, artifact_id, return_configs=False):
 
     artifact = run.use_artifact(artifact_id)
     artifact_dir = artifact.download()
@@ -425,11 +468,16 @@ def load_wandb_artifact_model(run, artifact_id):
 
     helper_data = read_json_artifact(artifact_abs_dir, 'helper.json')
     arch = helper_data['arch']
+    artifact_type = helper_data['artifact_type']
     model_filename = helper_data['model_file_config']['model_filename']
     model_path = Path(artifact_dir, model_filename)
     model = load_model(model_path, arch)
 
-    return model
+    if not return_configs:
+        return model
+
+    else:
+        return model, arch, artifact_type
 
 
 if __name__ == '__main__':
