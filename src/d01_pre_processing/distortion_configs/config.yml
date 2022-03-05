@@ -1,0 +1,17 @@
+---
+
+description: build mini-set of images with varied resolution
+
+parent_dataset_id: sat6_full
+parent_artifact_alias: latest
+parent_artifact_filename: standard  # standard functions as a flag to use definitions.STANDARD_ARTIFACT_FILENAME
+
+num_images: 3000
+images_per_file: 100
+distortion_tags: ['rs1']
+use_flags: ['res']
+iterations: 1
+artifact_type: test_dataset
+artifact_filename: standard
+datatype_key: np.uint8
+

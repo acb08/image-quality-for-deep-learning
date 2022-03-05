@@ -1,16 +1,20 @@
 ---
 
-description: 'test of sat6 model trained on undistorted data'
+description: 'test of sat6 model on mini-set of images with varied resolution'
 descrptive_tags: []
 
-test_dataset_id: 0006_tst_micro
+test_dataset_id: 0022_tst_rs1_res
 test_dataset_artifact_alias: latest
 
-model_artifact_id: "0001"
-model_artifact_alias: best # best loss epoch
+#model_artifact_id: "0001"
+#model_artifact_alias: best # best loss epoch (this alias only applies for the 0001 model
+
+model_artifact_id: "0024_best_loss"
+model_artifact_alias: latest
 
 batch_size: 32
 num_workers: 0
 pin_memory: True
 rgb_flag: 'rgb'
+final_distortion_type_flag: res  # set to "noise" if using fully distorted dataset, otherwise "blur" or "res"
 loss_func: 'CrossEntropyLoss'

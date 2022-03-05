@@ -69,7 +69,7 @@ def test_model(config):
 
     with wandb.init(project=PROJECT_ID, job_type='test_model', notes=config['description'], config=config) as run:
 
-        config = wandb.config
+        # config = wandb.config
 
         dataset_artifact_id = f"{config['test_dataset_id']}:{config['test_dataset_artifact_alias']}"
         model_artifact_id = f"{config['model_artifact_id']}:{config['model_artifact_alias']}"
@@ -82,12 +82,20 @@ def test_model(config):
         num_workers = config['num_workers']
         pin_memory = config['pin_memory']
         rgb_flag = config['rgb_flag']
+        final_distortion_type_flag = config['final_distortion_type_flag']
         transform = get_transform(distortion_tags=[], rgb=rgb_flag)
         loss_function = getattr(nn, config['loss_func'])()
         artifact_type = 'test_result'
 
-        test_shard_ids = dataset['test']['image_and_label_filenames']
+        if final_distortion_type_flag:
+            dataset_type_key = final_distortion_type_flag
+        else:
+            dataset_type_key = 'test'
+
+        test_shard_ids = dataset[dataset_type_key]['image_and_label_filenames']
         dataset_rel_dir = dataset['dataset_rel_dir']
+        if final_distortion_type_flag:
+            dataset_rel_dir = Path(dataset_rel_dir, REL_PATHS[final_distortion_type_flag])
         dataset_abs_dir = Path(ROOT_DIR, dataset_rel_dir)
 
         loss, accuracy, shard_accuracies, shard_lengths, shard_performances = execute_test(model,
@@ -107,6 +115,8 @@ def test_model(config):
             'shard_lengths': shard_lengths,
             'shard_performances': shard_performances
         }
+
+        test_result.update(config)
 
         # log top level metrics for easy access on wandb dashboard
         wandb.log({

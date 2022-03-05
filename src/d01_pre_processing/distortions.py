@@ -7,10 +7,10 @@ from torchvision import transforms
 from torchvision.io import read_image
 import matplotlib.pyplot as plt
 import random
+from PIL import Image
 
 
 class AddPoissonNoise(object):
-
     """
     Adds zero-centered Poisson noise of standard deviation sigma_poisson.
 
@@ -42,6 +42,7 @@ class AddVariablePoissonNoise(object):
 
 
     """
+
     def __init__(self, sigma_poisson_range, clamp=True):
         self.low = sigma_poisson_range[0] ** 2
         self.high = sigma_poisson_range[1] ** 2 + 1  # add one because torch.randint excludes right endpoint
@@ -56,7 +57,50 @@ class AddVariablePoissonNoise(object):
         return noisy_tensor
 
 
+class VariableImageResize(object):
+    """
+    Builds a transform bank to re-size images and provides a method for randomly selecting the size of the
+    transform to be used before being called.
+    """
+
+    def __init__(self, sizes):
+        self.sizes = sizes
+        self.transform_bank = self.build_transform_bank()
+        self.size_keys = list(self.transform_bank.keys())
+
+    def build_transform_bank(self):
+        transform_bank = {}
+        for size in self.sizes:
+            size = int(size)
+            new_transform = transforms.Compose([transforms.Resize(size,
+                                                                  interpolation=transforms.InterpolationMode.BILINEAR,
+                                                                  antialias=True)])
+            transform_bank[size] = new_transform
+        print('build_transform_bank called')
+        return transform_bank
+
+    def get_size_key(self):
+        """
+        randomly returns one of the class's size keys, which can then be used in the __call__() method. Allows the user
+        to know the resolution ahead of time for things like initializing arrays of the correct shape.
+        """
+        size_key = random.choice(self.size_keys)
+        return size_key
+
+    def __call__(self, image, size_key, dtype_out=np.uint8):
+        if not isinstance(image, Image.Image):
+            image = Image.fromarray(image)
+        transform_use = self.transform_bank[size_key]
+        image = transform_use(image)
+        image = np.asarray(image, dtype=dtype_out)
+        return image
+
+
 class VariableResolution(object):
+
+    """
+    Randomly selects a resize transform per the sizes argument passed in the __init__() method
+    """
 
     def __init__(self, sizes):
         self.sizes = sizes
@@ -78,22 +122,7 @@ class VariableResolution(object):
         return transform_use(tensor)
 
 
-def pan(img):
-    """
-    :param img: torch image tensor
-    :param shape: keword arg to ignore, enables compatibility with other distortion functions
-    :return: torch image tensor, converted to grayscale
-    """
-
-    return transforms.Grayscale(num_output_channels=3)(img), 'mode', 'pan'
-
-
-def pan_c():
-    return transforms.Grayscale(num_output_channels=3)
-
-
 def b3(img):
-
     kernel_size = 15
     sigma_range = np.linspace(0.1, 3.5, num=50, endpoint=True)
     std = np.random.choice(sigma_range)
@@ -105,7 +134,6 @@ def b3(img):
 
 
 def bc3(img):
-
     """
     Coarser version of b3, with only 20 stds rather than 52.
     """
@@ -150,7 +178,6 @@ def b5():
 
 
 def b6(img):
-
     kernel_size = 15
     std = 1.75
 
@@ -158,7 +185,6 @@ def b6(img):
 
 
 def b7(img):
-
     kernel_size = 15
     std = 1.75
 
@@ -166,7 +192,6 @@ def b7(img):
 
 
 def b8(img):
-
     kernel_size = 15
     std = 3.5
 
@@ -236,7 +261,6 @@ def bp2(img):
 
 
 def n2(img):
-
     """
 
     Stop Using this version. This noise version does not actually add noise, instead returning
@@ -262,7 +286,6 @@ def n2(img):
 
 
 def n3(img):
-
     """
 
     :param img: image tensor, values on range [0,1]
@@ -285,7 +308,6 @@ def n3(img):
 
 
 def nf3(img):
-
     """
 
     :param img: image tensor, values on range [0,1]
@@ -303,7 +325,7 @@ def nf3(img):
     shape = img.shape
     sigma_poisson = np.random.randint(0, 21)  # add 1 to target distribution, high is "one above the highest integer to
     # be drawn from the target distribution
-    lambda_poisson = sigma_poisson**2
+    lambda_poisson = sigma_poisson ** 2
     noise = (torch.poisson(torch.ones(shape) * lambda_poisson).float() - lambda_poisson) / 255
     img_out = torch.clone(img) + noise
     img_out = torch.clamp(img_out, 0, 1)
@@ -356,7 +378,6 @@ def nf5():
 
 
 def n6(img):
-
     """
 
     :param img: image tensor, values on range [0,1]
@@ -379,7 +400,6 @@ def n6(img):
 
 
 def n7(img):
-
     """
 
     :param img: image tensor, values on range [0,1]
@@ -402,7 +422,6 @@ def n7(img):
 
 
 def n8(img):
-
     """
 
     :param img: image tensor, values on range [0,1]
@@ -425,7 +444,6 @@ def n8(img):
 
 
 def n9(img):
-
     """
     :param img: image tensor, values on range [0,1]
     :return: image + Poisson noise, where poisson noise is scaled by 1 / 255  and
@@ -509,7 +527,6 @@ def nfr2():
 
 
 def nfp1(img):
-
     """
 
     :param img: image tensor, values on range [0,1]
@@ -527,7 +544,7 @@ def nfp1(img):
     shape = img.shape
     sigma_poisson = 5
     # be drawn from the target distribution
-    lambda_poisson = sigma_poisson**2
+    lambda_poisson = sigma_poisson ** 2
     noise = (torch.poisson(torch.ones(shape) * lambda_poisson).float() - lambda_poisson) / 255
     img_out = torch.clone(img) + noise
     img_out = torch.clamp(img_out, 0, 1)
@@ -536,7 +553,6 @@ def nfp1(img):
 
 
 def nfp2(img):
-
     """
 
     :param img: image tensor, values on range [0,1]
@@ -554,7 +570,7 @@ def nfp2(img):
     shape = img.shape
     sigma_poisson = 15
     # be drawn from the target distribution
-    lambda_poisson = sigma_poisson**2
+    lambda_poisson = sigma_poisson ** 2
     noise = (torch.poisson(torch.ones(shape) * lambda_poisson).float() - lambda_poisson) / 255
     img_out = torch.clone(img) + noise
     img_out = torch.clamp(img_out, 0, 1)
@@ -570,7 +586,6 @@ def r1(img):
 
 
 def r2(img):
-
     """
     scales image down by a factor on [0.5, 1] and re-sizes to original size, emulating a lower resolution
     image
@@ -595,7 +610,6 @@ def r2(img):
 
 
 def r3(img):
-
     """
     scales image down by a factor on [0.5, 1] WITHOUT resizing to original size, emulating a lower resolution
     image.
@@ -619,7 +633,6 @@ def r3(img):
 
 
 def rc3(img):
-
     """
     scales image down by a factor on [0.5, 1] WITHOUT resizing to original size, emulating a lower resolution
     image. A coarser version of r3, with only 21 resolution bins rather than 52
@@ -643,7 +656,6 @@ def rc3(img):
 
 
 def r4():
-
     """
     returns transform to down-scale a 256 x 256 image to 75% scale (i.e. 192 x 192)
     """
@@ -652,7 +664,6 @@ def r4():
 
 
 def r5(img):
-
     """
     scales image down by a factor on [0.3, 1] WITHOUT resizing to original size, emulating a lower resolution
     image.
@@ -676,7 +687,6 @@ def r5(img):
 
 
 def r6():
-
     """
     returns transform to down-scale a 256 x 256 image to 50% scale (i.e. 128 x 128). Intended as the endpoint of the
     r3 distortion space.
@@ -686,7 +696,6 @@ def r6():
 
 
 def r7(img):
-
     """
     scales image down by 0.75 WITHOUT resizing to original size, emulating a lower resolution
     image. Equivalent to r4, but for use in scripts where each distortion is called separately rather than in
@@ -707,7 +716,6 @@ def r7(img):
 
 
 def r8(img):
-
     """
     scales image down by 0.5 WITHOUT resizing to original size, emulating a lower resolution
     image. Equivalent to r6, but for use in scripts where each distortion is called separately rather than in
@@ -778,7 +786,6 @@ def rr2():
 
 
 def rp1(img):
-
     """
     scales image down by 12.25% WITHOUT resizing to original size, emulating a lower resolution
     image.
@@ -822,157 +829,23 @@ def rp2(img):
     return res_transform(img), 'res', scale
 
 
-def tag_to_func(tag):  # TODO: see if calling an intermediate function is slower than import function directly
+def rs1():
 
     """
-
-    Repeatably maps distortion tags to stable distortion functions. Allows distortion scripts to
-    import a single function that then calls the appropriate distortion functions. The more I think about it,
-    I should probably just import the distortion functions themselves...
-
-    :param tag: tag mapped to a particular distortion function
-    :return: distortion function corresponding to tag
+    Initializes and returns a VariableImageResize instance designed to re-size SAT6 images
+    randomly between 50% and 100% of original images size
     """
 
-    if tag == 'pan':
-        return pan
-    if tag == 'pan_c':
-        return pan_c()
-    if tag == 'pan_br':  # pan branch (hence '_br') to avoid overwriting other pan test datasets
-        return pan       # this is why I need a new scheme for config mgt/saving data...
-    if tag == 'pan_crop':
-        return pan
-    if tag == 'pan_msc1':  # msc stands for mega set coarse
-        return pan
-    if tag == 'pan_msc2':
-        return pan
-    # tags to avoid overwriting parent images in octant scheme
-    if tag == 'pan_p111':
-        return pan
-    if tag == 'pan_p112':
-        return pan
-    if tag == 'pan_p121':
-        return pan
-    if tag == 'pan_p122':
-        return pan
-    if tag == 'pan_p211':
-        return pan
-    if tag == 'pan_p212':
-        return pan
-    if tag == 'pan_p221':
-        return pan
-    if tag == 'pan_p222':
-        return pan
+    min_size = 14
+    max_size = 28
+    sizes = list(np.arange(min_size, max_size + 1))
+    transform = VariableImageResize(sizes)
 
-    if tag == 'b0':
-        return b0
-    if tag == 'b3':
-        return b3
-    if tag == 'bc3':
-        return bc3
-    if tag == 'b4':
-        return b4()
-    if tag == 'b5':
-        return b5()
-    if tag == 'b6':
-        return b6
-    if tag == 'b7':
-        return b7
-    if tag == 'b8':
-        return b8
-    if tag == 'b9':
-        return b9()
-    if tag == 'b10':
-        return b10()
-    if tag == 'br1':
-        return br1()
-    if tag == 'br2':
-        return br2()
-    if tag == 'bp1':
-        return bp1
-    if tag == 'bp2':
-        return bp2
+    return transform
 
-    ######################################
-    # n2 - n10 all incorrectly incorporate Poisson noise.
-    # if tag == 'n2':
-    #     return n2
-    # if tag == 'n3':
-    #     return n3
-    # if tag == 'n4':
-    #     return n4()
-    # if tag == 'n5':
-    #     return n5()
-    # if tag == 'n6':
-    #     return n6
-    # if tag == 'n7':
-    #     return n7
-    # if tag == 'n8':
-    #     return n8
-    # if tag == 'n9':
-    #     return n9
-    # if tag == 'n10':
-    #     return n10()
-    #################################
-    # corrected noise tags below
-    if tag == 'nf3':
-        return nf3
-    if tag == 'nf4':
-        return nf4()
-    if tag == 'nf5':
-        return nf5()
-    if tag == 'nf10':
-        return nf10()
-    if tag == 'nf11':
-        return nf11()
-    # "octant transforms"
-    if tag == 'nfr1':
-        return nfr1()
-    if tag == 'nfr2':
-        return nfr2()
-    if tag == 'nfp1':
-        return nfp1
-    if tag == 'nfp2':
-        return nfp2
-
-    if tag == 'r1':
-        return r1
-    if tag == 'r2':
-        return r2
-    if tag == 'r3':
-        return r3
-    if tag == 'rc3':
-        return rc3
-    if tag == 'r3_br': # another overwrite project branch for making mega dataset
-        return r3
-    if tag == 'r3_br2':
-        return r3
-    if tag == 'r4':
-        return r4()
-    if tag == 'r5':
-        return r5
-    if tag == 'r6':
-        return r6()
-    if tag == 'r7':
-        return r7
-    if tag == 'r8':
-        return r8
-    if tag == 'r9':
-        return r9()
-    if tag == 'r10':
-        return r10()
-    if tag == 'rr1':
-        return rr1()
-    if tag == 'rr2':
-        return rr2()
-    if tag == 'rp1':
-        return rp1
-    if tag == 'rp2':
-        return rp2
 
 
 def test_noise_transform(noise_func):
-
     t = transforms.Compose(noise_func)
     runs_per_tensor = 10
 
@@ -1000,7 +873,6 @@ def test_noise_transform(noise_func):
 
 
 def test_res_transform(res_func):
-
     input_tensor = torch.rand((10, 3, 256, 256))
     num_iterations = 100
     t = transforms.Compose(res_func)
@@ -1013,7 +885,6 @@ def test_res_transform(res_func):
 
 
 def test_blur_function(blur_func):
-
     input_tensor = torch.rand((10, 3, 256, 256))
     num_iterations = 100
     t = transforms.Compose(blur_func)
@@ -1023,3 +894,25 @@ def test_blur_function(blur_func):
         outputs.append(output_tensor)
     return outputs
 
+
+tag_to_func = {
+    'rs1': rs1,
+}
+
+
+if __name__ == '__main__':
+
+    foo = np.random.randint(0, 255, size=(28, 28), dtype=np.uint8)
+    res_trans = tag_to_func['rs1']()
+    tgt_size = res_trans.get_size_key()
+    bar = res_trans(foo, 14)
+
+    plt.figure()
+    plt.imshow(foo)
+    plt.title('foo')
+    plt.show()
+
+    plt.figure()
+    plt.imshow(bar)
+    plt.title('bar')
+    plt.show()

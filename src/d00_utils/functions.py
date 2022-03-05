@@ -8,6 +8,7 @@ from pathlib import Path
 from yaml import safe_load, dump
 import numpy as np
 from src.d00_utils.classes import Sat6ResNet
+import copy
 
 
 def load_original_dataset(dataset_id):
@@ -231,19 +232,25 @@ def get_path_and_key(artifact_type):
 #     return name
 
 
-def id_from_tags(artifact_type, tags):
+def id_from_tags(artifact_type, tags, return_dir=False):
 
     target_dir, dir_key_query_result = get_path_and_key(artifact_type)
     dir_key = dir_key_query_result[0]
 
     name = dir_key
     type_tag = ARTIFACT_TYPE_TAGS[artifact_type]
-    tags.insert(0, type_tag)
 
-    tag_string = string_from_tags(tags)
+    local_tags = copy.deepcopy(tags)  # avoids having the type tag inserted in the mutable list passed to the function
+    local_tags.insert(0, type_tag)
+
+    tag_string = string_from_tags(local_tags)
     name = name + tag_string
 
-    return name
+    if not return_dir:
+        return name
+    else:
+        artifact_rel_dir = Path(REL_PATHS[artifact_type], name)
+        return name, artifact_rel_dir
 
 
 def string_from_tags(tags):
@@ -468,6 +475,7 @@ def load_wandb_artifact_model(run, artifact_id, return_configs=False):
 
     helper_data = read_json_artifact(artifact_abs_dir, 'helper.json')
     arch = helper_data['arch']
+    # arch = 'resnet18_sat6'
     artifact_type = helper_data['artifact_type']
     model_filename = helper_data['model_file_config']['model_filename']
     model_path = Path(artifact_dir, model_filename)

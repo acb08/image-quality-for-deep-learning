@@ -16,7 +16,7 @@ PROJECT_ID = 'sat6'
 STANDARD_DATASET_FILENAME = 'dataset.json'
 STANDARD_CHECKPOINT_FILENAME = 'model_cp.pt'
 STANDARD_BEST_LOSS_FILENAME = 'best_loss.pt'
-STANDARD_TEST_RESULT_FILENAME = 'best_result.json'
+STANDARD_TEST_RESULT_FILENAME = 'test_result.json'
 STANDARD_CONFIG_USED_FILENAME = 'config_used.yml'
 KEY_LENGTH = 4
 
@@ -29,7 +29,10 @@ REL_PATHS = {
     'val_vectors': r'val_split',
     'model': r'models',
     'test_result': r'test_results',
-    'analysis': r'analysis'
+    'analysis': r'analysis',
+    'res': r'0-res',
+    'blur': r'1-blur',
+    'noise': r'2-noise'
 }
 
 # ARTIFACT_TYPE_TAGS used to avoid name wandb name collisions
