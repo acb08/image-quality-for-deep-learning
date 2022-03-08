@@ -30,9 +30,10 @@ REL_PATHS = {
     'model': r'models',
     'test_result': r'test_results',
     'analysis': r'analysis',
-    'res': r'0-res',
-    'blur': r'1-blur',
-    'noise': r'2-noise'
+    'pan': r'0-pan',
+    'res': r'1-res',
+    'blur': r'2-blur',
+    'noise': r'3-noise'
 }
 
 # ARTIFACT_TYPE_TAGS used to avoid name wandb name collisions

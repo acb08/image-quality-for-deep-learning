@@ -387,6 +387,20 @@ def load_npz_data(directory, filename):
     return data
 
 
+def load_data_vectors(shard_id, directory):
+    """
+    Extracts image and data vectors from the .npz file corresponding to shard_id in directory. Intended to provide
+    image/label vectors to create an instance of the NumpyDatasetBatchDistortion class.
+    """
+
+    data = load_npz_data(directory, shard_id)
+
+    image_vector = data['images']
+    label_vector = data['labels']
+
+    return image_vector, label_vector
+
+
 def get_model_path(model_rel_dir, model_filename):
     """
     Arguments named so function can be called with **model_file_config
@@ -474,8 +488,8 @@ def load_wandb_artifact_model(run, artifact_id, return_configs=False):
     artifact_abs_dir = Path(Path.cwd(), artifact_dir)
 
     helper_data = read_json_artifact(artifact_abs_dir, 'helper.json')
-    arch = helper_data['arch']
-    # arch = 'resnet18_sat6'
+    # arch = helper_data['arch']
+    arch = 'resnet18_sat6'
     artifact_type = helper_data['artifact_type']
     model_filename = helper_data['model_file_config']['model_filename']
     model_path = Path(artifact_dir, model_filename)

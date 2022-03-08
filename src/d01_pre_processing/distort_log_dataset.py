@@ -7,7 +7,7 @@ from torchvision import transforms
 from pathlib import Path
 from src.d00_utils.definitions import ROOT_DIR, PROJECT_ID, STANDARD_DATASET_FILENAME, REL_PATHS
 from src.d00_utils.functions import id_from_tags, get_config, read_json_artifact, string_from_tags
-from distortions import tag_to_func
+from distortions import tag_to_transform
 
 """
 Makes a distorted version of a dataset and logs as a W&B artifact 
@@ -167,7 +167,7 @@ def distort(starting_dataset, distortion_tags, num_distortion_iterations, new_da
 
     distortion_functions = []
     for tag in distortion_tags:
-        distortion_functions.append(tag_to_func(tag))
+        distortion_functions.append(tag_to_transform(tag))
 
     new_names_labels = []
     new_image_distortion_info = {}

@@ -10,6 +10,9 @@ import random
 from PIL import Image
 
 
+RNG = np.random.default_rng()
+
+
 class AddPoissonNoise(object):
     """
     Adds zero-centered Poisson noise of standard deviation sigma_poisson.
@@ -87,12 +90,12 @@ class VariableImageResize(object):
         size_key = random.choice(self.size_keys)
         return size_key
 
-    def __call__(self, image, size_key, dtype_out=np.uint8):
+    def __call__(self, image, size_key, dtype=np.uint8):
         if not isinstance(image, Image.Image):
             image = Image.fromarray(image)
         transform_use = self.transform_bank[size_key]
         image = transform_use(image)
-        image = np.asarray(image, dtype=dtype_out)
+        image = np.asarray(image, dtype=dtype)
         return image
 
 
@@ -146,6 +149,18 @@ def bc3(img):
         return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std), 'std', std
     else:
         return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
+
+
+def bcs3(img):
+    """
+    Coarser version of b3, with only 20 stds rather than 52, modified for SAT-6
+    """
+
+    kernel_size = 15
+    sigma_range = np.linspace(0.1, 3.5, num=21, endpoint=True)
+    std = np.random.choice(sigma_range)
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
 
 
 def b0(img):
@@ -214,6 +229,16 @@ def b10():
     """
     kernel_size = 15
     std = (0.1, 3.5)
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)
+
+
+def b11():
+    """
+    variable blur transform centered at the blur midpoint, with a total width of 50% of the blur range (midpoint +- 24%)
+    """
+    kernel_size = 15
+    std = (0.875, 2.625)
 
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)
 
@@ -329,6 +354,31 @@ def nf3(img):
     noise = (torch.poisson(torch.ones(shape) * lambda_poisson).float() - lambda_poisson) / 255
     img_out = torch.clone(img) + noise
     img_out = torch.clamp(img_out, 0, 1)
+
+    return img_out, 'lambda_poisson', lambda_poisson
+
+
+def nfs3(img):
+    """
+
+    :param img: image array, values on [0, 255]
+    :return: image + Poisson noise, where the resulting image is clamped to fall on [0, 255]
+
+    Note: if img is grayscale but 3-channel, effective noise will be reduced
+    relative to adding noise to a 1-channel image by virtue of averaging across
+    channels for a 3-channel image.
+
+    """
+
+    img = np.asarray(img)
+
+    shape = img.shape
+    sigma_poisson = np.random.randint(0, 21)  # add 1 to target distribution, high is "one above the highest integer to
+    # be drawn from the target distribution
+    lambda_poisson = sigma_poisson ** 2
+    noise = RNG.poisson(lambda_poisson, size=shape) - lambda_poisson
+    img_out = img + noise
+    img_out = np.clip(img_out, 0, 255)
 
     return img_out, 'lambda_poisson', lambda_poisson
 
@@ -833,7 +883,8 @@ def rs1():
 
     """
     Initializes and returns a VariableImageResize instance designed to re-size SAT6 images
-    randomly between 50% and 100% of original images size
+    randomly between 50% and 100% of original images size. Intended for use in dataset distortion (as opposed to in
+    a dataloader)
     """
 
     min_size = 14
@@ -843,6 +894,57 @@ def rs1():
 
     return transform
 
+
+def rs2(img):
+
+    """
+    scales SAT6 image down by 25% WITHOUT resizing to original size
+
+    Resolution midpoint.
+
+    Intended for use in dataset transform
+
+    """
+
+    downsize_dim = 21  # 75% of sat6 original size, midpoint of 50-100% resolution range
+    scale = 28 / downsize_dim
+
+    res_transform = transforms.Compose([
+        transforms.Resize(downsize_dim, interpolation=transforms.InterpolationMode.BILINEAR, antialias=True)
+    ])
+
+    return res_transform(img), 'res', scale
+
+
+def rst1():
+
+    """
+    Resolution transform for full range of distortion transforms (50-100%, or 14-28 pixels).
+
+    Intended for use in a dataloader.
+    """
+
+    min_size = 14
+    max_size = 28
+    sizes = list(np.arange(min_size, max_size + 1))
+
+    return VariableResolution(sizes)
+
+
+def rst2():
+
+    """
+    Resolution transform for midpoint +-25% of full range of resolution transforms (where 25% of the full range of
+    resolution transforms is 25% of 0.5-1, or a difference of 12.5% in absolute terms).
+
+    Intended for use in a dataloader
+    """
+
+    min_size = 18
+    max_size = 24
+    sizes = list(np.arange(min_size, max_size + 1))
+
+    return VariableResolution(sizes)
 
 
 def test_noise_transform(noise_func):
@@ -895,17 +997,42 @@ def test_blur_function(blur_func):
     return outputs
 
 
-tag_to_func = {
+# tag_to_transform intended for use in building dataloader image transforms
+tag_to_transform = {
+    'rst1': rst1,
+    'rst2': rst2,
+
+    'b9': b9,
+    'b11': b11,
+
+    'nf10': nf10,
+    'nf11': nf11,
+}
+
+# tags_to_image_distortion intended for building distorted datasets (generally all modified for the sat6 dataset)
+tag_to_image_distortion = {
     'rs1': rs1,
+    'rs2': rs2,
+
+    'bcs3': bcs3,
+
+    'nfs3': nfs3
 }
 
 
 if __name__ == '__main__':
 
-    foo = np.random.randint(0, 255, size=(28, 28), dtype=np.uint8)
-    res_trans = tag_to_func['rs1']()
+    # foo = np.random.randint(0, 255, size=(28, 28), dtype=np.uint8)
+    foo = np.zeros((28, 28, 3), dtype=np.uint8)
+    foo[14:, 14:, :] = 255
+    res_trans = tag_to_image_distortion['rs1']()
     tgt_size = res_trans.get_size_key()
     bar = res_trans(foo, 14)
+
+    blur_trans = tag_to_image_distortion['bcs3']
+    blur_image, __, blur_std = blur_trans(Image.fromarray(foo))
+    blur_image = np.asarray(blur_image)
+    print(type(blur_image))
 
     plt.figure()
     plt.imshow(foo)
@@ -915,4 +1042,9 @@ if __name__ == '__main__':
     plt.figure()
     plt.imshow(bar)
     plt.title('bar')
+    plt.show()
+
+    plt.figure()
+    plt.imshow(blur_image)
+    plt.title('blur_image')
     plt.show()

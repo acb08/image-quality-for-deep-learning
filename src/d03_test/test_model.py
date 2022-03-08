@@ -21,7 +21,8 @@ def execute_test(model,
                  num_workers,
                  pin_memory,
                  device,
-                 loss_func):
+                 loss_func,
+                 status_interval=None):
     running_loss = 0
     total_samples = 0
     weighted_accuracies = []
@@ -30,6 +31,7 @@ def execute_test(model,
     shard_performances = {}
 
     for shard_id in shard_ids:
+
         shard, shard_length = get_shard(shard_id, data_abs_dir, transform)
 
         model, shard_loss, shard_accuracy, labels, predicts = run_shard(model=model,
@@ -55,6 +57,9 @@ def execute_test(model,
 
         total_samples += shard_length
 
+        if status_interval and total_samples % status_interval == 0:
+            print(f'{total_samples} complete')
+
         scaled_loss = shard_loss / shard_length
         running_loss += scaled_loss
         weighted_accuracy = shard_length * shard_accuracy
@@ -77,25 +82,27 @@ def test_model(config):
         __, dataset = load_wandb_dataset_artifact(run, dataset_artifact_id, STANDARD_DATASET_FILENAME)
         model = load_wandb_artifact_model(run, model_artifact_id)
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        print('device: ', device)
         model.to(device)
         batch_size = config['batch_size']
         num_workers = config['num_workers']
         pin_memory = config['pin_memory']
         rgb_flag = config['rgb_flag']
-        final_distortion_type_flag = config['final_distortion_type_flag']
+        last_distortion_type_flag = config['last_distortion_type_flag']
+        dataset_split_key = config['dataset_split_key']
         transform = get_transform(distortion_tags=[], rgb=rgb_flag)
         loss_function = getattr(nn, config['loss_func'])()
+        status_interval = config['status_interval']
         artifact_type = 'test_result'
 
-        if final_distortion_type_flag:
-            dataset_type_key = final_distortion_type_flag
-        else:
-            dataset_type_key = 'test'
+        if not dataset_split_key:
+            dataset_split_key = 'test'
 
-        test_shard_ids = dataset[dataset_type_key]['image_and_label_filenames']
+        test_shard_ids = dataset[dataset_split_key]['image_and_label_filenames']
         dataset_rel_dir = dataset['dataset_rel_dir']
-        if final_distortion_type_flag:
-            dataset_rel_dir = Path(dataset_rel_dir, REL_PATHS[final_distortion_type_flag])
+
+        if last_distortion_type_flag:
+            dataset_rel_dir = Path(dataset_rel_dir, REL_PATHS[last_distortion_type_flag])
         dataset_abs_dir = Path(ROOT_DIR, dataset_rel_dir)
 
         loss, accuracy, shard_accuracies, shard_lengths, shard_performances = execute_test(model,
@@ -106,7 +113,8 @@ def test_model(config):
                                                                                            num_workers,
                                                                                            pin_memory,
                                                                                            device,
-                                                                                           loss_function)
+                                                                                           loss_function,
+                                                                                           status_interval)
 
         test_result = {
             'loss': loss,
@@ -153,9 +161,9 @@ def test_model(config):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_name', default='config.yml', help='config filename to be used')
+    parser.add_argument('--config_name', default='test_config.yml', help='config filename to be used')
     parser.add_argument('--config_dir',
-                        default=Path(Path(__file__).parents[0], 'configs'),
+                        default=Path(Path(__file__).parents[0], 'test_configs'),
                         help="configuration file directory")
     args_passed = parser.parse_args()
     run_config = get_config(args_passed)

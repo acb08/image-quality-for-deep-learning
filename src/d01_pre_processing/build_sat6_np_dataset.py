@@ -8,7 +8,7 @@ import wandb
 import json
 import random
 import scipy.io
-from distortions import tag_to_func
+from distortions import tag_to_transform
 
 wandb.login()
 
@@ -20,27 +20,27 @@ def mat_to_numpy(data_x,
                  datatype_key,
                  use_flag,
                  new_dataset_path,
-                 res_function=False,
+                 # res_function=False,
                  file_count_offset=0,
                  filename_stem=None,
                  parent_dataset_id=None):
 
     """
 
-    Converts image and labels arrays from SAT-6 .mat file numpy arrays saved in separate files.
+    Converts image and labels arrays from 4-band SAT-6 .mat file numpy arrays to separate, panchromatic numpy arrays
+    saved in separate files.
 
     :param data_x: image array
     :param data_y: label array (one-hot vector)
     :param num_images: number of images to include in output ('all' or int)
     :param images_per_file: number of images to include in each output numpy file
     :param datatype_key: key extracting datatype from definitions.DATATYPE_MAP (e.g. 'np.uint8': np.uint8)
-    :param use_flag: 'test_vectors', 'train_vectors', 'val_vectors', 'res'
+    :param use_flag: 'test_vectors', 'train_vectors', 'val_vectors', 'pan'
     :param new_dataset_path: absolute directory path for output files. A subdirectory is created if
     use_flag!= test_vectors.
-    :param res_function: optional, function to reduce image resolution
     :param file_count_offset: optional. If function used in a loop, file_offset_count can be used to avoid overwriting
     previous iteration's files
-    :param filename_stem: optional, e.g. 'test' results in 'test_{i}.npz' output files. Default stem
+    :param filename_stem: optional, e.g. filename_stem 'test' will result in 'test_{i}.npz' output files. Default stem
     is use_flag
     :param parent_dataset_id: optional, allows traceability of outputs for metrics across different
     distortions
@@ -50,11 +50,13 @@ def mat_to_numpy(data_x,
     if not filename_stem:
         filename_stem = use_flag
 
-    native_res = 28
-    res = native_res  # set the default resolution to the native resolution, update with res_function
+    # native_res = 28
+    # res = native_res  # set the default resolution to the native resolution, update with res_function
     labels = np.argmax(data_y, axis=0)
     data_type = DATATYPE_MAP[datatype_key]
     images = np.asarray(np.mean(data_x, axis=2), dtype=data_type)
+
+    res, __, num_images_original = np.shape(images)
 
     if use_flag != 'test_vectors':
         new_data_dir = Path(new_dataset_path, REL_PATHS[use_flag])
@@ -67,7 +69,7 @@ def mat_to_numpy(data_x,
     image_and_label_filenames = []  # filenames for image data files AND associated label files
 
     if num_images == 'all':
-        num_images = np.shape(data_x)[-1]
+        num_images = num_images_original
     else:
         images = images[:, :, :num_images]
         labels = labels[:num_images]
@@ -77,8 +79,11 @@ def mat_to_numpy(data_x,
     else:
         num_new_files = int(np.ceil(num_images / images_per_file))
 
-    image_distortion_info = {}
-    # image_distortion_info = {'parent_datasets': [parent_dataset_id]}
+    # image_distortion_info = {}
+    parent_dataset_ids = {}
+    if use_flag:
+        parent_dataset_ids[use_flag] = parent_dataset_id
+    # image_distortion_info = {'parent_dataset_ids': [parent_dataset_id]}
     # image_distortion_info to contain list of each parent dataset along the chain. Also, it
     # will contain nested dicts for each distortion type for each distortion output
     # e.g. image_distortion_info['file_0.npz'] = {'res': [r0, r1,..., r_num_images],
@@ -92,15 +97,15 @@ def mat_to_numpy(data_x,
         image_subset = images[:, :, start_idx:end_idx]
         vector_length = np.shape(image_subset)[-1]  # covers remainder at end of array (last vector prob shorter)
 
-        if res_function:
-            res = res_function.get_size_key()
+        # if res_function:
+        #     res = res_function.get_size_key()
 
         image_vector = np.empty((vector_length, res, res, 3), dtype=data_type)
 
         for idx in range(vector_length):  # a better person would make reshaping work without a loop
             new_image = image_subset[:, :, idx]
-            if res_function:
-                new_image = res_function(new_image, res, dtype_out=data_type)
+            # if res_function:
+            #     new_image = res_function(new_image, res, dtype_out=data_type)
             image_vector[idx] = np.stack(3 * [new_image], axis=2)
 
         name_label_filename = f'{filename_stem}_{file_count_offset + i}.npz'
@@ -112,15 +117,15 @@ def mat_to_numpy(data_x,
         # store distortion parameters for each image in a vector for later analysis. Relative resolution
         # vectorized here simplicity/compatibility with other transforms that will vary from
         # image to image in a single shard
-        res_fraction = res / native_res
-        res_vector = np.repeat(res_fraction, vector_length)
-        res_list = list(res_vector)
-        image_distortion_info[name_label_filename] = {'res': res_list}
+        # res_fraction = res / native_res
+        # res_vector = np.repeat(res_fraction, vector_length)
+        # res_list = list(res_vector)
+        # image_distortion_info[name_label_filename] = {'res': res_list}
 
     numpy_dataset = {
         'image_and_label_filenames': image_and_label_filenames,
-        'image_distortion_info': image_distortion_info,
-        'parent_datasets': [parent_dataset_id]
+        # 'image_distortion_info': image_distortion_info,
+        'parent_dataset_ids': parent_dataset_ids
     }
 
     return numpy_dataset
@@ -235,16 +240,16 @@ def build_log_numpy(config):
 
 if __name__ == "__main__":
 
-    _description = 'save undistorted test dataset with new artifact type tagging'
-    _num_images = 500
-    _images_per_file = 63
+    _description = 'save quick test dataset with new artifact to check that additional code updates working'
+    _num_images = 1000
+    _images_per_file = 100
 
     _config = {
         'parent_dataset_id': 'sat6_full',
         'artifact_type': 'test_dataset',
         'num_images': _num_images,
         'images_per_file': _images_per_file,
-        'val_frac': None,
+        'val_frac': 0.1,
         'datatype_key': 'np.uint8',
         'artifact_filename': STANDARD_DATASET_FILENAME,
         'description': _description,

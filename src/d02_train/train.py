@@ -9,9 +9,9 @@ import argparse
 import copy
 from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, ROOT_DIR, PROJECT_ID, REL_PATHS
 from src.d00_utils.definitions import STANDARD_CHECKPOINT_FILENAME, STANDARD_BEST_LOSS_FILENAME
-from src.d00_utils.functions import load_wandb_dataset_artifact, load_npz_data, load_wandb_artifact_model
+from src.d00_utils.functions import load_wandb_dataset_artifact, load_data_vectors, load_wandb_artifact_model
 from src.d00_utils.functions import id_from_tags, save_model, get_config, read_json_artifact, string_from_tags
-from src.d01_pre_processing.distortions import tag_to_func
+from src.d01_pre_processing.distortions import tag_to_transform
 from src.d00_utils.classes import NumpyDataset
 import wandb
 import os
@@ -21,18 +21,18 @@ os.environ["WANDB_START_MODE"] = 'thread'
 wandb.login()
 
 
-def load_data_vectors(shard_id, directory):
-    """
-    Extracts image and data vectors from the .npz file corresponding to shard_id in directory. Intended to provide
-    image/label vectors to create an instance of the NumpyDatasetBatchDistortion class.
-    """
-
-    data = load_npz_data(directory, shard_id)
-
-    image_vector = data['images']
-    label_vector = data['labels']
-
-    return image_vector, label_vector
+# def load_data_vectors(shard_id, directory):
+#     """
+#     Extracts image and data vectors from the .npz file corresponding to shard_id in directory. Intended to provide
+#     image/label vectors to create an instance of the NumpyDatasetBatchDistortion class.
+#     """
+#
+#     data = load_npz_data(directory, shard_id)
+#
+#     image_vector = data['images']
+#     label_vector = data['labels']
+#
+#     return image_vector, label_vector
 
 
 def get_transform(distortion_tags, rgb=True):
@@ -44,7 +44,7 @@ def get_transform(distortion_tags, rgb=True):
     transform_list = [transforms.ToTensor()]
 
     for tag in distortion_tags:
-        distortion_function = tag_to_func(tag)
+        distortion_function = tag_to_transform[tag]()
         transform_list.append(distortion_function)
 
     if rgb:
@@ -58,7 +58,7 @@ def get_transform(distortion_tags, rgb=True):
     else:
         transform_list.extend([
             transforms.Normalize(
-                (0.5, 0.5, 0.5), (0.25, 25, 0.25)
+                [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
             ),
             transforms.Resize(224),
         ])
@@ -422,42 +422,13 @@ def load_tune_model(config):
 
 if __name__ == '__main__':
 
-    _manual_config = True
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config_name', default='train_config.yml', help='config filename to be used')
+    parser.add_argument('--config_dir',
+                        default=Path(Path(__file__).parents[0], 'train_configs'),
+                        help="configuration file directory")
+    args_passed = parser.parse_args()
+    run_config = get_config(args_passed)
 
-    if _manual_config:
-        _train_dataset_id = '0003_numpy-micro'
-        _train_dataset_artifact_alias = 'latest'
-        _starting_model_id = 'resnet18_sat6'
-        _starting_model_artifact_alias = 'latest'
-        _rgb_flag = True
-        _distortion_tags = []
-        _descriptive_tags = []
-        _num_epochs = 5
-        _batch_size = 8
-        _num_workers = 0
-        _pin_memory = True
-        _optimizer = 'Adam'
-        _loss_func = 'CrossEntropyLoss'
-        _description = 'quick check after updates. best_loss overwritten every epoch'
-        _artifact_type = 'model'
-
-        _config = {
-            'train_dataset_id': _train_dataset_id,
-            'train_dataset_artifact_alias': _train_dataset_artifact_alias,
-            'starting_model_id': _starting_model_id,
-            'starting_model_artifact_alias': _starting_model_artifact_alias,
-            'rgb_flag': _rgb_flag,
-            'distortion_tags': _distortion_tags,
-            'descriptive_tags': _descriptive_tags,
-            'num_epochs': _num_epochs,
-            'batch_size': _batch_size,
-            'num_workers': _num_workers,
-            'pin_memory': _pin_memory,
-            'optimizer': _optimizer,
-            'loss_func': _loss_func,
-            'description': _description,
-            'artifact_type': _artifact_type
-        }
-
-        load_tune_model(_config)
+    load_tune_model(run_config)
 
