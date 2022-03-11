@@ -1,7 +1,6 @@
 import scipy.io
 from pathlib import Path
 from src.d00_utils.definitions import ROOT_DIR, ORIGINAL_DATASETS
-import numpy as np
 
 dataset_path = Path(ROOT_DIR, ORIGINAL_DATASETS['sat6_full']['rel_path'])
 dataset = scipy.io.loadmat(dataset_path)

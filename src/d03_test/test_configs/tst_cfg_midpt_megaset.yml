@@ -1,13 +1,13 @@
 ---
 
-description: test of no-distortion model on full range mega-set
-descrptive_tags: ['full-range-mega-set', 'pre-trained-model']
+description: test of midpoint model on full range mega-set
+descrptive_tags: ['full-range-mega-set', 'midpoint-model']
 
 test_dataset_id: 0040_tst_rs1_bcs3_nfs3_noise # full range mega-set
 test_dataset_artifact_alias: latest
 
-model_artifact_id: "0001"
-model_artifact_alias: best # this alias only applies for the 0001 model
+#model_artifact_id: "0001"
+#model_artifact_alias: best # this alias only applies for the 0001 model
 
 #model_artifact_id: 0028_mdl_rst2_b11_nf10_best_loss # mid-band model
 #model_artifact_alias: latest
@@ -15,7 +15,8 @@ model_artifact_alias: best # this alias only applies for the 0001 model
 #model_artifact_id: 0027_mdl_rst1_b10_nf11_best_loss # full range model
 #model_artifact_alias: latest
 
-
+model_artifact_id: 0029_mdl_rst3_b4_nf4_best_loss # midpoint model
+model_artifact_alias: latest
 
 batch_size: 32
 num_workers: 0

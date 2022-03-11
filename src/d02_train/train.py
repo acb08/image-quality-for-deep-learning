@@ -9,8 +9,8 @@ import argparse
 import copy
 from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, ROOT_DIR, PROJECT_ID, REL_PATHS
 from src.d00_utils.definitions import STANDARD_CHECKPOINT_FILENAME, STANDARD_BEST_LOSS_FILENAME
-from src.d00_utils.functions import load_wandb_dataset_artifact, load_data_vectors, load_wandb_artifact_model
-from src.d00_utils.functions import id_from_tags, save_model, get_config, read_json_artifact, string_from_tags
+from src.d00_utils.functions import load_wandb_data_artifact, load_data_vectors, load_wandb_model_artifact
+from src.d00_utils.functions import id_from_tags, save_model, get_config
 from src.d01_pre_processing.distortions import tag_to_transform
 from src.d00_utils.classes import NumpyDataset
 import wandb
@@ -302,9 +302,9 @@ def load_tune_model(config):
         dataset_artifact_id = f"{config['train_dataset_id']}:{config['train_dataset_artifact_alias']}"
         starting_model_artifact_id = f"{config['starting_model_id']}:{config['starting_model_artifact_alias']}"
 
-        __, dataset = load_wandb_dataset_artifact(run, dataset_artifact_id, STANDARD_DATASET_FILENAME)
+        __, dataset = load_wandb_data_artifact(run, dataset_artifact_id, STANDARD_DATASET_FILENAME)
 
-        model, arch, __ = load_wandb_artifact_model(run, starting_model_artifact_id, return_configs=True)
+        model, arch, __ = load_wandb_model_artifact(run, starting_model_artifact_id, return_configs=True)
         config['arch'] = arch  # ensures model metadata identifies correct model architecture
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'

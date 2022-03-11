@@ -15,8 +15,6 @@ model_artifact_alias: best # this alias only applies for the 0001 model
 #model_artifact_id: 0027_mdl_rst1_b10_nf11_best_loss # full range model
 #model_artifact_alias: latest
 
-
-
 batch_size: 32
 num_workers: 0
 pin_memory: True

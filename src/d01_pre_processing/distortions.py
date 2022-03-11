@@ -1,10 +1,6 @@
-from PIL import Image
 import torch
 import numpy as np
-import os
-import json
 from torchvision import transforms
-from torchvision.io import read_image
 import matplotlib.pyplot as plt
 import random
 from PIL import Image
@@ -916,6 +912,7 @@ def rs2(img):
     return res_transform(img), 'res', scale
 
 
+
 def rst1():
 
     """
@@ -945,6 +942,24 @@ def rst2():
     sizes = list(np.arange(min_size, max_size + 1))
 
     return VariableResolution(sizes)
+
+
+def rst3():
+    """
+    returns transform to down-scale a 28 x 28 image to 75% scale (i.e. 21 x 21), midpoint of sat6 resolution
+    distortion space
+    """
+    downsize_dim = 21
+    return transforms.Resize(downsize_dim, interpolation=transforms.InterpolationMode.BILINEAR, antialias=True)
+
+
+def rst4():
+    """
+    returns transform to down-scale a 28 x 28 image to 50% scale (i.e. 21 x 21), midpoint of sat6 resolution
+    distortion space
+    """
+    downsize_dim = 14
+    return transforms.Resize(downsize_dim, interpolation=transforms.InterpolationMode.BILINEAR, antialias=True)
 
 
 def test_noise_transform(noise_func):
@@ -1001,22 +1016,28 @@ def test_blur_function(blur_func):
 tag_to_transform = {
     'rst1': rst1,
     'rst2': rst2,
+    'rst3': rst3,  # midpoint
+    'rst4': rst4,  # endpoint
 
+    'b4': b4,  # midpoint
+    'b5': b5,  # endpoint
     'b9': b9,
     'b11': b11,
 
+    'nf4': nf4,  # midpoint
+    'nf5': nf5,  # endpoint
     'nf10': nf10,
     'nf11': nf11,
 }
 
 # tags_to_image_distortion intended for building distorted datasets (generally all modified for the sat6 dataset)
 tag_to_image_distortion = {
-    'rs1': rs1,
+    'rs1': rs1,  # full range
     'rs2': rs2,
 
-    'bcs3': bcs3,
+    'bcs3': bcs3,  # full range
 
-    'nfs3': nfs3
+    'nfs3': nfs3  # full range
 }
 
 

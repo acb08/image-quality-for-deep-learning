@@ -3,7 +3,7 @@ import torch.nn as nn
 import wandb
 from src.d00_utils.definitions import PROJECT_ID, STANDARD_DATASET_FILENAME, ROOT_DIR, STANDARD_TEST_RESULT_FILENAME, \
     REL_PATHS
-from src.d00_utils.functions import load_wandb_artifact_model, load_wandb_dataset_artifact, id_from_tags, get_config, \
+from src.d00_utils.functions import load_wandb_model_artifact, load_wandb_data_artifact, id_from_tags, get_config, \
     log_config
 from src.d02_train.train import get_shard, run_shard, get_mean_accuracy, get_transform
 from pathlib import Path
@@ -79,8 +79,8 @@ def test_model(config):
         dataset_artifact_id = f"{config['test_dataset_id']}:{config['test_dataset_artifact_alias']}"
         model_artifact_id = f"{config['model_artifact_id']}:{config['model_artifact_alias']}"
 
-        __, dataset = load_wandb_dataset_artifact(run, dataset_artifact_id, STANDARD_DATASET_FILENAME)
-        model = load_wandb_artifact_model(run, model_artifact_id)
+        __, dataset = load_wandb_data_artifact(run, dataset_artifact_id, STANDARD_DATASET_FILENAME)
+        model = load_wandb_model_artifact(run, model_artifact_id)
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         print('device: ', device)
         model.to(device)

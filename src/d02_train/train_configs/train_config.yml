@@ -7,13 +7,13 @@ starting_model_id: '0001'
 starting_model_artifact_alias: 'best'
 
 rgb_flag: False
-distortion_tags: ['rst2', 'b11', 'nf10']
-descriptive_tags: []
+distortion_tags: ['rst4', 'b5', 'nf5']
+descriptive_tags: ['endpoint']
 num_epochs: 5
 batch_size: 32
 num_workers: 4
 pin_memory: True
 optimizer: 'Adam'
 loss_func: 'CrossEntropyLoss'
-description: 'tune the best no-distortion model against mid-band distortion dataset (midpoint +- 25-percent)'
+description: 'tune the best no-distortion model against endpoint distortion dataset'
 artifact_type: 'model'

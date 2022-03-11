@@ -7,7 +7,7 @@ from torchvision import transforms
 from pathlib import Path
 from src.d00_utils.definitions import ROOT_DIR, PROJECT_ID, STANDARD_DATASET_FILENAME, REL_PATHS
 from src.d00_utils.functions import id_from_tags, get_config, read_json_artifact, string_from_tags
-from distortions import tag_to_transform
+from src.d01_pre_processing.distortions import tag_to_transform
 
 """
 Makes a distorted version of a dataset and logs as a W&B artifact 

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import json
-
-from src.d00_utils.functions import load_wandb_dataset_artifact, id_from_tags, get_config, \
+from src.d00_utils.functions import load_wandb_data_artifact, id_from_tags, get_config, \
     log_config
 from src.d00_utils.definitions import REL_PATHS, DATATYPE_MAP, STANDARD_DATASET_FILENAME, PROJECT_ID, ROOT_DIR
 from src.d01_pre_processing.build_sat6_np_dataset import mat_to_numpy
@@ -109,9 +108,9 @@ def distort_log_numpy(config):
                     config=config) as run:
 
         parent_artifact_name = f'{parent_dataset_id}:{parent_artifact_alias}'
-        parent_artifact, parent_dataset = load_wandb_dataset_artifact(run,
-                                                                      parent_artifact_name,
-                                                                      parent_artifact_filename)
+        parent_artifact, parent_dataset = load_wandb_data_artifact(run,
+                                                                   parent_artifact_name,
+                                                                   parent_artifact_filename)
 
         new_dataset_id, new_dataset_rel_dir = id_from_tags(artifact_type, distortion_tags, return_dir=True)
         new_dataset_abs_dir = Path(ROOT_DIR, new_dataset_rel_dir)
@@ -183,9 +182,9 @@ def distort_log_numpy(config):
         for i, distortion_tag in enumerate(distortion_tags):
 
             distortion_type_flag = distortion_type_flags[i]
-            parent_artifact, parent_dataset = load_wandb_dataset_artifact(run,
-                                                                          parent_artifact_name,
-                                                                          artifact_filename)
+            parent_artifact, parent_dataset = load_wandb_data_artifact(run,
+                                                                       parent_artifact_name,
+                                                                       artifact_filename)
 
             new_dataset = distort_dataset(parent_dataset,
                                           new_dataset_abs_dir,
