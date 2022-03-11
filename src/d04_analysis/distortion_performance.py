@@ -330,14 +330,14 @@ def plot_perf_2d_multi_result(model_performances,
 def plot_perf_1d_multi_result(model_performances,
                               distortion_ids=('res', 'blur', 'noise'),
                               directory=None,
-                              identifier=None):
-
+                              identifier=None,
+                              legend_loc='best'):
     """
-
     :param model_performances: list of model performance class instances
     :param distortion_ids: distortion type tags to be analyzed
     :param directory: output derectory
     :param identifier: str for use as a filename seed
+    :param legend_loc: str to specify plot legend location
     """
 
     for i, distortion_id in enumerate(distortion_ids):
@@ -347,14 +347,16 @@ def plot_perf_1d_multi_result(model_performances,
             x, y, fit_coefficients, fit_correlation = get_distortion_perf_1d(model_performance, distortion_id)
             mean_performances[performance_key] = y
 
-        plot_1d_performance(x, mean_performances, distortion_id, result_identifier=identifier, directory=directory)
+        plot_1d_performance(x, mean_performances, distortion_id, result_identifier=identifier, directory=directory,
+                            legend_loc=legend_loc)
 
 
 def plot_1d_performance(x, performance_dict, distortion_id,
                         result_identifier=None,
                         xlabel='default',
                         ylabel='default',
-                        directory=None):
+                        directory=None,
+                        legend_loc='best'):
 
     if xlabel == 'default':
         xlabel = AXIS_LABELS[distortion_id]
@@ -362,9 +364,14 @@ def plot_1d_performance(x, performance_dict, distortion_id,
         ylabel = AXIS_LABELS['y']
 
     if result_identifier:
-        save_name = f'{distortion_id}_{str(result_identifier)}_acc.png'
+        save_name = f'{distortion_id}_{str(result_identifier)}_acc'
     else:
-        save_name = f'{distortion_id}_acc.png'
+        save_name = f'{distortion_id}_acc'
+
+    if legend_loc and legend_loc != 'best':
+        save_name = f"{save_name}_{legend_loc.replace(' ', '_')}"
+
+    save_name = f"{save_name}.png"
 
     plt.figure()
     for i, key in enumerate(performance_dict):
@@ -372,7 +379,7 @@ def plot_1d_performance(x, performance_dict, distortion_id,
         plt.scatter(x, performance_dict[key], label=key, c=COLORS[i], marker=SCATTER_PLOT_MARKERS[i])
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
-    plt.legend()
+    plt.legend(loc=legend_loc)
     if directory:
         plt.savefig(Path(directory, save_name))
     plt.show()
