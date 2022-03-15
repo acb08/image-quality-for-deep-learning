@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import yaml
 
 """
 Contains global constants. 
@@ -12,7 +13,9 @@ to local image files.
 """
 
 ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '../../..'))
-PROJECT_ID = 'places_dry_run'
+with open(os.path.join(ROOT_DIR, r'project_config', 'project_config.yml')) as f:
+    project_config = yaml.safe_load(f)
+PROJECT_ID = project_config['PROJECT_ID']  # enable swapping wandb project without code change
 STANDARD_DATASET_FILENAME = 'dataset.json'
 STANDARD_CHECKPOINT_FILENAME = 'model_cp.pt'
 STANDARD_BEST_LOSS_FILENAME = 'best_loss.pt'
@@ -25,7 +28,6 @@ REL_PATHS = {
     'images': r'images',
     'train_vectors': r'train_split',
     'val_vectors': r'val_split',
-    # 'metadata': r'metadata',  # removing redundant project metadata
     'model': r'models',
     'test_result': r'test_results',
     'analysis': r'analysis'
