@@ -2,7 +2,7 @@ import wandb
 import json
 from pathlib import Path
 from src.d00_utils.definitions import ROOT_DIR, ORIGINAL_DATASETS, PROJECT_ID, STANDARD_DATASET_FILENAME
-from src.d00_utils.functions import load_original_dataset, log_metadata
+from src.d00_utils.functions import load_original_dataset
 
 """
 Logs undistorted datasets as a W&B artifact and puts metadata into .json format 
@@ -39,8 +39,6 @@ def main(dataset_id, description=None):
         'distortion_iterations': [],
         'ROOT_DIR_at_run': str(ROOT_DIR),
     }
-
-    log_metadata(artifact_type, dataset_id, run_metadata)  # logs in local json file
 
     with wandb.init(project=PROJECT_ID, job_type='load_dataset') as run:
 
