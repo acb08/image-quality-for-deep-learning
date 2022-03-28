@@ -19,6 +19,16 @@ IMAGE_MODE = 'L'  # currently, adding random noise across all channels (i.e. noi
 
 
 def get_vec_entropy_vals(vector_in, entropy_functions):
+
+    """
+    Extracts entropy an entropy value for each function in entropy_functions for each image in vector_in. Returns a
+    dictionary of the following form:
+        {entropy_type_key_0: [entropy_val_0, ..., entropy_val_n]
+        entropy_type_key_1: [entropy_val_1, ..., entropy_val_n]
+        ...}
+    where n is given by np.shape(vector_in)[0] and corresponds to the number of images in vector_n
+    """
+
     vector_length, res, __, num_channels = np.shape(vector_in)
     entropy_values = {}
 
@@ -43,6 +53,26 @@ def get_vec_entropy_vals(vector_in, entropy_functions):
 
 def get_entropy_properties(dataset, dataset_path, entropy_functions, dataset_split_key):
 
+    """
+
+    :param dataset: dictionary containing image vector filenames and distortion type flags denoting the
+    last distortion type applied
+    :param dataset_path: absolute path to the umbrella directory containing a subdirectory for each distortion applied
+    :param entropy_functions: list containing entropy functions to be used for extracting entropy properties
+    :param dataset_split_key: should be 'test'. Used to maintain parallel between train and test datasets, where
+    train dataset contain 'train' and 'val' splits
+    :return: entropy properties dict of the following form:
+        {shard_id_0: {
+        entropy_type_key_0: [entropy_value_0, entropy_value_1, ...],
+        entropy_type_key_1: [entropy_value_0, entropy_value_1, ...],
+        ...}
+        shard_id_1: {
+        entropy_type_key_0: [entropy_value_0, entropy_value_1, ...],
+        entropy_type_key_1: [entropy_value_0, entropy_value_1, ...],
+        ...}
+        }
+    """
+
     image_and_label_filenames = dataset[dataset_split_key]['image_and_label_filenames']  # constant parent to child
     last_distortion_type_flag = dataset['last_distortion_type_flag']
 
@@ -65,7 +95,12 @@ def get_entropy_properties(dataset, dataset_path, entropy_functions, dataset_spl
 
 def measure_dataset_entropy_properties(config):
 
-    initial_dataset_id = config['initial_dataset_id']
+    """
+    Measures the entropy properties of a dataset logged as a W&B artifact and logs these entropy properties as new
+    W&B artifacts.
+    """
+
+    dataset_id = config['starting_dataset_id']
     dataset_artifact_alias = 'latest'
     num_analysis_stages = config['num_analysis_stages']
     # parent_artifact_filename = config['parent_artifact_filename']
@@ -77,8 +112,14 @@ def measure_dataset_entropy_properties(config):
     entropy_function_tags = config['entropy_function_tags']
     entropy_functions = [tag_to_entropy_function[tag] for tag in entropy_function_tags]
     description = config['description']
+    measure_effective_entropy = config['measure_effective_entropy']
+    overwrite_previous = config['overwrite_previous']
 
-    dataset_id = initial_dataset_id
+    if measure_effective_entropy:
+        noise_dataset_id = dataset_id
+        if noise_dataset_id[-5:] != 'noise':
+            raise Exception("Expected dataset_id ending in noise")
+
     measured_dataset_directories = []
 
     with wandb.init(project=PROJECT_ID, job_type='measure_entropy_properties', notes=description,
@@ -92,20 +133,23 @@ def measure_dataset_entropy_properties(config):
             distortion_type_flag = dataset['last_distortion_type_flag']
             dataset_abs_dir = Path(ROOT_DIR, dataset['dataset_rel_dir'])  # umbrella directory w/ all distortion stages
 
-            entropy_properties = get_entropy_properties(dataset, dataset_abs_dir, entropy_functions,
-                                                        dataset_split_key)
+            shard_entropy_properties = get_entropy_properties(dataset, dataset_abs_dir, entropy_functions,
+                                                              dataset_split_key)
 
             dataset_distortion_stage_abs_dir = Path(dataset_abs_dir, REL_PATHS[distortion_type_flag])
             measured_dataset_directories.append(str(dataset_distortion_stage_abs_dir))
 
             entropy_properties_path = Path(dataset_distortion_stage_abs_dir, STANDARD_ENTROPY_PROPERTIES_FILENAME)
 
-            if entropy_properties_path.is_file():
+            if entropy_properties_path.is_file() and not overwrite_previous:
                 with open(entropy_properties_path, 'r') as file:
                     dataset_entropy_properties = json.load(file)
-                dataset_entropy_properties.update(entropy_properties)
+                dataset_entropy_properties['shard_entropy_properties'] = shard_entropy_properties
             else:
-                dataset_entropy_properties = entropy_properties
+                dataset_entropy_properties = {'shard_entropy_properties': shard_entropy_properties}
+
+            dataset_entropy_properties.update(config)
+            dataset_entropy_properties['dataset_id'] = dataset_id
 
             with open(entropy_properties_path, 'w') as file:
                 json.dump(dataset_entropy_properties, file)
@@ -121,30 +165,55 @@ def measure_dataset_entropy_properties(config):
             current_iteration_distortion_type = DISTORTION_TYPES[-(i + 1)]  # move from end of list child to parent
             dataset_id = dataset['parent_dataset_ids'][current_iteration_distortion_type]
 
-        effective_entropy_properties = get_effective_entropy_values(measured_dataset_directories)
-        effective_entropy_properties_path = Path(measured_dataset_directories[0],
-                                                 STANDARD_EFFECTIVE_ENTROPY_PROPERTIES_FILENAME)
-        noise_dataset_id = initial_dataset_id
-        if noise_dataset_id[-5:] != 'noise':
-            raise Exception("Expected dataset_id ending in noise")
-        with open(effective_entropy_properties_path, 'w') as file:
-            json.dump(effective_entropy_properties, file)
+        if measure_effective_entropy:
 
-        effective_entropy_artifact_id = f'{noise_dataset_id}_effective_entropy_properties'
-        effective_entropy_artifact = wandb.Artifact(
-            effective_entropy_artifact_id,
-            type='effective_entropy_properties',
-            metadata=config
-        )
-        effective_entropy_artifact.add_file(effective_entropy_properties_path)
-        run.log_artifact(effective_entropy_artifact)
+            shard_effective_entropy_properties = get_effective_entropy_values(measured_dataset_directories)
+            effective_entropy_properties = {'shard_effective_entropy_properties': shard_effective_entropy_properties}
+            effective_entropy_properties.update(config)
+            effective_entropy_properties['dataset_id'] = noise_dataset_id
+            effective_entropy_properties_path = Path(measured_dataset_directories[0],
+                                                     STANDARD_EFFECTIVE_ENTROPY_PROPERTIES_FILENAME)
 
-        run.name = f'{initial_dataset_id}_entropy'
+            with open(effective_entropy_properties_path, 'w') as file:
+                json.dump(effective_entropy_properties, file)
+
+            effective_entropy_artifact_id = f'{noise_dataset_id}_effective_entropy_properties'
+            effective_entropy_artifact = wandb.Artifact(
+                effective_entropy_artifact_id,
+                type='effective_entropy_properties',
+                metadata=config
+            )
+            effective_entropy_artifact.add_file(effective_entropy_properties_path)
+            run.log_artifact(effective_entropy_artifact)
+
+        run.name = f'{noise_dataset_id}_entropy'
 
         # return measured_dataset_directories
 
 
 def get_effective_entropy_values(measured_dataset_directories, ignore_directory_name_warnings=False):
+
+    """
+    Extracts effective entropy values for using the entropy_properties.json files in measured_dataset_directories.
+
+    :param measured_dataset_directories: directories containing dataset entropy properties, in the format
+    [noise_directory, blur_directory, ...].
+    :param ignore_directory_name_warnings: if False, will ensure the first directory name ends in 'noise' and the second
+    directory name ends in 'blur'
+    :return: effective entropy properties of the following form
+        {shard_id_0: {
+            entropy_function_tag_0_effective: [],
+            entropy_function_tag_1_effective: [],
+            ...
+            }
+        shard_id_1: {
+            entropy_function_tag_0_effective: [],
+            entropy_function_tag_1_effective: [],
+            ...
+            }
+        ...
+        }
+    """
 
     relevant_directories = measured_dataset_directories[:2]
     # measured_dataset_directories starts at the end of the
@@ -160,10 +229,12 @@ def get_effective_entropy_values(measured_dataset_directories, ignore_directory_
     blur_directory = relevant_directories[1]
 
     with open(Path(noise_directory, STANDARD_ENTROPY_PROPERTIES_FILENAME), 'r') as file:
-        noise_stage_entropy_props = json.load(file)
+        noise_stage_entropy_data = json.load(file)
+        noise_stage_entropy_props = noise_stage_entropy_data['shard_entropy_properties']
 
     with open(Path(blur_directory, STANDARD_ENTROPY_PROPERTIES_FILENAME), 'r') as file:
-        blur_stage_entropy_props = json.load(file)
+        blur_stage_entropy_data = json.load(file)
+        blur_stage_entropy_props = blur_stage_entropy_data['shard_entropy_properties']
 
     effective_entropy_properties = {}
 
