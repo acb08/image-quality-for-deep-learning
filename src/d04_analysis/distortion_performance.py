@@ -437,7 +437,7 @@ def analyze_perf_3d(model_performance,
     if isosurf_plot:
         save_name = f'{str(model_performance)}_isosurf.png'
         plot_isosurf(x_values, y_values, z_values, perf_3d,
-                     level=np.mean(perf_3d), save_name=save_name, directory=directory)
+                     level=np.mean(perf_3d), save_name=save_name, save_dir=directory)
 
 
 def get_model_distortion_performance_result(result_id=None, identifier=None, config=None):
