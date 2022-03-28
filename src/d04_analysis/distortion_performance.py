@@ -1,7 +1,8 @@
 from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, STANDARD_TEST_RESULT_FILENAME, PROJECT_ID, REL_PATHS, \
     ROOT_DIR
 from src.d00_utils.functions import load_wandb_data_artifact, get_config
-from src.d04_analysis.performance_analysis_functions import conditional_mean_accuracy
+from src.d04_analysis.performance_analysis_functions import conditional_mean_accuracy, \
+    extract_combine_shard_vector_data, extract_distortion_vectors
 from src.d04_analysis.fit import fit_hyperplane, eval_linear_fit, linear_predict
 from src.d04_analysis.tools3d import conditional_extract_2d, wire_plot, build_3d_field, plot_isosurf
 from src.d04_analysis.plot_defaults import AZ_EL_DEFAULTS, AXIS_LABELS, AZ_EL_COMBINATIONS, COLORS, SCATTER_PLOT_MARKERS
@@ -70,73 +71,73 @@ def load_dataset_and_result(run, result_id,
     return dataset, result
 
 
-def extract_combine_shard_vector_data(data, target_keys):
-    """
-    Extracts target vectors from a top-level dictionary keyed by shard ids (generally filenames), where each entry of
-    for form data[shard_id] is another dict keyed with members of target_keys.
-
-    Concatenates target vectors associated with each target_key in target_keys according to the order of the shard ids
-    in data.
-
-    Returns a dict containing concatenated target vectors keyed with their respective target keys and as well as a key
-    check vectors for each target key to enable downstream checking of the shard id associated with each entry in the
-    output target vectors.
-
-    :param data: dict of the following form:
-        {shard_id_0: {
-            target_key_0: [],
-            target_key_1: [],
-            ...}
-        shard_id_1: {
-            target_key_0: []
-            target_key_1: []
-            ...}
-        ...}
-
-    :param target_keys: tuple or list
-
-    :return: dict of the following form:
-        {target_key_0: []
-        target_key_0_key_check: []
-        etc.}
-    """
-
-    shard_extracts = {}
-
-    for target_key in target_keys:
-
-        extract = []
-        vector_file_key_checker = []
-
-        for vector_file_key in data:
-            shard_data = data[vector_file_key][target_key]
-            extract.extend(shard_data)
-            vector_keys = [vector_file_key] * len(shard_data)
-            vector_file_key_checker.extend(vector_keys)
-
-        shard_extracts[target_key] = extract
-        shard_extracts[f'{target_key}_key_check'] = vector_file_key_checker
-
-    return shard_extracts
-
-
-def extract_distortion_vectors(dataset,
-                               dataset_split_key='test',
-                               distortion_info_key='image_distortion_info',
-                               distortion_type_flags=('res', 'blur', 'noise'),
-                               return_full_dict=False):
-    image_distortion_info = dataset[dataset_split_key][distortion_info_key]
-    extracted_distortion_data = extract_combine_shard_vector_data(image_distortion_info, distortion_type_flags)
-
-    if return_full_dict:
-        return extracted_distortion_data
-
-    else:
-        distortion_vectors = []
-        for flag in distortion_type_flags:
-            distortion_vectors.append(extracted_distortion_data[flag])
-
-        return distortion_vectors
+# def extract_combine_shard_vector_data(data, target_keys):
+#     """
+#     Extracts target vectors from a top-level dictionary keyed by shard ids (generally filenames), where each entry of
+#     for form data[shard_id] is another dict keyed with members of target_keys.
+#
+#     Concatenates target vectors associated with each target_key in target_keys according to the order of the shard ids
+#     in data.
+#
+#     Returns a dict containing concatenated target vectors keyed with their respective target keys and as well as a key
+#     check vectors for each target key to enable downstream checking of the shard id associated with each entry in the
+#     output target vectors.
+#
+#     :param data: dict of the following form:
+#         {shard_id_0: {
+#             target_key_0: [],
+#             target_key_1: [],
+#             ...}
+#         shard_id_1: {
+#             target_key_0: []
+#             target_key_1: []
+#             ...}
+#         ...}
+#
+#     :param target_keys: tuple or list
+#
+#     :return: dict of the following form:
+#         {target_key_0: []
+#         target_key_0_key_check: []
+#         etc.}
+#     """
+#
+#     shard_extracts = {}
+#
+#     for target_key in target_keys:
+#
+#         extract = []
+#         vector_file_key_checker = []
+#
+#         for vector_file_key in data:
+#             shard_data = data[vector_file_key][target_key]
+#             extract.extend(shard_data)
+#             vector_keys = [vector_file_key] * len(shard_data)
+#             vector_file_key_checker.extend(vector_keys)
+#
+#         shard_extracts[target_key] = extract
+#         shard_extracts[f'{target_key}_key_check'] = vector_file_key_checker
+#
+#     return shard_extracts
+#
+#
+# def extract_distortion_vectors(dataset,
+#                                dataset_split_key='test',
+#                                distortion_info_key='image_distortion_info',
+#                                distortion_type_flags=('res', 'blur', 'noise'),
+#                                return_full_dict=False):
+#     image_distortion_info = dataset[dataset_split_key][distortion_info_key]
+#     extracted_distortion_data = extract_combine_shard_vector_data(image_distortion_info, distortion_type_flags)
+#
+#     if return_full_dict:
+#         return extracted_distortion_data
+#
+#     else:
+#         distortion_vectors = []
+#         for flag in distortion_type_flags:
+#             distortion_vectors.append(extracted_distortion_data[flag])
+#
+#         return distortion_vectors
 
 
 def extract_performance_vectors(test_result,
