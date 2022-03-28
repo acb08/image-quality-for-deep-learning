@@ -1,0 +1,9 @@
+---
+
+initial_dataset_id: 0038_tst_rs1_bcs3_nfs3_noise
+#dataset_artifact_alias: latest
+#parent_artifact_filename: standard
+num_analysis_stages: 2  # how many image chain stages to analyze
+dataset_split_key: test
+description: test of entropy property pipeline
+entropy_function_tags: ['shannon', 'grad', 'fourier_mag']

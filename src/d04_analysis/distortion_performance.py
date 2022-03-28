@@ -1,6 +1,6 @@
 from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, STANDARD_TEST_RESULT_FILENAME, PROJECT_ID, REL_PATHS, \
     ROOT_DIR
-from src.d00_utils.functions import load_wandb_data_artifact
+from src.d00_utils.functions import load_wandb_data_artifact, get_config
 from src.d04_analysis.performance_analysis_functions import conditional_mean_accuracy
 from src.d04_analysis.fit import fit_hyperplane, eval_linear_fit, linear_predict
 from src.d04_analysis.tools3d import conditional_extract_2d, wire_plot, build_3d_field, plot_isosurf
@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from pathlib import Path
 import wandb
+import argparse
 
 wandb.login()
 
@@ -149,7 +150,6 @@ def extract_performance_vectors(test_result,
         return extracted_performance_vectors
 
     else:
-
         performance_vectors = []
         for target_vector_key in target_vector_keys:
             performance_vectors.append(extracted_performance_vectors[target_vector_key])
@@ -440,7 +440,12 @@ def analyze_perf_3d(model_performance,
                      level=np.mean(perf_3d), save_name=save_name, directory=directory)
 
 
-def get_model_distortion_performance_result(result_id, identifier):
+def get_model_distortion_performance_result(result_id=None, identifier=None, config=None):
+
+    if not result_id and not identifier:
+        result_id = config['result_id']
+        identifier = config['identifier']
+
     with wandb.init(project=PROJECT_ID, job_type='analyze_test_result') as run:
         output_dir = Path(ROOT_DIR, REL_PATHS['analysis'], result_id)
         if not output_dir.is_dir():
@@ -452,9 +457,16 @@ def get_model_distortion_performance_result(result_id, identifier):
 
 
 if __name__ == '__main__':
-    _result_id = "0018_rlt_0030_mdl_rst4_b5_nf5_best_loss_0040_tst_rs1_bcs3_nfs3_noise"
-    _identifier = 'endpoint'
-    _model_distortion_performance, _output_dir = get_model_distortion_performance_result(_result_id, _identifier)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config_name', default='distortion_analysis_config.yml', help='config filename to be used')
+    parser.add_argument('--config_dir',
+                        default=Path(Path(__file__).parents[0], 'distortion_analysis_configs'),
+                        help="configuration file directory")
+    args_passed = parser.parse_args()
+    run_config = get_config(args_passed)
+
+    _model_distortion_performance, _output_dir = get_model_distortion_performance_result(config=run_config)
 
     with open(Path(_output_dir, 'result_log.txt'), 'w') as output_file:
         analyze_perf_1d(_model_distortion_performance, log_file=output_file, directory=_output_dir)

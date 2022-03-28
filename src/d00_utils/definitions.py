@@ -18,6 +18,8 @@ STANDARD_CHECKPOINT_FILENAME = 'model_cp.pt'
 STANDARD_BEST_LOSS_FILENAME = 'best_loss.pt'
 STANDARD_TEST_RESULT_FILENAME = 'test_result.json'
 STANDARD_CONFIG_USED_FILENAME = 'config_used.yml'
+STANDARD_ENTROPY_PROPERTIES_FILENAME = 'entropy_properties.json'
+STANDARD_EFFECTIVE_ENTROPY_PROPERTIES_FILENAME = 'effective_entropy_properties.json'
 KEY_LENGTH = 4
 
 # defines standard paths in project structure for different artifact types
@@ -36,12 +38,15 @@ REL_PATHS = {
     'noise': r'3-noise'
 }
 
+DISTORTION_TYPES = ['pan', 'res', 'blur', 'noise']
+
 # ARTIFACT_TYPE_TAGS used to avoid name wandb name collisions
 ARTIFACT_TYPE_TAGS = {
     'train_dataset': 'trn',
     'test_dataset': 'tst',
     'model': r'mdl',
-    'test_result': r'rlt'
+    'test_result': r'rlt',
+    'entropy_properties': r'ent'
 }
 
 # note: val slice in original datasets used for test dataset in this
