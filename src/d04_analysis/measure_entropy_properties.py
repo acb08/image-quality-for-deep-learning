@@ -18,6 +18,25 @@ IMAGE_MODE = 'L'  # currently, adding random noise across all channels (i.e. noi
 # image channels (b) modify entropy functions to account for noise independence across channels
 
 
+def get_entropy_artifact_name(dataset_id, effective):
+    """
+    Returns standard artifact name for a dataset's entropy properties. Allows an entropy artifact to be used along with
+    the dataset from which it is derived without manually specifying the entropy artifact name. This automatic naming
+    approach is a departure from the goal of making all links between artifacts explicit and avoiding reliance on
+    formatted names to link data. Because entropy artifacts are created after distortion datasets, this approach avoids
+    having to modify the dataset artifact or create a third artifact formally linking the two.
+
+    :param dataset_id: str, name of wandb dataset artifact
+    :param effective: bool, specifies whether entropy artifact captures effective entropy
+    :return: str, standard entropy artifact name
+    """
+    if not effective:
+        entropy_artifact_name = f"{dataset_id}_entropy"
+    else:
+        entropy_artifact_name = f"{dataset_id}_entropy_effective"
+    return entropy_artifact_name
+
+
 def get_vec_entropy_vals(vector_in, entropy_functions):
 
     """
@@ -154,7 +173,7 @@ def measure_dataset_entropy_properties(config):
             with open(entropy_properties_path, 'w') as file:
                 json.dump(dataset_entropy_properties, file)
 
-            new_artifact_id = f"{dataset_id}_entropy"
+            new_artifact_id = get_entropy_artifact_name(dataset_id, effective=False) #f"{dataset_id}_entropy"
             new_artifact = wandb.Artifact(new_artifact_id,
                                           type=new_artifact_type,
                                           metadata=config)
@@ -177,7 +196,7 @@ def measure_dataset_entropy_properties(config):
             with open(effective_entropy_properties_path, 'w') as file:
                 json.dump(effective_entropy_properties, file)
 
-            effective_entropy_artifact_id = f'{noise_dataset_id}_effective_entropy_properties'
+            effective_entropy_artifact_id = get_entropy_artifact_name(noise_dataset_id, effective=True)
             effective_entropy_artifact = wandb.Artifact(
                 effective_entropy_artifact_id,
                 type='effective_entropy_properties',
