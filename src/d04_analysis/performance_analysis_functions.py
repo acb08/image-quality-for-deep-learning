@@ -52,21 +52,55 @@ def extract_combine_shard_vector_data(data, target_keys):
     return shard_extracts
 
 
-def extract_distortion_vectors(dataset,
-                               dataset_split_key='test',
-                               distortion_info_key='image_distortion_info',
-                               distortion_type_flags=('res', 'blur', 'noise'),
-                               return_full_dict=False):
-    image_distortion_info = dataset[dataset_split_key][distortion_info_key]
-    extracted_distortion_data = extract_combine_shard_vector_data(image_distortion_info, distortion_type_flags)
+def extract_embedded_vectors(data_dict,
+                             intermediate_keys,
+                             target_keys,
+                             return_full_dict=False):
+
+    """
+    Extracts and builds lists from shard level data embedded in data_dict, where the target data is stored in a nested dict of the
+    form target_dict = {
+        shard_id_0: {
+            target_key_0: [],
+            target_key_1: [],
+            etc.
+        }
+        shard_id_1: {
+            target_key_0: []
+            target_key_2: []
+            etc.
+        }
+        etc.
+    }.  target_dict is found at data_dict[intermediate_keys[0]][intermediate_keys[1]][etc.] The actual shard level data
+    extraction is accomplished by extract_combine_shard_vector_data(*args)
+
+    :param data_dict:
+    :param intermediate_keys:
+    :param target_keys:
+    :param return_full_dict:
+    :return: if return_full_dict, returns dict of the following form:
+        {target_key_0: []
+        target_key_0_key_check: []
+        etc.}
+    if not return_full_dict, returns list of the form
+        [full_dict[target_key_0], full_dict[target_key_1], etc.], where each element full_dict[target_key_n] is itself
+        a list.
+    """
+
+    target_dict = data_dict
+    if intermediate_keys is not None:
+        for intermediate_key in intermediate_keys:
+            target_dict = target_dict[intermediate_key]
+
+    extracted_data = extract_combine_shard_vector_data(target_dict, target_keys)
 
     if return_full_dict:
-        return extracted_distortion_data
+        return extracted_data
 
     else:
         distortion_vectors = []
-        for flag in distortion_type_flags:
-            distortion_vectors.append(extracted_distortion_data[flag])
+        for target_key in target_keys:
+            distortion_vectors.append(extracted_data[target_key])
 
         return distortion_vectors
 

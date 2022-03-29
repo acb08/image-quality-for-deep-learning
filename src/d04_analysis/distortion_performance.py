@@ -2,7 +2,7 @@ from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, STANDARD_TEST_R
     ROOT_DIR
 from src.d00_utils.functions import load_wandb_data_artifact, get_config
 from src.d04_analysis.performance_analysis_functions import conditional_mean_accuracy, \
-    extract_combine_shard_vector_data, extract_distortion_vectors
+    extract_combine_shard_vector_data, extract_embedded_vectors
 from src.d04_analysis.fit import fit_hyperplane, eval_linear_fit, linear_predict
 from src.d04_analysis.tools3d import conditional_extract_2d, wire_plot, build_3d_field, plot_isosurf
 from src.d04_analysis.plot_defaults import AZ_EL_DEFAULTS, AXIS_LABELS, AZ_EL_COMBINATIONS, COLORS, SCATTER_PLOT_MARKERS
@@ -16,11 +16,34 @@ import argparse
 wandb.login()
 
 
+# class DistortedDataset(object):
+#
+#     def __init__(self, dataset, convert_to_std=True):
+#         self.dataset = dataset
+#         self.res, self.blur, self.noise = extract_distortion_vectors(self.dataset)
+#         self.res = np.asarray(self.res)
+#         self.blur = np.asarray(self.blur)
+#         self.noise = np.asarray(self.noise)
+#         if convert_to_std:
+#             self.noise = np.sqrt(self.noise)
+#         self.distortions = {
+#             'res': self.res,
+#             'blur': self.blur,
+#             'noise': self.noise
+#         }
+
+
 class DistortedDataset(object):
 
-    def __init__(self, dataset, convert_to_std=True):
-        # self.dataset = dataset
-        self.res, self.blur, self.noise = extract_distortion_vectors(dataset)
+    def __init__(self, dataset,
+                 intermediate_keys=('test', 'image_distortion_info'),
+                 target_keys=('res', 'blur', 'noise'),
+                 convert_to_std=True):
+        self.dataset = dataset
+        self.res, self.blur, self.noise = extract_embedded_vectors(self.dataset,
+                                                                   intermediate_keys=intermediate_keys,
+                                                                   target_keys=target_keys,
+                                                                   return_full_dict=False)
         self.res = np.asarray(self.res)
         self.blur = np.asarray(self.blur)
         self.noise = np.asarray(self.noise)
@@ -33,49 +56,12 @@ class DistortedDataset(object):
         }
 
 
-class ModelDistortionPerformanceResult(DistortedDataset):
-
-    def __init__(self, run, result_id, identifier=None, convert_to_std=True):
-
-        self.dataset, self.result = load_dataset_and_result(run, result_id)
-        DistortedDataset.__init__(self, self.dataset)
-        self.labels, self.predicts = extract_performance_vectors(self.result)
-        self.predicts = np.asarray(self.predicts)
-        self.labels = np.asarray(self.labels)
-        self.top_1_vec = self.get_accuracy_vector()
-        self.identifier = identifier
-
-    def __len__(self):
-        return len(self.labels)
-
-    def __repr__(self):
-        return str(self.identifier)
-
-    def get_accuracy_vector(self):
-        return np.equal(self.labels, self.predicts)
-
-    def conditional_accuracy(self, distortion_id):
-        return conditional_mean_accuracy(self.labels, self.predicts, self.distortions[distortion_id])
-
-
-# class ModelDistortionPerformanceResult(object):
+# class ModelDistortionPerformanceResult(DistortedDataset):
 #
 #     def __init__(self, run, result_id, identifier=None, convert_to_std=True):
-#
+#         self.convert_to_std = convert_to_std
 #         self.dataset, self.result = load_dataset_and_result(run, result_id)
-#
-#         self.res, self.blur, self.noise = extract_distortion_vectors(self.dataset)
-#         self.res = np.asarray(self.res)
-#         self.blur = np.asarray(self.blur)
-#         if convert_to_std:
-#             self.noise = np.sqrt(np.asarray(self.noise))
-#         else:
-#             self.noise = np.asarray(self.noise)
-#         self.distortions = {
-#             'res': self.res,
-#             'blur': self.blur,
-#             'noise': self.noise
-#         }
+#         DistortedDataset.__init__(self, self.dataset, convert_to_std=self.convert_to_std)
 #         self.labels, self.predicts = extract_performance_vectors(self.result)
 #         self.predicts = np.asarray(self.predicts)
 #         self.labels = np.asarray(self.labels)
@@ -93,6 +79,34 @@ class ModelDistortionPerformanceResult(DistortedDataset):
 #
 #     def conditional_accuracy(self, distortion_id):
 #         return conditional_mean_accuracy(self.labels, self.predicts, self.distortions[distortion_id])
+
+
+class ModelDistortionPerformanceResult(DistortedDataset):
+
+    def __init__(self, run, result_id, identifier=None, convert_to_std=True):
+        self.convert_to_std = convert_to_std
+        self.dataset, self.result = load_dataset_and_result(run, result_id)
+        DistortedDataset.__init__(self, self.dataset, convert_to_std=self.convert_to_std)
+        self.labels, self.predicts = extract_embedded_vectors(self.result,
+                                                              intermediate_keys=['shard_performances'],
+                                                              target_keys=('labels', 'predicts'),
+                                                              return_full_dict=False)
+        self.predicts = np.asarray(self.predicts)
+        self.labels = np.asarray(self.labels)
+        self.top_1_vec = self.get_accuracy_vector()
+        self.identifier = identifier
+
+    def __len__(self):
+        return len(self.labels)
+
+    def __repr__(self):
+        return str(self.identifier)
+
+    def get_accuracy_vector(self):
+        return np.equal(self.labels, self.predicts)
+
+    def conditional_accuracy(self, distortion_id):
+        return conditional_mean_accuracy(self.labels, self.predicts, self.distortions[distortion_id])
 
 
 def load_dataset_and_result(run, result_id,
@@ -114,56 +128,6 @@ def load_dataset_and_result(run, result_id,
     return dataset, result
 
 
-# def extract_combine_shard_vector_data(data, target_keys):
-#     """
-#     Extracts target vectors from a top-level dictionary keyed by shard ids (generally filenames), where each entry of
-#     for form data[shard_id] is another dict keyed with members of target_keys.
-#
-#     Concatenates target vectors associated with each target_key in target_keys according to the order of the shard ids
-#     in data.
-#
-#     Returns a dict containing concatenated target vectors keyed with their respective target keys and as well as a key
-#     check vectors for each target key to enable downstream checking of the shard id associated with each entry in the
-#     output target vectors.
-#
-#     :param data: dict of the following form:
-#         {shard_id_0: {
-#             target_key_0: [],
-#             target_key_1: [],
-#             ...}
-#         shard_id_1: {
-#             target_key_0: []
-#             target_key_1: []
-#             ...}
-#         ...}
-#
-#     :param target_keys: tuple or list
-#
-#     :return: dict of the following form:
-#         {target_key_0: []
-#         target_key_0_key_check: []
-#         etc.}
-#     """
-#
-#     shard_extracts = {}
-#
-#     for target_key in target_keys:
-#
-#         extract = []
-#         vector_file_key_checker = []
-#
-#         for vector_file_key in data:
-#             shard_data = data[vector_file_key][target_key]
-#             extract.extend(shard_data)
-#             vector_keys = [vector_file_key] * len(shard_data)
-#             vector_file_key_checker.extend(vector_keys)
-#
-#         shard_extracts[target_key] = extract
-#         shard_extracts[f'{target_key}_key_check'] = vector_file_key_checker
-#
-#     return shard_extracts
-#
-#
 # def extract_distortion_vectors(dataset,
 #                                dataset_split_key='test',
 #                                distortion_info_key='image_distortion_info',
@@ -183,23 +147,23 @@ def load_dataset_and_result(run, result_id,
 #         return distortion_vectors
 
 
-def extract_performance_vectors(test_result,
-                                performance_key='shard_performances',
-                                target_vector_keys=('labels', 'predicts'),
-                                return_full_dict=False):
-    performance_data = test_result[performance_key]
-    extracted_performance_vectors = extract_combine_shard_vector_data(performance_data, target_vector_keys)
-
-    if return_full_dict:
-        return extracted_performance_vectors
-
-    else:
-        performance_vectors = []
-        for target_vector_key in target_vector_keys:
-            performance_vectors.append(extracted_performance_vectors[target_vector_key])
-
-        return performance_vectors
-
+# def extract_performance_vectors(test_result,
+#                                 performance_key='shard_performances',
+#                                 target_vector_keys=('labels', 'predicts'),
+#                                 return_full_dict=False):
+#     performance_data = test_result[performance_key]
+#     extracted_performance_vectors = extract_combine_shard_vector_data(performance_data, target_vector_keys)
+#
+#     if return_full_dict:
+#         return extracted_performance_vectors
+#
+#     else:
+#         performance_vectors = []
+#         for target_vector_key in target_vector_keys:
+#             performance_vectors.append(extracted_performance_vectors[target_vector_key])
+#
+#         return performance_vectors
+#
 
 def plot_1d_linear_fit(x_data, y_data, fit_coefficients, distortion_id,
                        result_identifier=None, ylabel='accuracy', title=None, directory=None):
@@ -498,6 +462,22 @@ def get_model_distortion_performance_result(result_id=None, identifier=None, con
         model_distortion_performance = ModelDistortionPerformanceResult(run, result_id, identifier=identifier)
 
     return model_distortion_performance, output_dir
+
+
+# def get_model_distortion_performance_result_compare(result_id=None, identifier=None, config=None):
+#
+#     if not result_id and not identifier:
+#         result_id = config['result_id']
+#         identifier = config['identifier']
+#
+#     with wandb.init(project=PROJECT_ID, job_type='analyze_test_result') as run:
+#         output_dir = Path(ROOT_DIR, REL_PATHS['analysis'], result_id)
+#         if not output_dir.is_dir():
+#             Path.mkdir(output_dir)
+#
+#         model_distortion_performance = ModelDistortionPerformanceResultV2(run, result_id, identifier=identifier)
+#
+#     return model_distortion_performance, output_dir
 
 
 if __name__ == '__main__':
