@@ -16,28 +16,34 @@ import argparse
 wandb.login()
 
 
-class ModelDistortionPerformanceResult(object):
+class DistortedDataset(object):
 
-    def __init__(self, run, result_id, identifier=None, convert_to_std=True):
-
-        self.dataset, self.result = load_dataset_and_result(run, result_id)
-        self.labels, self.predicts = extract_performance_vectors(self.result)
-        self.labels = np.asarray(self.labels)
-        self.predicts = np.asarray(self.predicts)
-        self.res, self.blur, self.noise = extract_distortion_vectors(self.dataset)
+    def __init__(self, dataset, convert_to_std=True):
+        # self.dataset = dataset
+        self.res, self.blur, self.noise = extract_distortion_vectors(dataset)
         self.res = np.asarray(self.res)
         self.blur = np.asarray(self.blur)
+        self.noise = np.asarray(self.noise)
         if convert_to_std:
-            self.noise = np.sqrt(np.asarray(self.noise))
-        else:
-            self.noise = np.asarray(self.noise)
-        self.top_1_vec = self.get_accuracy_vector()
-        self.identifier = identifier
+            self.noise = np.sqrt(self.noise)
         self.distortions = {
             'res': self.res,
             'blur': self.blur,
             'noise': self.noise
         }
+
+
+class ModelDistortionPerformanceResult(DistortedDataset):
+
+    def __init__(self, run, result_id, identifier=None, convert_to_std=True):
+
+        self.dataset, self.result = load_dataset_and_result(run, result_id)
+        DistortedDataset.__init__(self, self.dataset)
+        self.labels, self.predicts = extract_performance_vectors(self.result)
+        self.predicts = np.asarray(self.predicts)
+        self.labels = np.asarray(self.labels)
+        self.top_1_vec = self.get_accuracy_vector()
+        self.identifier = identifier
 
     def __len__(self):
         return len(self.labels)
@@ -50,6 +56,43 @@ class ModelDistortionPerformanceResult(object):
 
     def conditional_accuracy(self, distortion_id):
         return conditional_mean_accuracy(self.labels, self.predicts, self.distortions[distortion_id])
+
+
+# class ModelDistortionPerformanceResult(object):
+#
+#     def __init__(self, run, result_id, identifier=None, convert_to_std=True):
+#
+#         self.dataset, self.result = load_dataset_and_result(run, result_id)
+#
+#         self.res, self.blur, self.noise = extract_distortion_vectors(self.dataset)
+#         self.res = np.asarray(self.res)
+#         self.blur = np.asarray(self.blur)
+#         if convert_to_std:
+#             self.noise = np.sqrt(np.asarray(self.noise))
+#         else:
+#             self.noise = np.asarray(self.noise)
+#         self.distortions = {
+#             'res': self.res,
+#             'blur': self.blur,
+#             'noise': self.noise
+#         }
+#         self.labels, self.predicts = extract_performance_vectors(self.result)
+#         self.predicts = np.asarray(self.predicts)
+#         self.labels = np.asarray(self.labels)
+#         self.top_1_vec = self.get_accuracy_vector()
+#         self.identifier = identifier
+#
+#     def __len__(self):
+#         return len(self.labels)
+#
+#     def __repr__(self):
+#         return str(self.identifier)
+#
+#     def get_accuracy_vector(self):
+#         return np.equal(self.labels, self.predicts)
+#
+#     def conditional_accuracy(self, distortion_id):
+#         return conditional_mean_accuracy(self.labels, self.predicts, self.distortions[distortion_id])
 
 
 def load_dataset_and_result(run, result_id,
