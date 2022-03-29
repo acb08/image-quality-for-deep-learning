@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def extract_combine_shard_vector_data(data, target_keys):
+def extract_combine_shard_vector_data(data, target_keys, check_keys=False):
     """
     Extracts target vectors from a top-level dictionary keyed by shard ids (generally filenames), where each entry of
     for form data[shard_id] is another dict keyed with members of target_keys.
@@ -26,10 +26,14 @@ def extract_combine_shard_vector_data(data, target_keys):
         ...}
 
     :param target_keys: tuple or list
+    :param check_keys: Bool
 
-    :return: dict of the following form:
+    :return: if check_keys, dict of the following form:
         {target_key_0: []
         target_key_0_key_check: []
+        etc.}
+    if not check_keys, dict of the following form:
+        {target_key_0: []
         etc.}
     """
 
@@ -47,7 +51,8 @@ def extract_combine_shard_vector_data(data, target_keys):
             vector_file_key_checker.extend(vector_keys)
 
         shard_extracts[target_key] = extract
-        shard_extracts[f'{target_key}_key_check'] = vector_file_key_checker
+        if check_keys:
+            shard_extracts[f'{target_key}_key_check'] = vector_file_key_checker
 
     return shard_extracts
 
