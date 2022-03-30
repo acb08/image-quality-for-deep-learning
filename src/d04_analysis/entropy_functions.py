@@ -60,22 +60,23 @@ def entropy_2d(hist_img):
     return _entropy
 
 
-def fourier_magnitude_entropy(f_img, base=2):
+def fourier_magnitude_entropy(img, base=2):
+    f_img = image_fft_normalized(img)
     f_img_mag = np.asarray(np.absolute(f_img), dtype=np.uint8)
-    return 'fourier_mag', array_entropy(f_img_mag)
+    return 'fourier_mag', array_entropy(f_img_mag, base=base)
 
 
-def fourier_2d_entropy(img_ft, base=2):
-
-    f_img_real = img_ft.real
-    f_img_imag = img_ft.imag
+def fourier_2d_entropy(img):
+    f_img = image_fft_normalized(img)
+    f_img_real = f_img.real
+    f_img_imag = f_img.imag
     hist_img = histogram_2d(f_img_real, f_img_imag)
     entropy_f_2d = entropy_2d(hist_img)
 
     return 'fourier_2d', entropy_f_2d
 
 
-def fourier_entropies(img):
+def image_fft_normalized(img):
 
     f_img = np.fft.fft2(img, axes=(0, 1))
 
@@ -83,10 +84,7 @@ def fourier_entropies(img):
     norm_constant = n * m
     f_img = f_img / norm_constant  # ensures max value <= 255
 
-    f_mag_key, f_mag_ent = fourier_magnitude_entropy(f_img)
-    f_2d_key, f_2d_ent = fourier_2d_entropy(f_img)
-
-    return (f_mag_key, f_2d_key), (f_mag_ent, f_2d_ent)
+    return f_img
 
 
 def shannon_entropy(img):
