@@ -182,15 +182,24 @@ def conditional_mean_accuracy(labels, predicts, condition_array):
     conditions = np.unique(condition_array)
     conditioned_accuracies = np.zeros(len(conditions))
 
-    counter = 0
-    for condition in conditions:
+    for i, condition in enumerate(conditions):
         condition_labels = labels[np.where(condition_array == condition)]
         condition_predicts = predicts[np.where(condition_array == condition)]
-        conditioned_accuracies[counter] = (
+        conditioned_accuracies[i] = (
             np.mean(np.equal(condition_labels, condition_predicts)))
-        counter += 1
 
     return conditions, conditioned_accuracies
+
+
+def conditional_mean_entropy(entropy, condition_array):
+
+    conditions = np.unique(condition_array)
+    conditional_entropies = np.zeros(len(conditions))
+
+    for i, condition in enumerate(conditions):
+        conditional_entropies[i] = np.mean(entropy[np.where(condition_array == condition)])
+
+    return conditions, conditional_entropies
 
 
 # def metric_perf_corrcoeff(performance, metric, hist):

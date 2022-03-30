@@ -1,3 +1,8 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
+from pathlib import Path
+
 AZ_EL_DEFAULTS = {
     'az': -60,
     'el': 30
@@ -50,3 +55,27 @@ AXIS_LABELS = {
 SCATTER_PLOT_MARKERS = ['.', 'v', '2', 'P', 's', 'd', 'X', 'h']
 COLORS = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
 
+
+def plot_1d_linear_fit(x_data, y_data, fit_coefficients, distortion_id,
+                       result_identifier=None, ylabel='accuracy', title=None, directory=None):
+    xlabel = AXIS_LABELS[distortion_id]
+    x_plot = np.linspace(np.min(x_data), np.max(x_data), num=50)
+    y_plot = fit_coefficients[0] * x_plot + fit_coefficients[1]
+
+    ax = plt.figure().gca()
+
+    ax.plot(x_plot, y_plot, linestyle='dashed', lw=0.8, color='k')
+    ax.scatter(x_data, y_data)
+    ax.set_xlabel(xlabel)
+    if 'noise' in xlabel or np.max(x_data) > 5:
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+    ax.set_ylabel(ylabel)
+    if title:
+        ax.set_title(title)
+    if directory:
+        if result_identifier:
+            save_name = f'{distortion_id}_{result_identifier}_{ylabel}.png'
+        else:
+            save_name = f'{distortion_id}_{ylabel}.png'
+        plt.savefig(Path(directory, save_name))
+    plt.show()

@@ -2,7 +2,7 @@ import numpy as np
 from skimage.measure import marching_cubes
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from src.d04_analysis.plot_defaults import AZ_EL_DEFAULTS, AXIS_LABELS
+from src.d04_analysis.plot import AZ_EL_DEFAULTS, AXIS_LABELS
 from pathlib import Path
 import os
 
