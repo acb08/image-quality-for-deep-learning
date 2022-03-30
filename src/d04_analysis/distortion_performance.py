@@ -1,11 +1,11 @@
 from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, STANDARD_TEST_RESULT_FILENAME, PROJECT_ID, REL_PATHS, \
     ROOT_DIR
 from src.d00_utils.functions import load_wandb_data_artifact, get_config
-from src.d04_analysis.performance_analysis_functions import conditional_mean_accuracy, \
-    extract_combine_shard_vector_data, extract_embedded_vectors
+from src.d04_analysis.analysis_functions import conditional_mean_accuracy, extract_embedded_vectors
 from src.d04_analysis.fit import fit_hyperplane, eval_linear_fit, linear_predict
-from src.d04_analysis.tools3d import conditional_extract_2d, wire_plot, build_3d_field, plot_isosurf
-from src.d04_analysis.plot_defaults import AZ_EL_DEFAULTS, AXIS_LABELS, AZ_EL_COMBINATIONS, COLORS, SCATTER_PLOT_MARKERS
+from src.d04_analysis.tools3d import conditional_extract_2d, build_3d_field, plot_isosurf
+from src.d04_analysis.plot import AZ_EL_DEFAULTS, AXIS_LABELS, AZ_EL_COMBINATIONS, COLORS, SCATTER_PLOT_MARKERS, \
+    plot_1d_linear_fit, wire_plot, plot_2d
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -16,33 +16,17 @@ import argparse
 wandb.login()
 
 
-# class DistortedDataset(object):
-#
-#     def __init__(self, dataset, convert_to_std=True):
-#         self.dataset = dataset
-#         self.res, self.blur, self.noise = extract_distortion_vectors(self.dataset)
-#         self.res = np.asarray(self.res)
-#         self.blur = np.asarray(self.blur)
-#         self.noise = np.asarray(self.noise)
-#         if convert_to_std:
-#             self.noise = np.sqrt(self.noise)
-#         self.distortions = {
-#             'res': self.res,
-#             'blur': self.blur,
-#             'noise': self.noise
-#         }
-
-
 class DistortedDataset(object):
 
     def __init__(self, dataset,
                  intermediate_keys=('test', 'image_distortion_info'),
-                 target_keys=('res', 'blur', 'noise'),
+                 distortion_ids=('res', 'blur', 'noise'),
                  convert_to_std=True):
         self.dataset = dataset
+        self.distortion_ids = distortion_ids
         self.res, self.blur, self.noise = extract_embedded_vectors(self.dataset,
                                                                    intermediate_keys=intermediate_keys,
-                                                                   target_keys=target_keys,
+                                                                   target_keys=self.distortion_ids,
                                                                    return_full_dict=False)
         self.res = np.asarray(self.res)
         self.blur = np.asarray(self.blur)
@@ -54,31 +38,6 @@ class DistortedDataset(object):
             'blur': self.blur,
             'noise': self.noise
         }
-
-
-# class ModelDistortionPerformanceResult(DistortedDataset):
-#
-#     def __init__(self, run, result_id, identifier=None, convert_to_std=True):
-#         self.convert_to_std = convert_to_std
-#         self.dataset, self.result = load_dataset_and_result(run, result_id)
-#         DistortedDataset.__init__(self, self.dataset, convert_to_std=self.convert_to_std)
-#         self.labels, self.predicts = extract_performance_vectors(self.result)
-#         self.predicts = np.asarray(self.predicts)
-#         self.labels = np.asarray(self.labels)
-#         self.top_1_vec = self.get_accuracy_vector()
-#         self.identifier = identifier
-#
-#     def __len__(self):
-#         return len(self.labels)
-#
-#     def __repr__(self):
-#         return str(self.identifier)
-#
-#     def get_accuracy_vector(self):
-#         return np.equal(self.labels, self.predicts)
-#
-#     def conditional_accuracy(self, distortion_id):
-#         return conditional_mean_accuracy(self.labels, self.predicts, self.distortions[distortion_id])
 
 
 class ModelDistortionPerformanceResult(DistortedDataset):
@@ -128,66 +87,29 @@ def load_dataset_and_result(run, result_id,
     return dataset, result
 
 
-# def extract_distortion_vectors(dataset,
-#                                dataset_split_key='test',
-#                                distortion_info_key='image_distortion_info',
-#                                distortion_type_flags=('res', 'blur', 'noise'),
-#                                return_full_dict=False):
-#     image_distortion_info = dataset[dataset_split_key][distortion_info_key]
-#     extracted_distortion_data = extract_combine_shard_vector_data(image_distortion_info, distortion_type_flags)
+# def plot_1d_linear_fit(x_data, y_data, fit_coefficients, distortion_id,
+#                        result_identifier=None, ylabel='accuracy', title=None, directory=None):
+#     xlabel = AXIS_LABELS[distortion_id]
+#     x_plot = np.linspace(np.min(x_data), np.max(x_data), num=50)
+#     y_plot = fit_coefficients[0] * x_plot + fit_coefficients[1]
 #
-#     if return_full_dict:
-#         return extracted_distortion_data
+#     ax = plt.figure().gca()
 #
-#     else:
-#         distortion_vectors = []
-#         for flag in distortion_type_flags:
-#             distortion_vectors.append(extracted_distortion_data[flag])
-#
-#         return distortion_vectors
-
-
-# def extract_performance_vectors(test_result,
-#                                 performance_key='shard_performances',
-#                                 target_vector_keys=('labels', 'predicts'),
-#                                 return_full_dict=False):
-#     performance_data = test_result[performance_key]
-#     extracted_performance_vectors = extract_combine_shard_vector_data(performance_data, target_vector_keys)
-#
-#     if return_full_dict:
-#         return extracted_performance_vectors
-#
-#     else:
-#         performance_vectors = []
-#         for target_vector_key in target_vector_keys:
-#             performance_vectors.append(extracted_performance_vectors[target_vector_key])
-#
-#         return performance_vectors
-#
-
-def plot_1d_linear_fit(x_data, y_data, fit_coefficients, distortion_id,
-                       result_identifier=None, ylabel='accuracy', title=None, directory=None):
-    xlabel = AXIS_LABELS[distortion_id]
-    x_plot = np.linspace(np.min(x_data), np.max(x_data), num=50)
-    y_plot = fit_coefficients[0] * x_plot + fit_coefficients[1]
-
-    ax = plt.figure().gca()
-
-    ax.plot(x_plot, y_plot, linestyle='dashed', lw=0.8, color='k')
-    ax.scatter(x_data, y_data)
-    ax.set_xlabel(xlabel)
-    if 'noise' in xlabel or np.max(x_data) > 5:
-        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-    ax.set_ylabel(ylabel)
-    if title:
-        ax.set_title(title)
-    if directory:
-        if result_identifier:
-            save_name = f'{distortion_id}_{result_identifier}_{ylabel}.png'
-        else:
-            save_name = f'{distortion_id}_{ylabel}.png'
-        plt.savefig(Path(directory, save_name))
-    plt.show()
+#     ax.plot(x_plot, y_plot, linestyle='dashed', lw=0.8, color='k')
+#     ax.scatter(x_data, y_data)
+#     ax.set_xlabel(xlabel)
+#     if 'noise' in xlabel or np.max(x_data) > 5:
+#         ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+#     ax.set_ylabel(ylabel)
+#     if title:
+#         ax.set_title(title)
+#     if directory:
+#         if result_identifier:
+#             save_name = f'{distortion_id}_{result_identifier}_{ylabel}.png'
+#         else:
+#             save_name = f'{distortion_id}_{ylabel}.png'
+#         plt.savefig(Path(directory, save_name))
+#     plt.show()
 
 
 def get_distortion_perf_1d(model_performance, distortion_id, log_file=None, add_bias=True):
@@ -208,45 +130,45 @@ def get_distortion_perf_1d(model_performance, distortion_id, log_file=None, add_
     return distortion_vals, mean_accuracies, fit_coefficients, correlation
 
 
-def plot_2d_performance(x_values, y_values, accuracy_means, x_id, y_id,
-                        result_identifier=None,
-                        axis_labels=None,
-                        az_el_combinations='all',
-                        directory=None):
-    if not axis_labels or axis_labels == 'default':
-        xlabel, ylabel = AXIS_LABELS[x_id], AXIS_LABELS[y_id]
-    else:
-        xlabel, ylabel = axis_labels[x_id], axis_labels[x_id]
-
-    if result_identifier:
-        save_name = f'{x_id}_{y_id}_{str(result_identifier)}_acc.png'
-    else:
-        save_name = f'{x_id}_{y_id}_acc.png'
-
-    if az_el_combinations == 'all':
-
-        for combination_key in AZ_EL_COMBINATIONS:
-            az, el = AZ_EL_COMBINATIONS[combination_key]['az'], AZ_EL_COMBINATIONS[combination_key]['el']
-
-            wire_plot(x_values, y_values, accuracy_means,
-                      xlabel=xlabel, ylabel=ylabel,
-                      az=az, el=el,
-                      save_name=save_name,
-                      directory=directory)
-
-    else:
-        if az_el_combinations == 'default':
-            az, el = AZ_EL_DEFAULTS['az'], AZ_EL_DEFAULTS['el']
-        elif az_el_combinations in AZ_EL_COMBINATIONS:
-            az, el = AZ_EL_COMBINATIONS[az_el_combinations]['az'], AZ_EL_COMBINATIONS[az_el_combinations]['el']
-        else:
-            az, el = az_el_combinations[0], az_el_combinations[1]
-
-        wire_plot(x_values, y_values, accuracy_means,
-                  xlabel=xlabel, ylabel=ylabel,
-                  az=az, el=el,
-                  save_name=save_name,
-                  directory=directory)
+# def plot_2d(x_values, y_values, accuracy_means, x_id, y_id,
+#             result_identifier=None,
+#             axis_labels=None,
+#             az_el_combinations='all',
+#             directory=None):
+#     if not axis_labels or axis_labels == 'default':
+#         xlabel, ylabel = AXIS_LABELS[x_id], AXIS_LABELS[y_id]
+#     else:
+#         xlabel, ylabel = axis_labels[x_id], axis_labels[x_id]
+#
+#     if result_identifier:
+#         save_name = f'{x_id}_{y_id}_{str(result_identifier)}_acc.png'
+#     else:
+#         save_name = f'{x_id}_{y_id}_acc.png'
+#
+#     if az_el_combinations == 'all':
+#
+#         for combination_key in AZ_EL_COMBINATIONS:
+#             az, el = AZ_EL_COMBINATIONS[combination_key]['az'], AZ_EL_COMBINATIONS[combination_key]['el']
+#
+#             wire_plot(x_values, y_values, accuracy_means,
+#                       xlabel=xlabel, ylabel=ylabel,
+#                       az=az, el=el,
+#                       save_name=save_name,
+#                       directory=directory)
+#
+#     else:
+#         if az_el_combinations == 'default':
+#             az, el = AZ_EL_DEFAULTS['az'], AZ_EL_DEFAULTS['el']
+#         elif az_el_combinations in AZ_EL_COMBINATIONS:
+#             az, el = AZ_EL_COMBINATIONS[az_el_combinations]['az'], AZ_EL_COMBINATIONS[az_el_combinations]['el']
+#         else:
+#             az, el = az_el_combinations[0], az_el_combinations[1]
+#
+#         wire_plot(x_values, y_values, accuracy_means,
+#                   xlabel=xlabel, ylabel=ylabel,
+#                   az=az, el=el,
+#                   save_name=save_name,
+#                   directory=directory)
 
 
 def plot_2d_linear_fit(distortion_array, accuracy_means, fit, x_id, y_id,
@@ -260,9 +182,9 @@ def plot_2d_linear_fit(distortion_array, accuracy_means, fit, x_id, y_id,
         'actual': accuracy_means
     }
 
-    plot_2d_performance(x_values, y_values, z_plot, x_id, y_id,
-                        axis_labels=axis_labels, az_el_combinations=az_el_combinations, directory=directory,
-                        result_identifier=result_identifier)
+    plot_2d(x_values, y_values, z_plot, x_id, y_id,
+            axis_labels=axis_labels, az_el_combinations=az_el_combinations, directory=directory,
+            result_identifier=result_identifier)
 
 
 def analyze_perf_1d(model_performance,
@@ -293,11 +215,11 @@ def analyze_perf_2d(model_performance,
                                                                                                add_bias=add_bias,
                                                                                                log_file=log_file)
 
-        plot_2d_performance(x_values, y_values, accuracy_means, x_id, y_id,
-                            result_identifier=identifier,
-                            axis_labels='default',
-                            az_el_combinations='all',
-                            directory=directory)
+        plot_2d(x_values, y_values, accuracy_means, x_id, y_id,
+                result_identifier=identifier,
+                axis_labels='default',
+                az_el_combinations='all',
+                directory=directory)
 
         plot_2d_linear_fit(distortion_arr, accuracy_means, fit, x_id, y_id,
                            result_identifier=f'{identifier}_fit',
@@ -328,11 +250,11 @@ def plot_perf_2d_multi_result(model_performances,
                                                                                                    log_file=log_file)
             mean_performances[performance_key] = accuracy_means
 
-        plot_2d_performance(x_values, y_values, mean_performances, x_id, y_id,
-                            result_identifier=identifier,
-                            axis_labels='default',
-                            az_el_combinations='all',
-                            directory=directory)
+        plot_2d(x_values, y_values, mean_performances, x_id, y_id,
+                result_identifier=identifier,
+                axis_labels='default',
+                az_el_combinations='all',
+                directory=directory)
 
 
 def plot_perf_1d_multi_result(model_performances,
@@ -462,22 +384,6 @@ def get_model_distortion_performance_result(result_id=None, identifier=None, con
         model_distortion_performance = ModelDistortionPerformanceResult(run, result_id, identifier=identifier)
 
     return model_distortion_performance, output_dir
-
-
-# def get_model_distortion_performance_result_compare(result_id=None, identifier=None, config=None):
-#
-#     if not result_id and not identifier:
-#         result_id = config['result_id']
-#         identifier = config['identifier']
-#
-#     with wandb.init(project=PROJECT_ID, job_type='analyze_test_result') as run:
-#         output_dir = Path(ROOT_DIR, REL_PATHS['analysis'], result_id)
-#         if not output_dir.is_dir():
-#             Path.mkdir(output_dir)
-#
-#         model_distortion_performance = ModelDistortionPerformanceResultV2(run, result_id, identifier=identifier)
-#
-#     return model_distortion_performance, output_dir
 
 
 if __name__ == '__main__':

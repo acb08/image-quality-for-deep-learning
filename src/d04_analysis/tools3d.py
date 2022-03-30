@@ -222,52 +222,6 @@ def conditional_multi_plot_3d(blur_sigmas, noise_means, z_dict,
     return save_name
 
 
-def wire_plot(x, y, z,
-              xlabel='x',
-              ylabel='y',
-              zlabel='default',
-              title=None,
-              directory=None,
-              save_name=None,
-              az=AZ_EL_DEFAULTS['az'],
-              el=AZ_EL_DEFAULTS['el'],
-              alpha=0.5,
-              indexing='ij'):
-
-    xx, yy = np.meshgrid(x, y, indexing=indexing)
-    fig = plt.figure()
-    ax = plt.axes(projection='3d', azim=az, elev=el)
-
-    if isinstance(z, dict):
-        color_list = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
-        for i, key in enumerate(z):
-            if isinstance(alpha, list):
-                alpha_plot = alpha[i]
-            else:
-                alpha_plot = alpha
-            ax.plot_wireframe(xx, yy, z[key], label=str(key), color=color_list[i], alpha=alpha_plot)
-        ax.legend()
-    else:
-        ax.plot_wireframe(xx, yy, z, alpha=alpha)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-    if zlabel:
-        if zlabel == 'default':
-            zlabel = AXIS_LABELS['z']
-        ax.set_zlabel(zlabel)
-    if title:
-        ax.set_title(title)
-    if save_name:
-        if az != AZ_EL_DEFAULTS['az'] or el != AZ_EL_DEFAULTS['el']:
-            seed = save_name.split('.')[0]
-            az_int = int(az)
-            el_int = int(el)
-            save_name = f"{seed}_az{az_int}_el{el_int}.png"
-    if directory and save_name:
-        plt.savefig(Path(directory, save_name))
-    fig.show()
-
-
 def conditional_plot_3d(blur_sigmas, noise_means, z,
                         xlabel=r'$\sigma$ Gaussian blur',
                         ylabel=r'$\lambda$ Poisson noise',
