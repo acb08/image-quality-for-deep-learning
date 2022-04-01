@@ -30,11 +30,15 @@ def get_entropy_artifact_name(dataset_id, effective):
     :param effective: bool, specifies whether entropy artifact captures effective entropy
     :return: str, standard entropy artifact name
     """
-    if not effective:
-        entropy_artifact_name = f"{dataset_id}_entropy"
-    else:
-        entropy_artifact_name = f"{dataset_id}_entropy_effective"
+
+    entropy_artifact_name = f"{dataset_id}_entropy"
+    if effective:
+        entropy_artifact_name = get_effective_entropy_equiv(entropy_artifact_name)
     return entropy_artifact_name
+
+
+def get_effective_entropy_equiv(entropy_artifact_name):
+    return f'{entropy_artifact_name}_effective'
 
 
 def get_vec_entropy_vals(vector_in, entropy_functions):
@@ -122,8 +126,6 @@ def measure_dataset_entropy_properties(config):
     dataset_id = config['starting_dataset_id']
     dataset_artifact_alias = 'latest'
     num_analysis_stages = config['num_analysis_stages']
-    # parent_artifact_filename = config['parent_artifact_filename']
-    # if parent_artifact_filename == 'standard':
     parent_artifact_filename = STANDARD_DATASET_FILENAME
     dataset_split_key = config['dataset_split_key']
 
@@ -268,7 +270,7 @@ def get_effective_entropy_values(measured_dataset_directories, ignore_directory_
             delta_entropy = noise_entropy - blur_entropy
             effective_entropy = blur_entropy - delta_entropy
 
-            effective_entropy_function_tag = f'{entropy_function_tag}_effective'
+            effective_entropy_function_tag = get_effective_entropy_equiv(entropy_function_tag)
 
             if shard_id not in effective_entropy_properties.keys():
                 effective_entropy_properties[shard_id] = {

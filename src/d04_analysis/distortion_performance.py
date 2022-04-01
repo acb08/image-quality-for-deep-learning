@@ -87,31 +87,6 @@ def load_dataset_and_result(run, result_id,
     return dataset, result
 
 
-# def plot_1d_linear_fit(x_data, y_data, fit_coefficients, distortion_id,
-#                        result_identifier=None, ylabel='accuracy', title=None, directory=None):
-#     xlabel = AXIS_LABELS[distortion_id]
-#     x_plot = np.linspace(np.min(x_data), np.max(x_data), num=50)
-#     y_plot = fit_coefficients[0] * x_plot + fit_coefficients[1]
-#
-#     ax = plt.figure().gca()
-#
-#     ax.plot(x_plot, y_plot, linestyle='dashed', lw=0.8, color='k')
-#     ax.scatter(x_data, y_data)
-#     ax.set_xlabel(xlabel)
-#     if 'noise' in xlabel or np.max(x_data) > 5:
-#         ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-#     ax.set_ylabel(ylabel)
-#     if title:
-#         ax.set_title(title)
-#     if directory:
-#         if result_identifier:
-#             save_name = f'{distortion_id}_{result_identifier}_{ylabel}.png'
-#         else:
-#             save_name = f'{distortion_id}_{ylabel}.png'
-#         plt.savefig(Path(directory, save_name))
-#     plt.show()
-
-
 def get_distortion_perf_1d(model_performance, distortion_id, log_file=None, add_bias=True):
     result_name = str(model_performance)
     distortion_vals, mean_accuracies = model_performance.conditional_accuracy(distortion_id)
@@ -128,47 +103,6 @@ def get_distortion_perf_1d(model_performance, distortion_id, log_file=None, add_
     print(f'{result_name} {distortion_id} linear fit correlation: ', correlation, '\n', file=log_file)
 
     return distortion_vals, mean_accuracies, fit_coefficients, correlation
-
-
-# def plot_2d(x_values, y_values, accuracy_means, x_id, y_id,
-#             result_identifier=None,
-#             axis_labels=None,
-#             az_el_combinations='all',
-#             directory=None):
-#     if not axis_labels or axis_labels == 'default':
-#         xlabel, ylabel = AXIS_LABELS[x_id], AXIS_LABELS[y_id]
-#     else:
-#         xlabel, ylabel = axis_labels[x_id], axis_labels[x_id]
-#
-#     if result_identifier:
-#         save_name = f'{x_id}_{y_id}_{str(result_identifier)}_acc.png'
-#     else:
-#         save_name = f'{x_id}_{y_id}_acc.png'
-#
-#     if az_el_combinations == 'all':
-#
-#         for combination_key in AZ_EL_COMBINATIONS:
-#             az, el = AZ_EL_COMBINATIONS[combination_key]['az'], AZ_EL_COMBINATIONS[combination_key]['el']
-#
-#             wire_plot(x_values, y_values, accuracy_means,
-#                       xlabel=xlabel, ylabel=ylabel,
-#                       az=az, el=el,
-#                       save_name=save_name,
-#                       directory=directory)
-#
-#     else:
-#         if az_el_combinations == 'default':
-#             az, el = AZ_EL_DEFAULTS['az'], AZ_EL_DEFAULTS['el']
-#         elif az_el_combinations in AZ_EL_COMBINATIONS:
-#             az, el = AZ_EL_COMBINATIONS[az_el_combinations]['az'], AZ_EL_COMBINATIONS[az_el_combinations]['el']
-#         else:
-#             az, el = az_el_combinations[0], az_el_combinations[1]
-#
-#         wire_plot(x_values, y_values, accuracy_means,
-#                   xlabel=xlabel, ylabel=ylabel,
-#                   az=az, el=el,
-#                   save_name=save_name,
-#                   directory=directory)
 
 
 def plot_2d_linear_fit(distortion_array, accuracy_means, fit, x_id, y_id,

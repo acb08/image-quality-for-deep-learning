@@ -56,6 +56,14 @@ def get_sub_dirs(parent_dir):
     return sub_dirs
 
 
+def dict_val_lists_to_arrays(data_dict, dtype=np.float32):
+
+    for key, val in data_dict.items():
+        data_dict[key] = np.asarray(val, dtype=dtype)
+
+    return data_dict
+
+
 def key_num_from_list(items):
 
     """

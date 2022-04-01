@@ -32,6 +32,7 @@ REL_PATHS = {
     'model': r'models',
     'test_result': r'test_results',
     'analysis': r'analysis',
+    'entropy': r'entropy',
     'pan': r'0-pan',
     'res': r'1-res',
     'blur': r'2-blur',
