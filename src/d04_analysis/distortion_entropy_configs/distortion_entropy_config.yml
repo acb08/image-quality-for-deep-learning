@@ -1,5 +1,8 @@
 ---
 
-dataset_id: 0038_tst_rs1_bcs3_nfs3_noise
+dataset_id: 0040_tst_rs1_bcs3_nfs3_noise
 identifier: None
 convert_to_std: True
+perform_2d_fit: False
+perform_3d_fit: False
+

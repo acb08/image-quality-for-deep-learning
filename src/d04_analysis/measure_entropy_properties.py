@@ -103,7 +103,7 @@ def get_entropy_properties(dataset, dataset_path, entropy_functions, dataset_spl
 
     entropy_properties = {}
 
-    for name_label_filename in image_and_label_filenames:
+    for i, name_label_filename in enumerate(image_and_label_filenames):
 
         image_vector, __ = load_data_vectors(name_label_filename, parent_image_file_dir)
         entropy_values = get_vec_entropy_vals(image_vector, entropy_functions)
@@ -112,6 +112,9 @@ def get_entropy_properties(dataset, dataset_path, entropy_functions, dataset_spl
             entropy_properties[name_label_filename].update(entropy_values)
         else:
             entropy_properties[name_label_filename] = entropy_values
+
+        if i % 10 == 0 and i > 0:
+            print(f'Measured {name_label_filename}, {i + 1} / {len(image_and_label_filenames)} image vector files')
 
     return entropy_properties
 
@@ -156,6 +159,7 @@ def measure_dataset_entropy_properties(config):
 
             shard_entropy_properties = get_entropy_properties(dataset, dataset_abs_dir, entropy_functions,
                                                               dataset_split_key)
+            print(f'Completed {dataset_id} entropy measurement, function tags: {entropy_function_tags}')
 
             dataset_distortion_stage_abs_dir = Path(dataset_abs_dir, REL_PATHS[distortion_type_flag])
             measured_dataset_directories.append(str(dataset_distortion_stage_abs_dir))
@@ -182,6 +186,7 @@ def measure_dataset_entropy_properties(config):
 
             new_artifact.add_file(entropy_properties_path)
             run.log_artifact(new_artifact)
+            new_artifact.wait()
 
             current_iteration_distortion_type = DISTORTION_TYPES[-(i + 1)]  # move from end of list child to parent
             dataset_id = dataset['parent_dataset_ids'][current_iteration_distortion_type]

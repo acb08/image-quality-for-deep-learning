@@ -1,6 +1,6 @@
 ---
 
-starting_dataset_id: 0038_tst_rs1_bcs3_nfs3_noise
+starting_dataset_id: 0040_tst_rs1_bcs3_nfs3_noise
 #dataset_artifact_alias: latest
 #parent_artifact_filename: standard
 num_analysis_stages: 2  # how many image chain stages to analyze

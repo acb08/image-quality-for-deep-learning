@@ -1,14 +1,14 @@
 from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, STANDARD_TEST_RESULT_FILENAME, PROJECT_ID, REL_PATHS, \
     ROOT_DIR
 from src.d00_utils.functions import load_wandb_data_artifact, get_config
-from src.d04_analysis.analysis_functions import conditional_mean_accuracy, extract_embedded_vectors
-from src.d04_analysis.fit import fit_hyperplane, eval_linear_fit, linear_predict
-from src.d04_analysis.tools3d import conditional_extract_2d, build_3d_field, plot_isosurf
-from src.d04_analysis.plot import AZ_EL_DEFAULTS, AXIS_LABELS, AZ_EL_COMBINATIONS, COLORS, SCATTER_PLOT_MARKERS, \
-    plot_1d_linear_fit, wire_plot, plot_2d
+from src.d04_analysis.analysis_functions import conditional_mean_accuracy, extract_embedded_vectors, \
+    conditional_extract_2d
+from src.d04_analysis.fit import fit_hyperplane, eval_linear_fit
+from src.d04_analysis.tools3d import build_3d_field, plot_isosurf
+from src.d04_analysis.plot import AXIS_LABELS, COLORS, SCATTER_PLOT_MARKERS, \
+    plot_1d_linear_fit, plot_2d, plot_2d_linear_fit
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.ticker import MaxNLocator
 from pathlib import Path
 import wandb
 import argparse
@@ -103,22 +103,6 @@ def get_distortion_perf_1d(model_performance, distortion_id, log_file=None, add_
     print(f'{result_name} {distortion_id} linear fit correlation: ', correlation, '\n', file=log_file)
 
     return distortion_vals, mean_accuracies, fit_coefficients, correlation
-
-
-def plot_2d_linear_fit(distortion_array, accuracy_means, fit, x_id, y_id,
-                       result_identifier=None, axis_labels='default', az_el_combinations='all', directory=None):
-    x, y = distortion_array[:, 0], distortion_array[:, 1]
-    predict_mean_accuracy_vector = linear_predict(fit, distortion_array)
-    x_values, y_values, predicted_mean_accuracy, __ = conditional_extract_2d(x, y, predict_mean_accuracy_vector)
-
-    z_plot = {
-        'fit': predicted_mean_accuracy,
-        'actual': accuracy_means
-    }
-
-    plot_2d(x_values, y_values, z_plot, x_id, y_id,
-            axis_labels=axis_labels, az_el_combinations=az_el_combinations, directory=directory,
-            result_identifier=result_identifier)
 
 
 def analyze_perf_1d(model_performance,
@@ -220,7 +204,8 @@ def plot_1d_performance(x, performance_dict, distortion_id,
                         xlabel='default',
                         ylabel='default',
                         directory=None,
-                        legend_loc='best'):
+                        legend_loc='best',
+                        legend=True):
 
     if xlabel == 'default':
         xlabel = AXIS_LABELS[distortion_id]
@@ -243,7 +228,8 @@ def plot_1d_performance(x, performance_dict, distortion_id,
         plt.scatter(x, performance_dict[key], label=key, c=COLORS[i], marker=SCATTER_PLOT_MARKERS[i])
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
-    plt.legend(loc=legend_loc)
+    if legend:
+        plt.legend(loc=legend_loc)
     if directory:
         plt.savefig(Path(directory, save_name))
     plt.show()
@@ -280,7 +266,7 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
                                                                                              data_dump=True)
 
     fit_coefficients = fit_hyperplane(distortion_array, perf_array, add_bias=add_bias)
-    correlation = eval_linear_fit(fit_coefficients, distortion_array, perf_array, add_bias=True)
+    correlation = eval_linear_fit(fit_coefficients, distortion_array, perf_array, add_bias=add_bias)
 
     print(f'{result_name} {x_id} {y_id} {z_id} linear fit: ', fit_coefficients, file=log_file)
     print(f'{result_name} {x_id} {y_id} {z_id} linear fit correlation: ', correlation, '\n', file=log_file)

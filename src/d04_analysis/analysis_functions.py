@@ -338,5 +338,52 @@ def accuracy_v_entropy(image_entropies, labels, predicts,
 #     return comparison[0, :], np.sum(comparison, axis=0)
 
 
+def conditional_extract_2d(x, y, z):
+    """
+    x: array of length N containing j unique values
+    y: array of length N containing k unique values
+    z: array of length N, with values that will be sorted into a 2D j-by-k
+    array, with indices (alpha, beta), where 0 <= alpha <= j-1, 0 <= beta <= k-1,
+    where each (alpha, beta) represents a unique combination
+    of the unique values of x and y. In other words, lets imagine that z is a
+    2d function of two variables sigma and lambda, and that we have N samples
+    of z, with each sample corresponding to a pair values sigma and lambda.
+    This function extracts the relevant values of z for each unique
+    (sigma, lambda) pair.
 
+    returns:
 
+        x_values: numpy array, where x_values[alpha] represents the alpha-th unique
+        value of x
+        y_values: numpy array, where y_values[beta] represents the beta-th unique
+        value of y
+        z_means: j x k array, where z_means[alpha, beta] is the mean of z
+        where x == x_values[alpha] and y == y_values[beta]
+        extracts: dictionary, where keys are tuples (alpha, beta) and values are
+        1D numpy arrays of z values where x == alpha and y == beta
+
+    """
+
+    x_values = np.unique(x)
+    y_values = np.unique(y)
+    z_means = np.zeros((len(x_values), len(y_values)))
+
+    param_array = []  # for use in curve fits
+    performance_array = []  # for use in svd
+
+    for x_counter, x_val in enumerate(x_values):
+        x_inds = np.where(x == x_val)
+        for y_counter, y_val in enumerate(y_values):
+            y_inds = np.where(y == y_val)
+            z_inds = np.intersect1d(x_inds, y_inds)
+            z_means[x_counter, y_counter] = np.mean(z[z_inds])
+            param_array.append([x_val, y_val])
+            performance_array.append(z_means[x_counter, y_counter])
+
+    # full extract arrays written out this way for use in svd.
+    vector_data_extract = {
+        'param_array': np.asarray(param_array),
+        'performance_array': np.atleast_2d(performance_array).T
+    }
+
+    return x_values, y_values, z_means, vector_data_extract

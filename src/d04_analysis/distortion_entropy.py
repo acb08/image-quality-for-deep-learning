@@ -4,10 +4,11 @@ from src.d00_utils.definitions import STANDARD_EFFECTIVE_ENTROPY_PROPERTIES_FILE
 from src.d04_analysis.distortion_performance import DistortedDataset
 from src.d00_utils.functions import load_wandb_data_artifact, get_config, dict_val_lists_to_arrays
 from src.d04_analysis.measure_entropy_properties import get_entropy_artifact_name, get_effective_entropy_equiv
-from src.d04_analysis.analysis_functions import extract_embedded_vectors, conditional_mean_entropy
-from src.d04_analysis.tools3d import conditional_extract_2d
+from src.d04_analysis.analysis_functions import extract_embedded_vectors, conditional_mean_entropy, \
+    conditional_extract_2d
 from src.d04_analysis.fit import fit_hyperplane, eval_linear_fit
-from src.d04_analysis.plot import plot_1d_linear_fit, AXIS_LABELS
+from src.d04_analysis.plot import plot_1d_linear_fit, AXIS_LABELS, plot_2d, plot_2d_linear_fit
+from src.d04_analysis.tools3d import build_3d_field
 import numpy as np
 import argparse
 from pathlib import Path
@@ -94,7 +95,7 @@ def analyze_entropy_1d(dist_entropy_props,
                 get_distortion_entropy_relationship_1d(dist_entropy_props, effective_entropy_id, distortion_id,
                                                        log_file=log_file, add_bias=True))
             plot_1d_linear_fit(distortion_vals, mean_entropy_effective_entropy_vals, fit, distortion_id,
-                               result_identifier=effective_entropy_id, ylabel=AXIS_LABELS['entropy'],
+                               result_identifier=effective_entropy_id, ylabel=AXIS_LABELS['effective_entropy'],
                                directory=directory)
 
 
@@ -124,7 +125,8 @@ def get_distortion_entropy_relationship_1d(dist_entropy_props, effective_entropy
 def analyze_entropy_2d(dist_entropy_props,
                        distortion_combinations=((0, 1), (1, 2), (0, 2)),
                        directory=None,
-                       log_file=None):
+                       log_file=None,
+                       perform_fit=False):
 
     distortion_ids = dist_entropy_props.distortion_ids
 
@@ -133,28 +135,83 @@ def analyze_entropy_2d(dist_entropy_props,
             x_id, y_id = distortion_ids[idx_0], distortion_ids[idx_1]
 
             x_vals, y_vals, entropy_means, fit, corr, distortion_arr = get_distortion_entropy_relationship_2d(
-                dist_entropy_props, effective_entropy_id, x_id, y_id, log_file=log_file, add_bias=True)
+                dist_entropy_props, effective_entropy_id, x_id, y_id, log_file=log_file, add_bias=True,
+                perform_fit=perform_fit)
 
-            pass
-
-    pass
+            plot_2d(x_vals, y_vals, entropy_means, x_id, y_id,
+                    result_identifier=effective_entropy_id,
+                    axis_labels='effective_entropy_default',
+                    directory=directory)
+            if perform_fit:
+                plot_2d_linear_fit(distortion_arr, entropy_means, fit, x_id, y_id,
+                                   result_identifier=effective_entropy_id, axis_labels='effective_entropy_default',
+                                   directory=directory)
 
 
 def get_distortion_entropy_relationship_2d(dist_entropy_props, effective_entropy_id, x_id, y_id, log_file=None,
-                                           add_bias=True):
+                                           add_bias=True, perform_fit=False):
 
-    entropy = dist_entropy_props[effective_entropy_id]
+    entropy = dist_entropy_props.effective_entropy_props[effective_entropy_id]
     x = dist_entropy_props.distortions[x_id]
     y = dist_entropy_props.distortions[y_id]
 
     x_values, y_values, entropy_means, vector_data_extract = conditional_extract_2d(x, y, entropy)
 
-    return 1, 2, 3, 4, 5, 6
+    fit_coefficients = None
+    correlation = None
+    distortion_param_array = None
+
+    if perform_fit:
+        distortion_param_array = vector_data_extract['param_array']
+        entropy_array = vector_data_extract['performance_array']
+        fit_coefficients = fit_hyperplane(distortion_param_array, entropy_array, add_bias=add_bias)
+        correlation = eval_linear_fit(fit_coefficients, distortion_param_array, entropy_array, add_bias=add_bias)
+
+        print(f'{effective_entropy_id} {x_id} {y_id} linear fit: ', fit_coefficients, file=log_file)
+        print(f'{effective_entropy_id} {x_id} {y_id} linear fit correlation: ', correlation, '\n', file=log_file)
+
+    return x_values, y_values, entropy_means, fit_coefficients, correlation, distortion_param_array
 
 
-def analyze_entropy_3d():
+def analyze_entropy_3d(dist_entropy_props, log_file=None):
 
-    pass
+    entropy_fields_3d = {}
+
+    x_id, y_id, z_id = dist_entropy_props.distortion_ids
+    for effective_entropy_id in dist_entropy_props.effective_entropy_ids:
+        x_vals, y_vals, z_vals, entropy_3d = get_distortion_entropy_relationship_3d(dist_entropy_props,
+                                                                                    effective_entropy_id,
+                                                                                    x_id=x_id, y_id=y_id, z_id=z_id,
+                                                                                    log_file=log_file, add_bias=True)
+        entropy_fields_3d[effective_entropy_id] = {
+            x_id: x_vals,
+            y_id: y_vals,
+            z_id: z_vals,
+            'entropy_3d': entropy_3d
+        }
+
+    return entropy_fields_3d
+
+
+def get_distortion_entropy_relationship_3d(dist_entropy_props, effective_entropy_id, x_id='res', y_id='blur',
+                                           z_id='noise', log_file=None, add_bias=True, perform_fit=False):
+
+    entropy = dist_entropy_props.effective_entropy_props[effective_entropy_id]
+    x = dist_entropy_props.distortions[x_id]
+    y = dist_entropy_props.distortions[y_id]
+    z = dist_entropy_props.distortions[z_id]
+
+    x_vals, y_vals, z_vals, entropy_3d, distortion_array, entropy_array, __ = build_3d_field(x, y, z, entropy,
+                                                                                             data_dump=True)
+
+    if perform_fit:
+        fit_coefficients = fit_hyperplane(distortion_array, entropy_array, add_bias=add_bias)
+        correlation = eval_linear_fit(fit_coefficients, distortion_array, entropy_array, add_bias=add_bias)
+
+        print(f'{effective_entropy_id} {x_id} {y_id} {z_id} linear fit: ', fit_coefficients, file=log_file)
+        print(f'{effective_entropy_id} {x_id} {y_id} {z_id} linear fit correlation: ', correlation, '\n', file=log_file)
+
+    return x_vals, y_vals, z_vals, entropy_3d
 
 
 if __name__ == '__main__':
@@ -166,8 +223,13 @@ if __name__ == '__main__':
                         help="configuration file directory")
     args_passed = parser.parse_args()
     run_config = get_config(args_passed)
+    perform_2d_fit = run_config['perform_2d_fit']
+    perform_3d_fit = run_config['perform_3d_fit']
 
     props, result_dir = get_distortion_entropy_properties(config=run_config)
 
-    with open(Path(result_dir, 'result_log.txt'), 'w') as output_fle:
-        analyze_entropy_1d(props, directory=result_dir, log_file=output_fle)
+    with open(Path(result_dir, 'result_log.txt'), 'w') as output_file:
+        analyze_entropy_1d(props, directory=result_dir, log_file=output_file)
+        analyze_entropy_2d(props, perform_fit=perform_2d_fit, directory=result_dir, log_file=output_file)
+        analyze_entropy_3d(props, log_file=output_file)
+

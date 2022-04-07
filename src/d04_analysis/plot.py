@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from pathlib import Path
+from src.d04_analysis.fit import linear_predict
+from src.d04_analysis.analysis_functions import conditional_extract_2d
 
 AZ_EL_DEFAULTS = {
     'az': -60,
@@ -84,12 +86,15 @@ def plot_1d_linear_fit(x_data, y_data, fit_coefficients, distortion_id,
 
 
 def plot_2d(x_values, y_values, accuracy_means, x_id, y_id,
+            zlabel=None,
             result_identifier=None,
             axis_labels=None,
             az_el_combinations='all',
             directory=None):
     if not axis_labels or axis_labels == 'default':
-        xlabel, ylabel = AXIS_LABELS[x_id], AXIS_LABELS[y_id]
+        xlabel, ylabel, zlabel = AXIS_LABELS[x_id], AXIS_LABELS[y_id], AXIS_LABELS['z']
+    elif axis_labels == 'effective_entropy_default':
+        xlabel, ylabel, zlabel = AXIS_LABELS[x_id], AXIS_LABELS[y_id], AXIS_LABELS['effective_entropy']
     else:
         xlabel, ylabel = axis_labels[x_id], axis_labels[x_id]
 
@@ -104,7 +109,7 @@ def plot_2d(x_values, y_values, accuracy_means, x_id, y_id,
             az, el = AZ_EL_COMBINATIONS[combination_key]['az'], AZ_EL_COMBINATIONS[combination_key]['el']
 
             wire_plot(x_values, y_values, accuracy_means,
-                      xlabel=xlabel, ylabel=ylabel,
+                      xlabel=xlabel, ylabel=ylabel, zlabel=zlabel,
                       az=az, el=el,
                       save_name=save_name,
                       directory=directory)
@@ -168,3 +173,19 @@ def wire_plot(x, y, z,
     if directory and save_name:
         plt.savefig(Path(directory, save_name))
     fig.show()
+
+
+def plot_2d_linear_fit(distortion_array, accuracy_means, fit, x_id, y_id,
+                       result_identifier=None, axis_labels='default', az_el_combinations='all', directory=None):
+    x, y = distortion_array[:, 0], distortion_array[:, 1]
+    predict_mean_accuracy_vector = linear_predict(fit, distortion_array)
+    x_values, y_values, predicted_mean_accuracy, __ = conditional_extract_2d(x, y, predict_mean_accuracy_vector)
+
+    z_plot = {
+        'fit': predicted_mean_accuracy,
+        'actual': accuracy_means
+    }
+
+    plot_2d(x_values, y_values, z_plot, x_id, y_id,
+            axis_labels=axis_labels, az_el_combinations=az_el_combinations, directory=directory,
+            result_identifier=result_identifier)
