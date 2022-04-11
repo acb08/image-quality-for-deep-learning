@@ -56,6 +56,33 @@ class AddVariablePoissonNoise(object):
         return noisy_tensor
 
 
+class AddVariableChannelReplicatePoissonNoise(object):
+    """
+    Selects Poisson noise standard deviation on sigma_poisson_range with uniform probability
+    inclusive of the endpoints.
+
+    generates zero-centered poisson noise with mean selected as described above, divides the noise by 255,
+    adds to input tensor and clamps the output to fall on [0, 1]
+
+    Copies the noise across input image channels so that a panchromatic image where the RGB channels are identical
+    has the same noise added to each channel.
+
+    """
+
+    def __init__(self, sigma_poisson_range, clamp=True):
+        self.low = sigma_poisson_range[0] ** 2
+        self.high = sigma_poisson_range[1] ** 2 + 1  # add one because torch.randint excludes right endpoint
+        self.clamp = clamp
+
+    def __call__(self, tensor):
+        lambda_poisson = torch.randint(self.low, self.high, (1,))
+        noise = (torch.poisson(torch.ones(tensor.shape) * lambda_poisson).float() - lambda_poisson) / 255
+        noisy_tensor = tensor + noise
+        if self.clamp:
+            noisy_tensor = torch.clamp(noisy_tensor, 0, 1)
+        return noisy_tensor
+
+
 class VariableImageResize(object):
     """
     Builds a transform bank to re-size images and provides a method for randomly selecting the size of the

@@ -176,8 +176,8 @@ def get_distortion_entropy_relationship_2d(dist_entropy_props, effective_entropy
 def analyze_entropy_3d(dist_entropy_props, log_file=None):
 
     entropy_fields_3d = {}
-
     x_id, y_id, z_id = dist_entropy_props.distortion_ids
+
     for effective_entropy_id in dist_entropy_props.effective_entropy_ids:
         x_vals, y_vals, z_vals, entropy_3d = get_distortion_entropy_relationship_3d(dist_entropy_props,
                                                                                     effective_entropy_id,

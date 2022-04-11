@@ -31,6 +31,8 @@ def get_entropy_artifact_name(dataset_id, effective):
     :return: str, standard entropy artifact name
     """
 
+    if ':' in dataset_id:
+        dataset_id = dataset_id.split(':')[0]
     entropy_artifact_name = f"{dataset_id}_entropy"
     if effective:
         entropy_artifact_name = get_effective_entropy_equiv(entropy_artifact_name)

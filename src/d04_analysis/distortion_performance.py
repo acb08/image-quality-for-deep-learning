@@ -44,7 +44,7 @@ class ModelDistortionPerformanceResult(DistortedDataset):
 
     def __init__(self, run, result_id, identifier=None, convert_to_std=True):
         self.convert_to_std = convert_to_std
-        self.dataset, self.result = load_dataset_and_result(run, result_id)
+        self.dataset, self.result, self.dataset_id = load_dataset_and_result(run, result_id)
         DistortedDataset.__init__(self, self.dataset, convert_to_std=self.convert_to_std)
         self.labels, self.predicts = extract_embedded_vectors(self.result,
                                                               intermediate_keys=['shard_performances'],
@@ -84,7 +84,7 @@ def load_dataset_and_result(run, result_id,
     dataset_id = f'{dataset_id}:{dataset_artifact_alias}'
     dataset_dir, dataset = load_wandb_data_artifact(run, dataset_id, dataset_filename)
 
-    return dataset, result
+    return dataset, result, dataset_id
 
 
 def get_distortion_perf_1d(model_performance, distortion_id, log_file=None, add_bias=True):
