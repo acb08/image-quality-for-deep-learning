@@ -162,7 +162,7 @@ def n_scan(img):
     img = np.asarray(img)
 
     shape = img.shape
-    sigma_poisson = np.random.randint(0, 21)  # add 1 to target distribution, high is "one above the highest integer to
+    sigma_poisson = np.random.randint(0, 26)  # add 1 to target distribution, high is "one above the highest integer to
     # be drawn from the target distribution
     lambda_poisson = sigma_poisson ** 2
     noise = RNG.poisson(lambda_poisson, size=shape) - lambda_poisson
@@ -172,6 +172,34 @@ def n_scan(img):
     return img_out, 'lambda_poisson', lambda_poisson
 
 
+def b_scan(img):
+
+    kernel_size = 23
+    sigma_range = np.linspace(0.1, 4, num=21, endpoint=True)
+    std = np.random.choice(sigma_range)
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
+
+
+def r_scan():
+    """
+    Initializes and returns a VariableImageResize instance designed to re-size SAT6 images
+    randomly between 25% and 100% of original images size. Intended for use in dataset distortion (as opposed to in
+    a dataloader)
+    """
+
+    min_size = 7
+    max_size = 28
+    sizes = list(np.arange(min_size, max_size + 1))
+    transform = VariableImageResize(sizes)
+
+    return transform
+
+
 tag_to_image_distortion = {
+    # _scan transforms intended for finding the point along each distortion axis at which performance of a
+    # pre-trained model drops to chance
+    'r_scan': r_scan,
+    'b_scan': b_scan,
     'n_scan': n_scan,
 }

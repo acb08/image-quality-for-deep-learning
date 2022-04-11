@@ -33,6 +33,8 @@ def check_for_original_dataset():
 
     if not all_datasets_found:
         print('Original dataset not found in project structure')
+    else:
+        print('Original dataset found')
 
 
 if __name__ == '__main__':
