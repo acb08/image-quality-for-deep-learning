@@ -85,14 +85,3 @@ if __name__ == '__main__':
     _description = 'test of loading and logging resnet18 pre-trained with sat6 modifications'
 
     load_log_original_model(_model_id, _new_model_id, _new_model_filename, _description)
-
-    # run = wandb.init()
-    # artifact = run.use_artifact('austinbergstrom/places_dry_run/resnet18_pretrained_copy:v0', type='model')
-    # artifact_rel_dir = artifact.download()
-    # artifact_dir = Path(Path.cwd(), artifact_rel_dir)
-    #
-    # helper_data = read_json_artifact(artifact_dir, 'helper.json')
-    # model_filename = helper_data['model_file_config']['model_filename']
-    #
-    # model = load_wandb_model(artifact_dir)
-    #
