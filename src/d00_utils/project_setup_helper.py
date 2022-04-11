@@ -29,7 +29,7 @@ def check_for_original_dataset():
 
         if not full_path.is_file():
             all_datasets_found = False
-            print(f'{str(full_path)} not found')
+            print(str(full_path), ' not found')
 
     if not all_datasets_found:
         print('Original dataset not found in project structure')
