@@ -12,7 +12,7 @@ to local image files.
 """
 
 ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '../../..'))
-PROJECT_ID = 'sat6'
+PROJECT_ID = 'sat6_v2'
 STANDARD_DATASET_FILENAME = 'dataset.json'
 STANDARD_CHECKPOINT_FILENAME = 'model_cp.pt'
 STANDARD_BEST_LOSS_FILENAME = 'best_loss.pt'
@@ -90,14 +90,5 @@ DATATYPE_MAP = {
     'np.int32': np.int32,
     'np.int64': np.int64,
 }
-
-# removing redundant project metadata
-# maps dataset type to its associated metadata filename located in the metadata dir
-# METADATA_FILENAMES = {
-#     'model': 'models.json',
-#     'train_dataset': 'train_datasets.json',
-#     'test_dataset': 'test_datasets.json',
-#     'test_result': 'test_results.json'
-# }
 
 
