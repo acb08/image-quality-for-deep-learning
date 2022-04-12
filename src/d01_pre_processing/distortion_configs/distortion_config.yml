@@ -1,6 +1,6 @@
 ---
 
-description: blur scan test dataset to find the resolution at which pre-trained performance drops to chance
+description: noise scan test dataset to find the noise level at which pre-trained performance drops to chance
 
 parent_dataset_id: sat6_full
 parent_artifact_alias: latest
@@ -8,8 +8,8 @@ parent_artifact_filename: standard  # standard functions as a flag to use defini
 
 num_images: 'all'
 images_per_file: 1000
-distortion_tags: ['b_scan']
-distortion_type_flags: ['blur']  # specifies distortion_tags associated distortion types
+distortion_tags: ['n_scan']
+distortion_type_flags: ['noise']  # specifies distortion_tags associated distortion types
 iterations: 1
 artifact_type: test_dataset
 dataset_split_key: test  # used to mirror 'train'/'val' split in data structure
