@@ -203,3 +203,5 @@ tag_to_image_distortion = {
     'b_scan': b_scan,
     'n_scan': n_scan,
 }
+
+tag_to_transform = {}
