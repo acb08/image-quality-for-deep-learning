@@ -35,7 +35,7 @@ wandb.login()
 #     return image_vector, label_vector
 
 
-def get_transform(distortion_tags, rgb=True):
+def get_transform(distortion_tags, crop=True):
     """
     Builds transform from distortion functions brought in by tag_to_func(), which image distortion tags to image
     distortion functions.
@@ -47,7 +47,7 @@ def get_transform(distortion_tags, rgb=True):
         distortion_function = tag_to_transform[tag]()
         transform_list.append(distortion_function)
 
-    if rgb:
+    if crop:
         transform_list.extend([
             transforms.Normalize(
                 [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
@@ -314,8 +314,8 @@ def load_tune_model(config):
         num_workers = config['num_workers']
         pin_memory = config['pin_memory']
         distortion_tags = config['distortion_tags']
-        rgb_flag = config['rgb_flag']
-        transform = get_transform(distortion_tags, rgb=rgb_flag)
+        crop_flag = config['crop_flag']
+        transform = get_transform(distortion_tags, crop=crop_flag)
         optimizer = getattr(torch.optim, config['optimizer'])(model.parameters())
         loss_function = getattr(nn, config['loss_func'])()
         description = config['description']
