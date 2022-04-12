@@ -52,9 +52,9 @@ def mat_to_numpy(data_x,
     # res = native_res  # set the default resolution to the native resolution, update with res_function
     labels = np.argmax(data_y, axis=0)
     data_type = DATATYPE_MAP[datatype_key]
-    images = np.asarray(np.mean(data_x, axis=2), dtype=data_type)
+    pan_images = np.asarray(np.mean(data_x, axis=2), dtype=data_type)
 
-    res, __, num_images_original = np.shape(images)
+    res, __, num_images_original = np.shape(pan_images)
 
     if use_flag != 'test_vectors':
         new_data_dir = Path(new_dataset_path, REL_PATHS[use_flag])
@@ -69,7 +69,7 @@ def mat_to_numpy(data_x,
     if num_images == 'all':
         num_images = num_images_original
     else:
-        images = images[:, :, :num_images]
+        pan_images = pan_images[:, :, :num_images]
         labels = labels[:num_images]
 
     if images_per_file == 'all':
@@ -81,29 +81,18 @@ def mat_to_numpy(data_x,
     parent_dataset_ids = {}
     if use_flag:
         parent_dataset_ids[use_flag] = parent_dataset_id
-    # image_distortion_info = {'parent_dataset_ids': [parent_dataset_id]}
-    # image_distortion_info to contain list of each parent dataset along the chain. Also, it
-    # will contain nested dicts for each distortion type for each distortion output
-    # e.g. image_distortion_info['file_0.npz'] = {'res': [r0, r1,..., r_num_images],
-    #                                             'blur': [b0, b1,..., b_num_images],
-    #                                             'noise': [n0, n1,..., n_num_images]}
 
     for i in range(num_new_files):
 
         start_idx, end_idx = i * images_per_file, (i + 1) * images_per_file
         label_vector = labels[start_idx:end_idx]
-        image_subset = images[:, :, start_idx:end_idx]
+        image_subset = pan_images[:, :, start_idx:end_idx]
         vector_length = np.shape(image_subset)[-1]  # covers remainder at end of array (last vector prob shorter)
-
-        # if res_function:
-        #     res = res_function.get_size_key()
 
         image_vector = np.empty((vector_length, res, res, 3), dtype=data_type)
 
         for idx in range(vector_length):  # a better person would make reshaping work without a loop
             new_image = image_subset[:, :, idx]
-            # if res_function:
-            #     new_image = res_function(new_image, res, dtype_out=data_type)
             image_vector[idx] = np.stack(3 * [new_image], axis=2)
 
         name_label_filename = f'{filename_stem}_{file_count_offset + i}.npz'
@@ -112,17 +101,8 @@ def mat_to_numpy(data_x,
                             labels=label_vector)
         image_and_label_filenames.append(name_label_filename)
 
-        # store distortion parameters for each image in a vector for later analysis. Relative resolution
-        # vectorized here simplicity/compatibility with other transforms that will vary from
-        # image to image in a single shard
-        # res_fraction = res / native_res
-        # res_vector = np.repeat(res_fraction, vector_length)
-        # res_list = list(res_vector)
-        # image_distortion_info[name_label_filename] = {'res': res_list}
-
     numpy_dataset = {
         'image_and_label_filenames': image_and_label_filenames,
-        # 'image_distortion_info': image_distortion_info,
         'parent_dataset_ids': parent_dataset_ids
     }
 
@@ -196,20 +176,8 @@ def build_log_numpy(config):
 
         else:
 
-            data_x, data_y = data['test_x'], data['test_y']
-            test_path_flag = 'test_vectors'
-
-            dataset_test = mat_to_numpy(data_x,
-                                        data_y,
-                                        num_images,
-                                        images_per_file,
-                                        datatype_key,
-                                        test_path_flag,
-                                        new_dataset_abs_dir)
-
-            new_dataset = {
-                'test': dataset_test
-            }
+            raise Exception('Expected artifact type of "train_dataset". '
+                            'build_sat6_np_dataset.py should only be used to create train datasets')
 
         run_metadata = config
         run_metadata_additions = {
@@ -238,20 +206,20 @@ def build_log_numpy(config):
 
 if __name__ == "__main__":
 
-    _description = 'save quick test dataset with new artifact to check that additional code updates working'
-    _num_images = 1000
-    _images_per_file = 100
+    _description = 'build basic pan train dataset'
+    _num_images = 'all'
+    _images_per_file = 1000
 
     _config = {
         'parent_dataset_id': 'sat6_full',
-        'artifact_type': 'test_dataset',
+        'artifact_type': 'train_dataset',
         'num_images': _num_images,
         'images_per_file': _images_per_file,
         'val_frac': 0.1,
         'datatype_key': 'np.uint8',
         'artifact_filename': STANDARD_DATASET_FILENAME,
         'description': _description,
-        'tags': ['nano']
+        'tags': ['train']
     }
 
     _artifact = build_log_numpy(_config)
