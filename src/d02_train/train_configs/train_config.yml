@@ -1,19 +1,19 @@
 ---
 
-train_dataset_id: '0000_numpy'
+train_dataset_id: '0000_trn_train'
 train_dataset_artifact_alias: latest
 
-starting_model_id: '0001'
-starting_model_artifact_alias: 'best'
+starting_model_id: 'resnet18_sat6'
+starting_model_artifact_alias: 'latest'
 
-rgb_flag: False
-distortion_tags: ['rst4', 'b5', 'nf5']
-descriptive_tags: ['endpoint']
-num_epochs: 5
-batch_size: 32
-num_workers: 4
+crop_flag: False
+distortion_tags: []
+descriptive_tags: ['pre-train']
+num_epochs: 30
+batch_size: 64
+num_workers: 8
 pin_memory: True
 optimizer: 'Adam'
 loss_func: 'CrossEntropyLoss'
-description: 'tune the best no-distortion model against endpoint distortion dataset'
+description: 'pre-train a no-distortion sat6 model'
 artifact_type: 'model'
