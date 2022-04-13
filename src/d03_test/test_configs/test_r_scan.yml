@@ -10,7 +10,7 @@ model_artifact_id: 0000_mdl_best_loss
 model_artifact_alias: latest
 
 batch_size: 64
-num_workers: 0
+num_workers: 8
 pin_memory: True
 rgb_flag: False
 dataset_split_key: test  # used to get to correct level of dataset dict (to mirror 'train'/'val' splits)
