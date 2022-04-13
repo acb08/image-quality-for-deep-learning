@@ -87,10 +87,10 @@ def test_model(config):
         batch_size = config['batch_size']
         num_workers = config['num_workers']
         pin_memory = config['pin_memory']
-        rgb_flag = config['rgb_flag']
+        crop_flag = config['crop_flag']
         last_distortion_type_flag = config['last_distortion_type_flag']
         dataset_split_key = config['dataset_split_key']
-        transform = get_transform(distortion_tags=[], rgb=rgb_flag)
+        transform = get_transform(distortion_tags=[], crop=crop_flag)
         loss_function = getattr(nn, config['loss_func'])()
         status_interval = config['status_interval']
         artifact_type = 'test_result'

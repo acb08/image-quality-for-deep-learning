@@ -12,7 +12,7 @@ model_artifact_alias: latest
 batch_size: 64
 num_workers: 8
 pin_memory: True
-rgb_flag: False
+crop_flag: False
 dataset_split_key: test  # used to get to correct level of dataset dict (to mirror 'train'/'val' splits)
 last_distortion_type_flag: res  # normally should be 'noise'
 loss_func: CrossEntropyLoss
