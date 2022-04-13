@@ -1,16 +1,16 @@
 ---
 
-description: test of no-distortion model on resolution scan test dataset
+description: test of no-distortion model on resolution scan v2 test dataset
 descrptive_tags: ['res-scan']
 
-test_dataset_id: 0000_tst_r_scan_res # resolution scan dataset
+test_dataset_id: 0003_tst_r_scan_v2_res # resolution scan dataset
 test_dataset_artifact_alias: latest
 
 model_artifact_id: 0000_mdl_best_loss
 model_artifact_alias: latest
 
 batch_size: 64
-num_workers: 8
+num_workers: 4
 pin_memory: True
 crop_flag: False
 dataset_split_key: test  # used to get to correct level of dataset dict (to mirror 'train'/'val' splits)
