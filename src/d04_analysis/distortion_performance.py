@@ -24,14 +24,36 @@ class DistortedDataset(object):
                  convert_to_std=True):
         self.dataset = dataset
         self.distortion_ids = distortion_ids
-        self.res, self.blur, self.noise = extract_embedded_vectors(self.dataset,
-                                                                   intermediate_keys=intermediate_keys,
-                                                                   target_keys=self.distortion_ids,
-                                                                   return_full_dict=False)
-        self.res = np.asarray(self.res)
-        self.blur = np.asarray(self.blur)
-        self.noise = np.asarray(self.noise)
-        if convert_to_std:
+        # self.res, self.blur, self.noise = extract_embedded_vectors(self.dataset,
+        #                                                            intermediate_keys=intermediate_keys,
+        #                                                            target_keys=self.distortion_ids,
+        #                                                            return_full_dict=False)
+        self._distortion_data = extract_embedded_vectors(self.dataset,
+                                                         intermediate_keys=intermediate_keys,
+                                                         target_keys=self.distortion_ids,
+                                                         return_full_dict=False)
+
+        self.res = None
+        self.blur = None
+        self.noise = None
+
+        for i, distortion_id in enumerate(self.distortion_ids):
+            distortion = self._distortion_data[i]
+            if distortion_id == 'res':
+                self.res = distortion
+            elif distortion_id == 'blur':
+                self.blur = distortion
+            elif distortion_id == 'noise':
+                self.noise = distortion
+
+        if self.res is not None:
+            self.res = np.asarray(self.res)
+        if self.blur is not None:
+            self.blur = np.asarray(self.blur)
+        if self.noise is not None:
+            self.noise = np.asarray(self.noise)
+
+        if self.noise is not None and convert_to_std:
             self.noise = np.sqrt(self.noise)
         self.distortions = {
             'res': self.res,
@@ -42,10 +64,12 @@ class DistortedDataset(object):
 
 class ModelDistortionPerformanceResult(DistortedDataset):
 
-    def __init__(self, run, result_id, identifier=None, convert_to_std=True):
+    def __init__(self, run, result_id, identifier=None, convert_to_std=True, distortion_ids=('res', 'blur', 'noise')):
         self.convert_to_std = convert_to_std
         self.dataset, self.result, self.dataset_id = load_dataset_and_result(run, result_id)
-        DistortedDataset.__init__(self, self.dataset, convert_to_std=self.convert_to_std)
+        self.distortion_ids = distortion_ids
+        DistortedDataset.__init__(self, self.dataset, convert_to_std=self.convert_to_std,
+                                  distortion_ids=self.distortion_ids)
         self.labels, self.predicts = extract_embedded_vectors(self.result,
                                                               intermediate_keys=['shard_performances'],
                                                               target_keys=('labels', 'predicts'),
@@ -290,7 +314,8 @@ def analyze_perf_3d(model_performance,
                      level=np.mean(perf_3d), save_name=save_name, save_dir=directory)
 
 
-def get_model_distortion_performance_result(result_id=None, identifier=None, config=None):
+def get_model_distortion_performance_result(result_id=None, identifier=None, config=None,
+                                            distortion_ids=('res', 'blur', 'noise')):
 
     if not result_id and not identifier:
         result_id = config['result_id']
@@ -301,7 +326,8 @@ def get_model_distortion_performance_result(result_id=None, identifier=None, con
         if not output_dir.is_dir():
             Path.mkdir(output_dir)
 
-        model_distortion_performance = ModelDistortionPerformanceResult(run, result_id, identifier=identifier)
+        model_distortion_performance = ModelDistortionPerformanceResult(run, result_id, identifier=identifier,
+                                                                        distortion_ids=distortion_ids)
 
     return model_distortion_performance, output_dir
 
