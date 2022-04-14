@@ -3,7 +3,7 @@
 description: test of no-distortion model on noise scan v3 test dataset
 descrptive_tags: ['noise-scan']
 
-test_dataset_id: 0006_tst_n_scan_v3_pan # noise scan dataset
+test_dataset_id: 0007_tst_n_scan_v3_noise # noise scan dataset
 test_dataset_artifact_alias: latest
 
 model_artifact_id: 0000_mdl_best_loss
