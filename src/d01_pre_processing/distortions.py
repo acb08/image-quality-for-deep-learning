@@ -214,9 +214,8 @@ def n_scan_v3(img):
     sigma_max = 50
     step = 2
     sigma_vals = step * np.arange(int(sigma_max / step) + 1)
-    sigma_poisson = np.random.choice(sigma_vals)  # add 1 to target distribution, high is one above the highest
-    # integer to be drawn from the target distribution
-    lambda_poisson = sigma_poisson ** 2
+    sigma_poisson = np.random.choice(sigma_vals)
+    lambda_poisson = int(sigma_poisson ** 2)  # convert from np.int64 to regular int for json serialization
     img_out = _add_zero_centered_channel_replicated_poisson_noise(img, lambda_poisson)
 
     return img_out, 'lambda_poisson', lambda_poisson
