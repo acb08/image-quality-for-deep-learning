@@ -203,6 +203,25 @@ def n_scan_v2(img):
     return img_out, 'lambda_poisson', lambda_poisson
 
 
+def n_scan_v3(img):
+    """
+    Adds zero-centered, channel-replicated Poisson noise up to 50 DN.
+
+    :param img: image array, values on [0, 255]
+    :return: image + zero centered Poisson noise, where the resulting image is clamped to fall on [0, 255]
+
+    """
+    sigma_max = 50
+    step = 2
+    sigma_vals = step * np.arange(int(sigma_max / step) + 1)
+    sigma_poisson = np.random.choice(sigma_vals)  # add 1 to target distribution, high is one above the highest
+    # integer to be drawn from the target distribution
+    lambda_poisson = sigma_poisson ** 2
+    img_out = _add_zero_centered_channel_replicated_poisson_noise(img, lambda_poisson)
+
+    return img_out, 'lambda_poisson', lambda_poisson
+
+
 def b_scan(img):
 
     kernel_size = 23
@@ -259,7 +278,8 @@ tag_to_image_distortion = {
     'b_scan': b_scan,
     'b_scan_v2': b_scan_v2,
     # 'n_scan': n_scan, # n_scan did not replicate noise over image channels
-    'n_scan_v2': n_scan_v2
+    'n_scan_v2': n_scan_v2,
+    'n_scan_v3': n_scan_v3
 }
 
 tag_to_transform = {}
