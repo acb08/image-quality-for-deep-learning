@@ -88,7 +88,8 @@ def test_model(config):
         num_workers = config['num_workers']
         pin_memory = config['pin_memory']
         crop_flag = config['crop_flag']
-        last_distortion_type_flag = config['last_distortion_type_flag']
+        # last_distortion_type_flag = config['last_distortion_type_flag']
+        last_distortion_type_flag = dataset['last_distortion_type_flag']
         dataset_split_key = config['dataset_split_key']
         transform = get_transform(distortion_tags=[], crop=crop_flag)
         loss_function = getattr(nn, config['loss_func'])()
