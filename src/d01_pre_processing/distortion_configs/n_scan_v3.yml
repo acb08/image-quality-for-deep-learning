@@ -1,6 +1,6 @@
 ---
 
-description: noise scan test dataset to find the blur level at which pre-trained performance drops to chance
+description: noise scan test dataset v3 to find the blur level at which pre-trained performance drops to chance
 
 parent_dataset_id: sat6_full
 parent_artifact_alias: latest
