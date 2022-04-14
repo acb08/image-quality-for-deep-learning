@@ -12,7 +12,7 @@ to local image files.
 """
 
 ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '../../..'))
-PROJECT_ID = 'sat6_v2'
+PROJECT_ID = 'chip_distortions'
 STANDARD_DATASET_FILENAME = 'dataset.json'
 STANDARD_CHECKPOINT_FILENAME = 'model_cp.pt'
 STANDARD_BEST_LOSS_FILENAME = 'best_loss.pt'
@@ -36,7 +36,8 @@ REL_PATHS = {
     'pan': r'0-pan',
     'res': r'1-res',
     'blur': r'2-blur',
-    'noise': r'3-noise'
+    'noise': r'3-noise',
+    'edge_chip': r'edge_chips'
 }
 
 DISTORTION_TYPES = ['pan', 'res', 'blur', 'noise']
