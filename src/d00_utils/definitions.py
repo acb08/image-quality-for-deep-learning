@@ -37,7 +37,8 @@ REL_PATHS = {
     'res': r'1-res',
     'blur': r'2-blur',
     'noise': r'3-noise',
-    'edge_chip': r'edge_chips'
+    'mtf_study': r'mtf_study',
+    'edge_chips': r'edge_chips'
 }
 
 DISTORTION_TYPES = ['pan', 'res', 'blur', 'noise']
@@ -92,4 +93,5 @@ DATATYPE_MAP = {
     'np.int64': np.int64,
 }
 
-
+FIRST_DISC_ENCIRCLED_ENERGY = 0.838
+AIRY_GAUSS_STD_EQUIV = 1.91
