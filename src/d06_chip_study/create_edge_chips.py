@@ -6,6 +6,7 @@ from torchvision import transforms
 import torch
 
 AIRY_GAUSS_CONVERSION = 1.91
+RNG = np.random.default_rng()
 
 
 def p2_downsample(image, downsample_step_size):
@@ -41,7 +42,7 @@ def make_perfect_edge(size, theta, dark_val=0.1, light_val=0.6):
         edge_image[row_idx, :edge_loc] = dark_val
         edge_image[row_idx, edge_loc] = edge_val
 
-    return edge_image
+    return edge_image, edge_locations
 
 
 def apply_optical_blur(edge_image, kernel_size, sigma):
@@ -80,9 +81,25 @@ def plot_edges(perfect_edge, blurred_edge, chips):
         plt.show()
 
 
-def make_edge_chips(image_size, scale_factor, angle, q_values):
+def convert_to_electrons(image, well_depth, noise_value=0, dark_electrons=1000):
 
-    perfect_edge = make_perfect_edge(image_size, angle)
+    image = image * well_depth  # convert from reflectance to radiance
+    image = image + dark_electrons  # apply constant dark current across image
+    if noise_value:
+        image = RNG.poisson(image)  # expected electron counts to Poisson image
+        image = RNG.normal(image, noise_value)  # add Gaussian distributed read noise
+
+    return image
+
+
+def get_snr(image, patch_size):
+
+    return
+
+
+def make_edge_chips(image_size, scale_factor, angle, q_values, noise_values, well_depth, dark_offset):
+
+    perfect_edge, edge_indices = make_perfect_edge(image_size, angle)
 
     stds = []
     kernel_sizes = []
@@ -92,12 +109,17 @@ def make_edge_chips(image_size, scale_factor, angle, q_values):
         kernel_sizes.append(k)
 
     kernel_size = max(kernel_sizes)  # just go with the max kernel size
-    chips = []
+    edge_buffer_left = min(edge_indices - (kernel_size + 1))  # buffers bound dark/light regions for SNR measurement
+    edge_buffer_right = max(edge_indices + (kernel_size + 1))
 
+    chips = []
     for std in stds:
         blurred_edge = apply_optical_blur(perfect_edge, kernel_size, std)
-        chip = p2_downsample(blurred_edge, scale_factor)
-        chips.append(chip)
+        for noise_value in noise_values:
+            edge = convert_to_electrons(blurred_edge, 80000, noise_value=noise_value, well_depth=well_depth,
+                                        dark_electrons=dark_offset)
+            chip = p2_downsample(edge, scale_factor)
+            chips.append(chip)
 
 
 if __name__ == '__main__':
@@ -106,10 +128,12 @@ if __name__ == '__main__':
     _scale_factor = int(1024 / 64)
     _angle = 8
     _q = 1
+    _well_depth = 100_000
+    _dark_offset = 1000
     # k_size = 15
     # std = 3
 
-    _perfect_edge = make_perfect_edge(_image_size, _angle)
+    _perfect_edge, _edge_indices = make_perfect_edge(_image_size, _angle)
     _std, _kernel_size = get_blur_parameters(_scale_factor, _q)
     _blurred_edge = apply_optical_blur(_perfect_edge, _kernel_size, _std)
     _chip = p2_downsample(_blurred_edge, _scale_factor)
