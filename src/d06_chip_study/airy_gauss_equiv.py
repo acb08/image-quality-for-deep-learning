@@ -6,6 +6,11 @@ from src.d00_utils.definitions import ROOT_DIR, REL_PATHS, FIRST_DISC_ENCIRCLED_
 
 def integrate(x, y):
 
+    """
+    Performs trapezoidal integral of y over x and returns an array with the values of the definite integral at every
+    starting value in x, starting at x[0]
+    """
+
     total = 0
     integral = [total]
     for i, y_val in enumerate(y[:-1]):
@@ -17,10 +22,14 @@ def integrate(x, y):
     return np.asarray(integral)
 
 
-def get_equivalent_gaussian_std(target_encircled_energy=None, save_plot=False):
+def get_equivalent_gaussian_std(save_plot=False):
+    """
+    Finds the Airy radius in multiples of sigma, the standard deviation of a 2d symmetric Gaussian, such that the
+    encircled energy of the Gaussian at the Airy radius matches the encircled energy of a diffraction limited
+    circular aperture with the same Airy radius.
+    """
 
-    if not target_encircled_energy:
-        target_encircled_energy = FIRST_DISC_ENCIRCLED_ENERGY
+    target_encircled_energy = FIRST_DISC_ENCIRCLED_ENERGY
 
     r = np.linspace(0, 5, num=500)
     y = 1 / (2 * np.pi) * np.exp(-0.5 * r**2)
@@ -29,7 +38,7 @@ def get_equivalent_gaussian_std(target_encircled_energy=None, save_plot=False):
 
     left_idx = np.where(encircled_energy <= target_encircled_energy)[0][-1]
     right_idx = np.where(encircled_energy >= target_encircled_energy)[0][0]
-    r_equiv = (r[left_idx] + r[right_idx]) / 2 # approx, but ok for this application
+    r_equiv = (r[left_idx] + r[right_idx]) / 2  # approx, but ok for this application
 
     airy_equiv_line = target_encircled_energy * np.ones_like(r)
 
