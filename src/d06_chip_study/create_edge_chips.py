@@ -80,6 +80,26 @@ def plot_edges(perfect_edge, blurred_edge, chips):
         plt.show()
 
 
+def make_edge_chips(image_size, scale_factor, angle, q_values):
+
+    perfect_edge = make_perfect_edge(image_size, angle)
+
+    stds = []
+    kernel_sizes = []
+    for q in q_values:
+        std, k = get_blur_parameters(scale_factor. q)
+        stds.append(std)
+        kernel_sizes.append(k)
+
+    kernel_size = max(kernel_sizes)  # just go with the max kernel size
+    chips = []
+
+    for std in stds:
+        blurred_edge = apply_optical_blur(perfect_edge, kernel_size, std)
+        chip = p2_downsample(blurred_edge, scale_factor)
+        chips.append(chip)
+
+
 if __name__ == '__main__':
 
     _image_size = 1024
