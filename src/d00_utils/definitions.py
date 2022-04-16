@@ -38,7 +38,8 @@ REL_PATHS = {
     'blur': r'2-blur',
     'noise': r'3-noise',
     'mtf_study': r'mtf_study',
-    'edge_chips': r'edge_chips'
+    'edge_chips': r'edge_chips',
+    'mtf': r'mtf'
 }
 
 DISTORTION_TYPES = ['pan', 'res', 'blur', 'noise']

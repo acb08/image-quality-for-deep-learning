@@ -6,7 +6,7 @@ import torch
 import json
 from pathlib import Path
 from src.d00_utils.functions import key_from_dir
-from src.d00_utils.definitions import ROOT_DIR, REL_PATHS
+from src.d00_utils.definitions import ROOT_DIR, REL_PATHS, STANDARD_DATASET_FILENAME
 
 AIRY_GAUSS_CONVERSION = 1.91
 RNG = np.random.default_rng()
@@ -143,7 +143,7 @@ def make_edge_chips(image_size, scale_factor, angle, q_values, noise_values, wel
     if edge_buffer < 10:
         print(f'Warning: narrow edge buffer: {edge_buffer}')
 
-    metadata = {}
+    chips = {}
 
     for i, std in enumerate(stds):
 
@@ -168,7 +168,7 @@ def make_edge_chips(image_size, scale_factor, angle, q_values, noise_values, wel
 
             chip = Image.fromarray(chip)
             chip_name = f'chip_{i}_{j}.png'
-            metadata[chip_name] = {
+            chips[chip_name] = {
                 'native_noise': noise_value,
                 'native_snr': snr,
                 'native_blur': std,
@@ -182,13 +182,13 @@ def make_edge_chips(image_size, scale_factor, angle, q_values, noise_values, wel
     perfect_edge_chip = Image.fromarray(perfect_edge_chip)
     perfect_edge_chip_name = 'perfect_edge_chip.png'
     perfect_edge_chip.save(Path(chip_dir, perfect_edge_chip_name))
-    metadata[perfect_edge_chip_name] = {
+    chips[perfect_edge_chip_name] = {
         'native_noise': 0,
         'native_snr': False,
         'native_blur': 0
     }
 
-    metadata_additions = {
+    metadata = {
         'image_size': image_size,
         'scale_factor': scale_factor,
         'angle': angle,
@@ -198,11 +198,15 @@ def make_edge_chips(image_size, scale_factor, angle, q_values, noise_values, wel
         'noise_values': noise_value,
 
     }
-    metadata.update(metadata_additions)
+
+    dataset = {
+        'chips': chips,
+        'metadata': metadata
+    }
 
     if save:
-        with open(Path(save_dir, 'metadata.json'), 'w') as file:
-            json.dump(metadata, file)
+        with open(Path(save_dir, STANDARD_DATASET_FILENAME), 'w') as file:
+            json.dump(dataset, file)
 
 
 def measure_snr(chip, buffer):
@@ -225,8 +229,9 @@ if __name__ == '__main__':
     _image_size = 1024
     _scale_factor = int(1024 / 64)
     _angle = 8
-    _q_values = [1, 1.5, 2, 3]
-    _noise_values = [0, 1000, 2000]
+    # _q_values = [1, 1.5, 2, 3]
+    _q_values = [1, 2]
+    _noise_values = [0, 1000]
     _well_depth = 100_000
     _dark_offset = 2000
 

@@ -2,25 +2,27 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 import scipy.stats as stats
+from pathlib import Path
+from src.d00_utils.definitions import ROOT_DIR, REL_PATHS, STANDARD_DATASET_FILENAME
+import json
 
-
-def get_chips(images, v_start=10, h_start=10, n_v=25, n_h=25):
-    chips = {}
-    for key, image in images.items():
-        chip = image[v_start:v_start + n_v, h_start: h_start + n_h]
-        chips[key] = chip / 255
-    return chips
-
-
-def load_images():
-
-    img_1 = np.asarray(Image.open('edge1.png'))
-    img_2 = np.asarray(Image.open('edge2.png'))
-    img_3 = np.asarray(Image.open('edge3.png'))
-
-    images = {'no noise': img_1, 'low noise': img_2, 'high noise': img_3}
-
-    return images
+# def get_chips(images, v_start=10, h_start=10, n_v=25, n_h=25):
+#     chips = {}
+#     for key, image in images.items():
+#         chip = image[v_start:v_start + n_v, h_start: h_start + n_h]
+#         chips[key] = chip / 255
+#     return chips
+#
+#
+# def load_images():
+#
+#     img_1 = np.asarray(Image.open('edge1.png'))
+#     img_2 = np.asarray(Image.open('edge2.png'))
+#     img_3 = np.asarray(Image.open('edge3.png'))
+#
+#     images = {'no noise': img_1, 'low noise': img_2, 'high noise': img_3}
+#
+#     return images
 
 
 def plot_rows(chip, interval=1):
@@ -144,35 +146,49 @@ def estimate_mtf(chip, edge_method='standard'):
     lsf = get_lsf(esf)
     mtf = get_mtf(lsf)
 
-    return mtf
+    return mtf, esf
 
 
-def compare_mtf_methods(chips):
+def measure_mtf_lsf(dataset, directory):
 
-    for key, chip in chips.items():
-        mtf_standard = estimate_mtf(chip, edge_method='standard')
-        mtf_tm = estimate_mtf(chip, edge_method='tm')
+    chip_data = dataset['chips']
+    chip_dir = Path(directory, REL_PATHS['edge_chips'])
+    output_dir = Path(directory, REL_PATHS['mtf'])
+    if not output_dir.is_dir():
+        Path.mkdir(output_dir)
+
+    mtf_lsf_data = {}
+
+    for chip_name in chip_data.keys():
+
+        chip = get_chip(chip_dir, chip_name)
+        mtf_standard, esf = estimate_mtf(chip, edge_method='standard')
+        mtf_lsf_data[str(chip_name)] = {
+            'mtf': [float(val) for val in mtf_standard],
+            'esf': [float(val) for val in esf]
+        }
         freq_axis = get_freq_axis(mtf_standard)
         n_plot = int((len(freq_axis) / 2))
         n_plot_nyquist = int(n_plot / 2)
 
         plt.figure()
         plt.plot(freq_axis[:n_plot], mtf_standard[:n_plot], label='standard')
-        plt.plot(freq_axis[:n_plot], mtf_tm[:n_plot], label='Tabatabai-Mitchell')
         plt.xlabel('spatial frequency [cycles / pixel]')
         plt.ylabel('MTF')
         plt.legend()
-        plt.savefig(f'{key}.png')
+        plt.savefig(Path(output_dir, chip_name))
         plt.show()
 
         plt.figure()
         plt.plot(freq_axis[:n_plot_nyquist], mtf_standard[:n_plot_nyquist], label='standard')
-        plt.plot(freq_axis[:n_plot_nyquist], mtf_tm[:n_plot_nyquist], label='Tabatabai-Mitchell')
         plt.xlabel('spatial frequency [cycles / pixel]')
         plt.ylabel('MTF')
         plt.legend()
-        plt.savefig(f'{key}_nyquist.png')
+        plt.savefig(Path(output_dir, f'nyquist_{chip_name}'))
         plt.show()
+
+    with open(Path(directory, 'mtf_lsf.json'), 'w') as file:
+        json.dump(mtf_lsf_data, file)
 
 
 def get_freq_axis(mtf):
@@ -182,9 +198,23 @@ def get_freq_axis(mtf):
     return f
 
 
+def load_dataset(directory_key):
+
+    directory = Path(ROOT_DIR, REL_PATHS['analysis'], REL_PATHS['mtf_study'], directory_key)
+    with open(Path(directory, STANDARD_DATASET_FILENAME), 'r') as file:
+        dataset = json.load(file)
+
+    return directory, dataset
+
+
+def get_chip(directory, name):
+    return np.asarray(Image.open(Path(directory, name)))
+
+
 if __name__ == '__main__':
 
-    _images = load_images()
-    _chips = get_chips(_images, v_start=110, h_start=10, n_v=60, n_h=110)
-    compare_mtf_methods(_chips)
+    _directory_key = '0008'
+    _directory, _dataset = load_dataset(_directory_key)
+
+    measure_mtf_lsf(_dataset, _directory)
 
