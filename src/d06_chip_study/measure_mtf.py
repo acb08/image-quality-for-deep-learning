@@ -6,24 +6,6 @@ from pathlib import Path
 from src.d00_utils.definitions import ROOT_DIR, REL_PATHS, STANDARD_DATASET_FILENAME
 import json
 
-# def get_chips(images, v_start=10, h_start=10, n_v=25, n_h=25):
-#     chips = {}
-#     for key, image in images.items():
-#         chip = image[v_start:v_start + n_v, h_start: h_start + n_h]
-#         chips[key] = chip / 255
-#     return chips
-#
-#
-# def load_images():
-#
-#     img_1 = np.asarray(Image.open('edge1.png'))
-#     img_2 = np.asarray(Image.open('edge2.png'))
-#     img_3 = np.asarray(Image.open('edge3.png'))
-#
-#     images = {'no noise': img_1, 'low noise': img_2, 'high noise': img_3}
-#
-#     return images
-
 
 def plot_rows(chip, interval=1):
 
@@ -36,10 +18,24 @@ def plot_rows(chip, interval=1):
     plt.show()
 
 
-def get_lsf(esf, kernel=np.asarray([0.5, -0.5])):
+def pad_signal(x, num):
 
-    lsf = np.convolve(esf, kernel) * np.hamming(len(esf)+1)
-    lsf = lsf[1:-1]
+    x_new = np.zeros(len(x) + 2 * num)
+    x_new[:num] = x[0]
+    x_new[num:-num] = x
+    x_new[-num:] = x[-1]
+
+    return x_new
+
+
+def get_lsf(esf, kernel=np.asarray([0.5, 0, -0.5]), pad=False):
+
+    if pad:
+        num_pad = int(np.floor(len(kernel) / 2))
+        esf = pad_signal(esf, num_pad)
+
+    lsf = np.convolve(esf, kernel, mode='valid')
+    lsf = lsf * np.hamming(len(lsf))
     lsf = lsf / np.sum(lsf)
 
     return lsf
@@ -54,17 +50,14 @@ def estimate_edge(row, kernel=np.asarray([-0.5, 0.5])):
     return centroid
 
 
-def fit_edge(rows, edge_method='standard', plot=True):
+def fit_edge(rows, plot=True):
 
     n, m = np.shape(rows)
     centroids = np.zeros(n)
     row_indices = np.arange(n)
     for idx in row_indices:
         row = rows[idx, :]
-        if edge_method == 'standard':
-            centroid = estimate_edge(row)
-        elif edge_method == 'tm':
-            centroid = estimate_edge_tm(row)
+        centroid = estimate_edge(row)
 
         centroids[idx] = centroid
 
@@ -84,20 +77,6 @@ def fit_edge(rows, edge_method='standard', plot=True):
     return centroids, fit
 
 
-def estimate_edge_tm(esf):
-
-    m = len(esf)
-    m1 = np.sum(esf) / m
-    m2 = np.sum(esf**2) / m
-    m3 = np.sum(esf**3) / m
-
-    sigma = np.sqrt(m2 - m1**2)
-    s = (m3 + 2 * m1**3 - 3 * m1 * m2) / sigma**3
-    p = (1 + s * np.sqrt(1 / (4 + s**2))) / 2
-
-    return p * m
-
-
 def oversampled_esf(rows, fit, oversample_factor=4, plot=True):
 
     n, m = np.shape(rows)
@@ -114,6 +93,7 @@ def oversampled_esf(rows, fit, oversample_factor=4, plot=True):
         x_shifted[idx] = x_scaled_quantized / oversample_factor
 
     x_oversampled = np.unique(x_shifted)
+
     esf_estimate = np.zeros_like(x_oversampled)
     for idx, x_val in enumerate(x_oversampled):
         indices = np.where(x_shifted == x_val)
@@ -129,6 +109,36 @@ def oversampled_esf(rows, fit, oversample_factor=4, plot=True):
         plt.title('shifted')
         plt.show()
 
+    target_length = oversample_factor * m
+    x_oversampled, esf_estimate = fix_sample_length(x_oversampled, esf_estimate,
+                                                    target_length)
+
+    return x_oversampled, esf_estimate, oversample_factor
+
+
+def fix_sample_length(x_oversampled, esf_estimate, target_length):
+
+    n_start = len(x_oversampled)
+    if n_start > target_length:
+        x_oversampled = x_oversampled[-target_length:]
+        esf_estimate = esf_estimate[-target_length:]
+
+    if n_start < target_length:
+
+        print('warning, fewer edge samples than expected')
+        x_ext = np.zeros(target_length)
+        x_ext[:len(x_oversampled)] = x_oversampled
+        delta_x = x_oversampled[1] - x_oversampled[0]
+        last_x = x_oversampled[-1]
+        num_extend = target_length - len(x_oversampled)
+        extension = [(last_x + delta_x * (i + 1)) for i in range(num_extend)]
+        x_ext[-num_extend:] = extension
+
+        esf_ext = np.zeros_like(x_ext)
+        esf_ext[-num_extend:] = esf_estimate[-1]
+
+        return x_ext, esf_ext
+
     return x_oversampled, esf_estimate
 
 
@@ -139,63 +149,88 @@ def get_mtf(lsf):
     return mtf
 
 
-def estimate_mtf(chip, edge_method='standard'):
+def estimate_mtf(chip):
 
-    centroids, fit = fit_edge(chip, edge_method=edge_method, plot=False)
-    x_oversampled, esf = oversampled_esf(chip, fit)
-    lsf = get_lsf(esf)
+    centroids, fit = fit_edge(chip, plot=False)
+    x_oversampled, esf, oversample_factor = oversampled_esf(chip, fit)
+    lsf = get_lsf(esf, pad=True)
     mtf = get_mtf(lsf)
 
-    return mtf, esf
+    print('esf:', len(esf), ' lsf:', len(lsf), ' mtf: ', len(mtf))
+
+    return mtf, esf, oversample_factor
 
 
 def measure_mtf_lsf(dataset, directory):
 
     chip_data = dataset['chips']
+    edge_names = dataset['edges']
     chip_dir = Path(directory, REL_PATHS['edge_chips'])
+    edge_dir = Path(directory, REL_PATHS['edges'])
     output_dir = Path(directory, REL_PATHS['mtf'])
     if not output_dir.is_dir():
         Path.mkdir(output_dir)
 
     mtf_lsf_data = {}
 
+    for edge_name in edge_names:
+        edge = get_image_array(edge_dir, edge_name)
+        mtf, esf, oversample_factor = estimate_mtf(edge)
+        mtf_lsf_data[edge_name] = {
+            'mtf': list(mtf),
+            'esf': list(esf),
+            'oversample_factor': oversample_factor
+        }
+        plot_mtf(mtf, output_dir=output_dir, chip_name=edge_name)
+
     for chip_name in chip_data.keys():
 
-        chip = get_chip(chip_dir, chip_name)
-        mtf_standard, esf = estimate_mtf(chip, edge_method='standard')
+        chip = get_image_array(chip_dir, chip_name)
+        mtf, esf, oversample_factor = estimate_mtf(chip)
         mtf_lsf_data[str(chip_name)] = {
-            'mtf': [float(val) for val in mtf_standard],
-            'esf': [float(val) for val in esf]
+            'mtf': [float(val) for val in mtf],
+            'esf': [float(val) for val in esf],
+            'oversample_factor': oversample_factor
         }
-        freq_axis = get_freq_axis(mtf_standard)
-        n_plot = int((len(freq_axis) / 2))
-        n_plot_nyquist = int(n_plot / 2)
-
-        plt.figure()
-        plt.plot(freq_axis[:n_plot], mtf_standard[:n_plot], label='standard')
-        plt.xlabel('spatial frequency [cycles / pixel]')
-        plt.ylabel('MTF')
-        plt.legend()
-        plt.savefig(Path(output_dir, chip_name))
-        plt.show()
-
-        plt.figure()
-        plt.plot(freq_axis[:n_plot_nyquist], mtf_standard[:n_plot_nyquist], label='standard')
-        plt.xlabel('spatial frequency [cycles / pixel]')
-        plt.ylabel('MTF')
-        plt.legend()
-        plt.savefig(Path(output_dir, f'nyquist_{chip_name}'))
-        plt.show()
+        plot_mtf(mtf, output_dir=output_dir, chip_name=chip_name)
 
     with open(Path(directory, 'mtf_lsf.json'), 'w') as file:
         json.dump(mtf_lsf_data, file)
 
+    return mtf_lsf_data
 
-def get_freq_axis(mtf):
 
-    f_max = 2
+def get_freq_axis(mtf, oversample_factor=4):
+    f_max = oversample_factor / 2
     f = np.linspace(0, f_max, num=len(mtf))
     return f
+
+
+def plot_mtf(mtf, output_dir=None, chip_name=None, f_max=None):
+
+    freq_axis = get_freq_axis(mtf)
+    n_plot = int((len(freq_axis) / 2))
+    n_plot_nyquist = int(n_plot / 2)
+
+    plt.figure()
+    plt.plot(freq_axis[:n_plot], mtf[:n_plot], label='standard')
+    plt.xlabel('spatial frequency [cycles / pixel]')
+    plt.ylabel('MTF')
+    plt.legend()
+    if output_dir and chip_name:
+        plt.savefig(Path(output_dir, chip_name))
+    plt.show()
+
+    plt.figure()
+    plt.plot(freq_axis[:n_plot_nyquist], mtf[:n_plot_nyquist], label='standard')
+    plt.xlabel('spatial frequency [cycles / pixel]')
+    plt.ylabel('MTF')
+    plt.legend()
+    if output_dir and chip_name:
+        plt.savefig(Path(output_dir, f'nyquist_{chip_name}'))
+    plt.show()
+
+    pass
 
 
 def load_dataset(directory_key):
@@ -207,13 +242,29 @@ def load_dataset(directory_key):
     return directory, dataset
 
 
-def get_chip(directory, name):
+def get_image_array(directory, name):
     return np.asarray(Image.open(Path(directory, name)))
+
+
+def normed_circ_ap_mtf(f, f_cut=None):
+    """
+    Calculates the diffraction mtf over frequency axis f for a circular aperture with optical cutoff frequency f_cut.
+    """
+    if not f_cut:
+        f_cut = max(f)
+    f = f / f_cut
+    mtf = np.zeros_like(f)
+    f_sub_cut = f[np.where(f <= 1)]
+    mtf_sub_cut = 2 / np.pi * (np.arccos(f_sub_cut) - f_sub_cut * np.sqrt(1 - f_sub_cut**2))
+    samples_sub_cut = len(mtf_sub_cut)
+    mtf[:samples_sub_cut] = mtf_sub_cut
+
+    return mtf
 
 
 if __name__ == '__main__':
 
-    _directory_key = '0008'
+    _directory_key = '0018'
     _directory, _dataset = load_dataset(_directory_key)
 
     measure_mtf_lsf(_dataset, _directory)

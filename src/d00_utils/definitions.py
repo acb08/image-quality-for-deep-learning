@@ -39,6 +39,7 @@ REL_PATHS = {
     'noise': r'3-noise',
     'mtf_study': r'mtf_study',
     'edge_chips': r'edge_chips',
+    'edges': r'edges',
     'mtf': r'mtf'
 }
 
