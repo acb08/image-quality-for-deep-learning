@@ -109,10 +109,26 @@ def extract_embedded_vectors(data_dict,
         return distortion_vectors
 
 
-def conditional_mean_accuracy(labels, predicts, condition_array):
+def get_class_accuracies(labels, predicts):
+    """
+    Extracts mean accuracy of predicts for each unique label in labels
+    """
+
+    classes = np.unique(labels)
+    class_accuracies = []
+    for _class in classes:
+        class_predicts = predicts[np.where(labels == _class)]
+        class_accuracy = np.mean(np.equal(class_predicts, _class))
+        class_accuracies.append(class_accuracy)
+
+    return classes, np.asarray(class_accuracies)
+
+
+def conditional_mean_accuracy(labels, predicts, condition_array, per_class=False):
 
     """
-    Returns mean accuracy as for each unique value in condition array.
+    Returns mean accuracy for each unique value in condition array. If per_class == True, returns mean per_class
+    accuracy for each unique value in condition array
 
     Note: switched the order of outputs to be x, y rather than y, x
     """
@@ -123,8 +139,12 @@ def conditional_mean_accuracy(labels, predicts, condition_array):
     for i, condition in enumerate(conditions):
         condition_labels = labels[np.where(condition_array == condition)]
         condition_predicts = predicts[np.where(condition_array == condition)]
-        conditioned_accuracies[i] = (
-            np.mean(np.equal(condition_labels, condition_predicts)))
+        if per_class:
+            __, class_accuracies = get_class_accuracies(condition_labels, condition_predicts)
+            conditioned_accuracies[i] = np.mean(class_accuracies)
+        if not per_class:
+            conditioned_accuracies[i] = (
+                np.mean(np.equal(condition_labels, condition_predicts)))
 
     return conditions, conditioned_accuracies
 
@@ -248,3 +268,8 @@ def conditional_extract_2d(x, y, z):
     }
 
     return x_values, y_values, z_means, vector_data_extract
+
+
+
+
+

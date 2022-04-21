@@ -2,7 +2,7 @@ from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, STANDARD_TEST_R
     ROOT_DIR
 from src.d00_utils.functions import load_wandb_data_artifact, get_config
 from src.d04_analysis.analysis_functions import conditional_mean_accuracy, extract_embedded_vectors, \
-    conditional_extract_2d
+    conditional_extract_2d, get_class_accuracies
 from src.d04_analysis.fit import fit_hyperplane, eval_linear_fit
 from src.d04_analysis.tools3d import build_3d_field, plot_isosurf
 from src.d04_analysis.plot import AXIS_LABELS, COLORS, SCATTER_PLOT_MARKERS, \
@@ -88,8 +88,18 @@ class ModelDistortionPerformanceResult(DistortedDataset):
     def get_accuracy_vector(self):
         return np.equal(self.labels, self.predicts)
 
-    def conditional_accuracy(self, distortion_id):
-        return conditional_mean_accuracy(self.labels, self.predicts, self.distortions[distortion_id])
+    def conditional_accuracy(self, distortion_id, per_class=False):
+        # if per_class==True, returns mean per class accuracy rather than overall mean accuracy
+        return conditional_mean_accuracy(self.labels, self.predicts, self.distortions[distortion_id],
+                                         per_class=per_class)
+
+    def class_accuracies(self):
+        classes, class_accuracies = get_class_accuracies(self.labels, self.predicts)
+        return classes, class_accuracies
+
+    def mean_per_class_accuracy(self):
+        __, class_accuracies = self.class_accuracies()
+        return np.mean(class_accuracies)
 
 
 def load_dataset_and_result(run, result_id,
@@ -111,9 +121,9 @@ def load_dataset_and_result(run, result_id,
     return dataset, result, dataset_id
 
 
-def get_distortion_perf_1d(model_performance, distortion_id, log_file=None, add_bias=True):
+def get_distortion_perf_1d(model_performance, distortion_id, log_file=None, add_bias=True, per_class=False):
     result_name = str(model_performance)
-    distortion_vals, mean_accuracies = model_performance.conditional_accuracy(distortion_id)
+    distortion_vals, mean_accuracies = model_performance.conditional_accuracy(distortion_id, per_class=per_class)
 
     fit_coefficients = fit_hyperplane(np.atleast_2d(distortion_vals).T,
                                       np.atleast_2d(mean_accuracies).T,
@@ -123,8 +133,8 @@ def get_distortion_perf_1d(model_performance, distortion_id, log_file=None, add_
                                   np.atleast_2d(distortion_vals).T,
                                   np.atleast_2d(mean_accuracies).T)
 
-    print(f'{result_name} {distortion_id} linear fit: ', fit_coefficients, file=log_file)
-    print(f'{result_name} {distortion_id} linear fit correlation: ', correlation, '\n', file=log_file)
+    print(f'{result_name} {distortion_id} (per_class = {per_class}) linear fit: ', fit_coefficients, file=log_file)
+    print(f'{result_name} {distortion_id} (per_class = {per_class}) linear fit correlation: ', correlation, '\n', file=log_file)
 
     return distortion_vals, mean_accuracies, fit_coefficients, correlation
 
@@ -132,12 +142,13 @@ def get_distortion_perf_1d(model_performance, distortion_id, log_file=None, add_
 def analyze_perf_1d(model_performance,
                     distortion_ids=('res', 'blur', 'noise'),
                     directory=None,
-                    log_file=None):
+                    log_file=None,
+                    per_class=False):
     for i, distortion_id in enumerate(distortion_ids):
         x, y, fit_coefficients, fit_correlation = get_distortion_perf_1d(model_performance, distortion_id,
-                                                                         log_file=log_file)
+                                                                         log_file=log_file, per_class=per_class)
         plot_1d_linear_fit(x, y, fit_coefficients, distortion_id,
-                           result_identifier=str(model_performance), directory=directory)
+                           result_identifier=str(model_performance), directory=directory, per_class=per_class)
 
 
 def analyze_perf_2d(model_performance,
@@ -345,6 +356,7 @@ if __name__ == '__main__':
     _model_distortion_performance, _output_dir = get_model_distortion_performance_result(config=run_config)
 
     with open(Path(_output_dir, 'result_log.txt'), 'w') as output_file:
-        analyze_perf_1d(_model_distortion_performance, log_file=output_file, directory=_output_dir)
+        analyze_perf_1d(_model_distortion_performance, log_file=output_file, directory=_output_dir, per_class=False)
+        analyze_perf_1d(_model_distortion_performance, log_file=output_file, directory=_output_dir, per_class=True)
         analyze_perf_2d(_model_distortion_performance, log_file=output_file, directory=_output_dir)
         analyze_perf_3d(_model_distortion_performance, log_file=output_file, directory=_output_dir)

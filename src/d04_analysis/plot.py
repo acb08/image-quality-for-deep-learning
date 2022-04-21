@@ -53,6 +53,7 @@ AXIS_LABELS = {
     'noise': r'$\sqrt{\lambda}$-noise',
     'z': 'accuracy',
     'y': 'accuracy',
+    'mpc': 'mean per class accuracy',
     'effective_entropy': 'effective entropy (bits)'
 }
 
@@ -61,7 +62,8 @@ COLORS = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
 
 
 def plot_1d_linear_fit(x_data, y_data, fit_coefficients, distortion_id,
-                       result_identifier=None, ylabel='accuracy', title=None, directory=None):
+                       result_identifier=None, ylabel=None, title=None, directory=None,
+                       per_class=False):
     xlabel = AXIS_LABELS[distortion_id]
     x_plot = np.linspace(np.min(x_data), np.max(x_data), num=50)
     y_plot = fit_coefficients[0] * x_plot + fit_coefficients[1]
@@ -73,14 +75,21 @@ def plot_1d_linear_fit(x_data, y_data, fit_coefficients, distortion_id,
     ax.set_xlabel(xlabel)
     if 'noise' in xlabel or np.max(x_data) > 5:
         ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+
+    if not ylabel and not per_class:
+        ylabel = AXIS_LABELS['y']
+    elif not ylabel and per_class:
+        ylabel = AXIS_LABELS['mpc']
+
     ax.set_ylabel(ylabel)
     if title:
         ax.set_title(title)
     if directory:
         if result_identifier:
-            save_name = f'{distortion_id}_{result_identifier}_{ylabel}.png'
+            save_name = f'{distortion_id}_{result_identifier}_{ylabel}'
         else:
-            save_name = f'{distortion_id}_{ylabel}.png'
+            save_name = f'{distortion_id}_{ylabel}'
+        save_name = save_name + '.png'
         plt.savefig(Path(directory, save_name))
     plt.show()
 
