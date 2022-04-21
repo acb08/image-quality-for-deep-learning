@@ -5,6 +5,7 @@ import scipy.stats as stats
 from pathlib import Path
 from src.d00_utils.definitions import ROOT_DIR, REL_PATHS, STANDARD_DATASET_FILENAME
 import json
+from src.d06_chip_study.create_edge_chips import measure_snr
 
 
 def plot_rows(chip, interval=1):
@@ -77,7 +78,7 @@ def fit_edge(rows, plot=True):
     return centroids, fit
 
 
-def oversampled_esf(rows, fit, oversample_factor=4, plot=True):
+def oversampled_esf(rows, fit, oversample_factor=4, plot=False):
 
     n, m = np.shape(rows)
     x_coarse = np.arange(m)
@@ -116,6 +117,21 @@ def oversampled_esf(rows, fit, oversample_factor=4, plot=True):
     return x_oversampled, esf_estimate, oversample_factor
 
 
+def get_rer(esf, oversample_factor=4):
+
+    esf = np.asarray(esf)
+    esf = esf - np.min(esf)
+    esf = esf / np.max(esf)
+
+    mid_val = (np.max(esf) + np.min(esf)) / 2
+    mid_point_idx = np.argmin(np.abs(esf - mid_val))
+    left_val = esf[mid_point_idx - int(oversample_factor / 2)]
+    right_val = esf[mid_point_idx + int(oversample_factor / 2)]
+    rer = np.abs(right_val - left_val)
+
+    return float(rer)
+
+
 def fix_sample_length(x_oversampled, esf_estimate, target_length):
 
     n_start = len(x_oversampled)
@@ -125,7 +141,7 @@ def fix_sample_length(x_oversampled, esf_estimate, target_length):
 
     if n_start < target_length:
 
-        print('warning, fewer edge samples than expected')
+        print(f'warning, {n_start - target_length} fewer edge samples than expected')
         x_ext = np.zeros(target_length)
         x_ext[:len(x_oversampled)] = x_oversampled
         delta_x = x_oversampled[1] - x_oversampled[0]
@@ -149,55 +165,84 @@ def get_mtf(lsf):
     return mtf
 
 
-def estimate_mtf(chip):
+def estimate_mtf(chip, plot=False):
 
-    centroids, fit = fit_edge(chip, plot=False)
-    x_oversampled, esf, oversample_factor = oversampled_esf(chip, fit)
+    centroids, fit = fit_edge(chip, plot=plot)
+    x_oversampled, esf, oversample_factor = oversampled_esf(chip, fit, plot=plot)
     lsf = get_lsf(esf, pad=True)
     mtf = get_mtf(lsf)
 
-    print('esf:', len(esf), ' lsf:', len(lsf), ' mtf: ', len(mtf))
+    # print('esf:', len(esf), ' lsf:', len(lsf), ' mtf: ', len(mtf))
 
     return mtf, esf, oversample_factor
 
 
-def measure_mtf_lsf(dataset, directory):
+def measure_props(dataset, directory, plot=False, measure_edges=True):
 
     chip_data = dataset['chips']
     edge_names = dataset['edges']
     chip_dir = Path(directory, REL_PATHS['edge_chips'])
     edge_dir = Path(directory, REL_PATHS['edges'])
+
+    if 'distorted_chips' in dataset.keys():
+        distorted_chip_dir = Path(directory, REL_PATHS['distorted_edge_chips'])
+        distorted_chip_data = dataset['distorted_chips']
+    else:
+        distorted_chip_data = None
+
     output_dir = Path(directory, REL_PATHS['mtf'])
     if not output_dir.is_dir():
         Path.mkdir(output_dir)
 
-    mtf_lsf_data = {}
+    properties = {}
 
-    for edge_name in edge_names:
-        edge = get_image_array(edge_dir, edge_name)
-        mtf, esf, oversample_factor = estimate_mtf(edge)
-        mtf_lsf_data[edge_name] = {
-            'mtf': list(mtf),
-            'esf': list(esf),
-            'oversample_factor': oversample_factor
-        }
-        plot_mtf(mtf, output_dir=output_dir, chip_name=edge_name)
+    if measure_edges:
+        for edge_name in edge_names:
+            edge = get_image_array(edge_dir, edge_name)
+            mtf, esf, oversample_factor = estimate_mtf(edge, plot=plot)
+            properties[edge_name] = {
+                'mtf': list(mtf),
+                'esf': list(esf),
+                'oversample_factor': oversample_factor
+            }
+            if plot:
+                plot_mtf(mtf, output_dir=output_dir, chip_name=edge_name)
 
     for chip_name in chip_data.keys():
 
         chip = get_image_array(chip_dir, chip_name)
         mtf, esf, oversample_factor = estimate_mtf(chip)
-        mtf_lsf_data[str(chip_name)] = {
+        properties[str(chip_name)] = {
             'mtf': [float(val) for val in mtf],
             'esf': [float(val) for val in esf],
             'oversample_factor': oversample_factor
         }
-        plot_mtf(mtf, output_dir=output_dir, chip_name=chip_name)
+        if plot:
+            plot_mtf(mtf, output_dir=output_dir, chip_name=chip_name)
+
+    if distorted_chip_data:
+
+        for distorted_chip_name in distorted_chip_data.keys():
+
+            distorted_chip = get_image_array(distorted_chip_dir, distorted_chip_name)
+            mtf, esf, oversample_factor = estimate_mtf(distorted_chip)
+            edge_buffer = distorted_chip_data[distorted_chip_name]['edge_buffer']
+            snr = measure_snr(distorted_chip, edge_buffer)
+            rer = get_rer(esf, oversample_factor=oversample_factor)
+            properties[str(distorted_chip_name)] = {
+                'mtf': [float(val) for val in mtf],
+                'esf': [float(val) for val in esf],
+                'rer': rer,
+                'post_distortion_snr': snr,
+                'oversample_factor': oversample_factor
+            }
+            if plot:
+                plot_mtf(mtf, output_dir=output_dir, chip_name=distorted_chip_name)
 
     with open(Path(directory, 'mtf_lsf.json'), 'w') as file:
-        json.dump(mtf_lsf_data, file)
+        json.dump(properties, file)
 
-    return mtf_lsf_data
+    return properties
 
 
 def get_freq_axis(mtf, oversample_factor=4):
@@ -229,8 +274,6 @@ def plot_mtf(mtf, output_dir=None, chip_name=None, f_max=None):
     if output_dir and chip_name:
         plt.savefig(Path(output_dir, f'nyquist_{chip_name}'))
     plt.show()
-
-    pass
 
 
 def load_dataset(directory_key):
@@ -264,8 +307,8 @@ def normed_circ_ap_mtf(f, f_cut=None):
 
 if __name__ == '__main__':
 
-    _directory_key = '0018'
+    _directory_key = '0032'
     _directory, _dataset = load_dataset(_directory_key)
 
-    measure_mtf_lsf(_dataset, _directory)
+    _properties = measure_props(_dataset, _directory)
 

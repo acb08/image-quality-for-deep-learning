@@ -173,18 +173,6 @@ def make_edge_chips(q_values, noise_values, half_step, image_size=DFNS.pre_sampl
 
         for j, noise_value in enumerate(noise_values):
 
-            # edge = convert_to_electrons(blurred_edge, well_depth, noise_value=noise_value,
-            #                             dark_electrons=dark_electrons)
-            #
-            # edge_save = electrons_to_dn(edge, well_depth=well_depth)
-            # edge_save = Image.fromarray(edge_save)
-            # blurred_noised_edge_name = f'blurred_noised_edge_{i}_{j}.png'
-            # edge_save.save(Path(edge_dir, blurred_noised_edge_name))
-            #
-            # edges.append(blurred_edge_name)
-            # edges.append(blurred_noised_edge_name)
-            # chip = p2_downsample(edge, scale_factor)
-
             chip = p2_downsample(blurred_edge, scale_factor)
             chip = convert_to_electrons(chip, well_depth, noise_value=noise_value, dark_electrons=dark_electrons)
             chip = electrons_to_dn(chip, well_depth)
@@ -194,7 +182,7 @@ def make_edge_chips(q_values, noise_values, half_step, image_size=DFNS.pre_sampl
             chips[chip_name] = {
                 'native_noise': noise_value,
                 'measured_snr': snr,
-                'native_blur': std,
+                'native_blur': q_values[i],
                 'edge_buffer': edge_buffer,
                 'parents': [perfect_edge_name, blurred_edge_name]
             }
@@ -211,6 +199,7 @@ def make_edge_chips(q_values, noise_values, half_step, image_size=DFNS.pre_sampl
         'native_noise': 0,
         'measured_snr': False,
         'native_blur': 0,
+        'edge_buffer': edge_buffer,
         'parents': [perfect_edge_name]
     }
 
@@ -234,6 +223,8 @@ def make_edge_chips(q_values, noise_values, half_step, image_size=DFNS.pre_sampl
     with open(Path(save_dir, STANDARD_DATASET_FILENAME), 'w') as file:
         json.dump(dataset, file)
 
+    print(key)
+
 
 def measure_snr(chip, buffer):
 
@@ -252,8 +243,10 @@ def measure_snr(chip, buffer):
 
 if __name__ == '__main__':
 
-    _q_values = [1, 2]
-    _noise_values = [0, 100, 1000]
-    _half_step = False
+    _q_values = [0.5, 1, 1.5, 2]
+    _noise_values = [0, 500]
+    # _q_values = [2]
+    # _noise_values = [1]
+    _half_step = True
 
-    make_edge_chips(_q_values, _noise_values, half_step=_half_step)
+    make_edge_chips(_q_values, _noise_values, half_step=_half_step, angle=5)

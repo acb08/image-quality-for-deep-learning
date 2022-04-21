@@ -64,7 +64,7 @@ class VariablePoissonNoiseChannelReplicated(object):
     generates zero-centered poisson noise with mean selected as described above, divides the noise by 255,
     adds to input tensor and clamps the output to fall on [0, 1]
 
-    Copies the noise across input image channels so that a panchromatic image where the RGB channels are identical
+    Copies the noise across input image channels so that a panchromatic image where the RGBe channels are identical
     has the same noise added to each channel.
 
     """
@@ -205,3 +205,18 @@ tag_to_image_distortion = {
 }
 
 tag_to_transform = {}
+
+
+def chip_res_0():
+
+    pass
+
+
+def chip_blur():
+
+    pass
+
+
+def chip_noise():
+
+    pass

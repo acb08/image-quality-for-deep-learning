@@ -40,7 +40,9 @@ REL_PATHS = {
     'mtf_study': r'mtf_study',
     'edge_chips': r'edge_chips',
     'edges': r'edges',
-    'mtf': r'mtf'
+    'mtf': r'mtf',
+    'distorted_edge_chips': r'distorted_edge_chips',
+    'post_dist_props': r'post_dist_props'
 }
 
 DISTORTION_TYPES = ['pan', 'res', 'blur', 'noise']
