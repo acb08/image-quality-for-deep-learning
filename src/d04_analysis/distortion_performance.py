@@ -315,7 +315,7 @@ def analyze_perf_3d(model_performance,
 
 
 def get_model_distortion_performance_result(result_id=None, identifier=None, config=None,
-                                            distortion_ids=('res', 'blur', 'noise')):
+                                            distortion_ids=('res', 'blur', 'noise'), make_dir=True):
 
     if not result_id and not identifier:
         result_id = config['result_id']
@@ -323,7 +323,7 @@ def get_model_distortion_performance_result(result_id=None, identifier=None, con
 
     with wandb.init(project=PROJECT_ID, job_type='analyze_test_result') as run:
         output_dir = Path(ROOT_DIR, REL_PATHS['analysis'], result_id)
-        if not output_dir.is_dir():
+        if make_dir and not output_dir.is_dir():
             Path.mkdir(output_dir)
 
         model_distortion_performance = ModelDistortionPerformanceResult(run, result_id, identifier=identifier,
