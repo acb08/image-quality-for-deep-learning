@@ -10,10 +10,12 @@ def chance_perf_distortion(result, distortion_id, save=False):
 
     all_labels = np.unique(result.labels)
     chance_perf = 1 / len(all_labels)
-    distortion_values, accuracies = result.conditional_accuracy(distortion_id)
+    distortion_values, accuracies = result.conditional_accuracy(distortion_id, per_class=False)
+    ___, mpc_accuracies = result.conditional_accuracy(distortion_id, per_class=True)
 
     plt.figure()
-    plt.plot(distortion_values, accuracies, label='pre-trained model performance')
+    plt.plot(distortion_values, accuracies, label='pre-trained model accuracy')
+    plt.plot(distortion_values, mpc_accuracies, label='pre-trained model mpc accuracy')
     plt.plot(distortion_values, chance_perf * np.ones_like(distortion_values),
              label='chance performance level', linestyle='dotted')
     plt.xlabel(AXIS_LABELS[distortion_id])
