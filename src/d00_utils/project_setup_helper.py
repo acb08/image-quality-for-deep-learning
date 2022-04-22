@@ -8,6 +8,7 @@ directory_keys = [
     'model',
     'test_result',
     'analysis',
+    'project_config'
 ]
 
 

@@ -1,5 +1,7 @@
 import os
 import numpy as np
+from yaml import safe_load
+from pathlib import Path
 
 """
 Contains global constants. 
@@ -12,7 +14,7 @@ to local image files.
 """
 
 ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '../../..'))
-PROJECT_ID = 'sat6_v2'
+
 STANDARD_DATASET_FILENAME = 'dataset.json'
 STANDARD_CHECKPOINT_FILENAME = 'model_cp.pt'
 STANDARD_BEST_LOSS_FILENAME = 'best_loss.pt'
@@ -37,8 +39,14 @@ REL_PATHS = {
     'pan': r'0-pan',
     'res': r'1-res',
     'blur': r'2-blur',
-    'noise': r'3-noise'
+    'noise': r'3-noise',
+    'project_config': r'project_config'
 }
+
+_project_config_filename = 'local_config.yml'
+with open(Path(ROOT_DIR, REL_PATHS['local_config'], _project_config_filename), 'r') as file:
+    _config = safe_load(file)
+PROJECT_ID = _config['PROJECT_ID']
 
 DISTORTION_TYPES = ['pan', 'res', 'blur', 'noise']
 
