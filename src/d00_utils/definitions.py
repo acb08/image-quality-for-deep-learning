@@ -44,7 +44,7 @@ REL_PATHS = {
 }
 
 _project_config_filename = 'local_config.yml'
-with open(Path(ROOT_DIR, REL_PATHS['local_config'], _project_config_filename), 'r') as file:
+with open(Path(ROOT_DIR, REL_PATHS['project_config'], _project_config_filename), 'r') as file:
     _config = safe_load(file)
 PROJECT_ID = _config['PROJECT_ID']
 
