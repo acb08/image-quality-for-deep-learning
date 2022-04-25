@@ -104,8 +104,12 @@ elif PROJECT_ID[:6] == 'places':
             'rel_path': r'datasets/train/data_256',
             'names_labels_filename': 'places365_train_standard.txt',
             'artifact_type': 'train_dataset'
-        }
-        # TODO: add train_256_challenge
+        },
+        'train_256_challenge': {
+            'rel_path': r'datasets/train/challenge/data_256',
+            'names_labels_filename': 'places365_train_challenge.txt',
+            'artifact_type': 'train_dataset'
+        },
     }
 
     ORIGINAL_PRETRAINED_MODELS = {
