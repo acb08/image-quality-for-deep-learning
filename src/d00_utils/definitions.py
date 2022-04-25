@@ -121,6 +121,22 @@ elif PROJECT_ID[:6] == 'places':
             'arch': 'resnet18',
             'artifact_type': 'model'
         },
+        'resnet50_places365_as_downloaded': {
+            'model_file_config': {
+                'model_rel_dir': r'models/resnet50',
+                'model_filename': 'resnet50_places365.pth.tar',
+            },
+            'arch': 'resnet50',
+            'artifact_type': 'model'
+        },
+        'densenet161_places365_as_downloaded': {
+            'model_file_config': {
+                'model_rel_dir': r'models/densenet161',
+                'model_filename': 'densenet161_places365.pth.tar',
+            },
+            'arch': 'densenet161',
+            'artifact_type': 'model'
+        },
     }
 
 else:

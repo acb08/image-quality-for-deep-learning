@@ -13,7 +13,9 @@ wandb.login()
 def load_pretrained_model(model_id):
 
     """
-    Returns pre-trained model
+    Returns pre-trained model. Places365 model loading code pulled from https://github.com/CSAILVision/places365, with
+    densenet161 state dict reconfiguration pulled from xeroxM comment at
+    https://github.com/CSAILVision/places365/issues/53
     """
 
     model_metadata = ORIGINAL_PRETRAINED_MODELS[model_id]
@@ -30,12 +32,34 @@ def load_pretrained_model(model_id):
 
         return model
 
+    if model_id == 'resnet50_places365_as_downloaded':
+        model = models.__dict__[arch](num_classes=365)
+        checkpoint = torch.load(model_path, map_location=lambda storage, loc: storage)
+        state_dict = {str.replace(k, 'module.', ''): v for k, v in checkpoint['state_dict'].items()}
+        model.load_state_dict(state_dict)
+
+        return model
+
+    if model_id == 'densenet161_places365_as_downloaded':
+
+        model = models.__dict__[arch](num_classes=365)
+        checkpoint = torch.load(model_path, map_location=lambda storage, loc: storage)
+
+        state_dict = {str.replace(k, 'module.', ''): v for k, v in checkpoint['state_dict'].items()}
+        state_dict = {str.replace(k, 'norm.', 'norm'): v for k, v in state_dict.items()}
+        state_dict = {str.replace(k, 'conv.', 'conv'): v for k, v in state_dict.items()}
+        state_dict = {str.replace(k, 'normweight', 'norm.weight'): v for k, v in state_dict.items()}
+        state_dict = {str.replace(k, 'normrunning', 'norm.running'): v for k, v in state_dict.items()}
+        state_dict = {str.replace(k, 'normbias', 'norm.bias'): v for k, v in state_dict.items()}
+        state_dict = {str.replace(k, 'convweight', 'conv.weight'): v for k, v in state_dict.items()}
+
+        model.load_state_dict(state_dict)
+
+        return model
+
     if model_id == 'resnet18_sat6':
         model = Sat6ResNet()
         return model
-
-
-# TODO: consider moving get_model_path() to functions.py
 
 
 def load_log_original_model(config):
