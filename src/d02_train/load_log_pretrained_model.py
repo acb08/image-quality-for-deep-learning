@@ -117,9 +117,4 @@ if __name__ == '__main__':
     args_passed = parser.parse_args()
     run_config = get_config(args_passed)
 
-    # _model_id = 'resnet18_sat6'
-    # _new_model_id = 'resnet18_sat6'
-    # _new_model_filename = 'resnet18.pt'
-    # _description = 'test of loading and logging resnet18 pre-trained with sat6 modifications'
-
     load_log_original_model(run_config)
