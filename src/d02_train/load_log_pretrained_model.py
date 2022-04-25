@@ -2,8 +2,9 @@ import torchvision.models as models
 import torch
 from pathlib import Path
 from src.d00_utils.definitions import ROOT_DIR, ORIGINAL_PRETRAINED_MODELS, PROJECT_ID, REL_PATHS
-from src.d00_utils.functions import get_model_path, save_model  # ,read_json_artifact, load_wandb_model
+from src.d00_utils.functions import get_model_path, save_model, get_config  # ,read_json_artifact, load_wandb_model
 from src.d00_utils.classes import Sat6ResNet
+import argparse
 
 import wandb
 wandb.login()
@@ -37,7 +38,12 @@ def load_pretrained_model(model_id):
 # TODO: consider moving get_model_path() to functions.py
 
 
-def load_log_original_model(model_id, new_model_id, new_model_filename, description):
+def load_log_original_model(config):
+
+    model_id = config['model_id']
+    description = config['description']
+    new_model_id = config['new_model_id']
+    new_model_filename = config['new_model_filename']
 
     model = load_pretrained_model(model_id)
 
@@ -79,9 +85,17 @@ def load_log_original_model(model_id, new_model_id, new_model_filename, descript
 
 if __name__ == '__main__':
 
-    _model_id = 'resnet18_sat6'
-    _new_model_id = 'resnet18_sat6'
-    _new_model_filename = 'resnet18.pt'
-    _description = 'test of loading and logging resnet18 pre-trained with sat6 modifications'
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config_name', default='artifact_log_config.yml', help='config filename to be used')
+    parser.add_argument('--config_dir',
+                        default=Path(Path(__file__).parents[0], 'artifact_log_configs'),
+                        help="configuration file directory")
+    args_passed = parser.parse_args()
+    run_config = get_config(args_passed)
 
-    load_log_original_model(_model_id, _new_model_id, _new_model_filename, _description)
+    # _model_id = 'resnet18_sat6'
+    # _new_model_id = 'resnet18_sat6'
+    # _new_model_filename = 'resnet18.pt'
+    # _description = 'test of loading and logging resnet18 pre-trained with sat6 modifications'
+
+    load_log_original_model(run_config)
