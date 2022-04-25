@@ -63,4 +63,5 @@ if __name__ == '__main__':
 
     _description = 'test of ability to log Places365 train_256 as artifact. parent_dataset_id is ' \
                    'identical to dataset_id when logging initial datasets'
-    main('train_256_standard', description=_description)
+    # main('train_256_standard', description=_description)
+    main('val_256', description=_description)
