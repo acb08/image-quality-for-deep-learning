@@ -63,6 +63,6 @@ if __name__ == '__main__':
 
     _description = 'Logging val_256 dataset as W&B artifact. parent_dataset_id is ' \
                    'identical to dataset_id when logging initial datasets'
-    # main('train_256_standard', description=_description)
-    # main('val_256', description=_description)
-    main('train_256_challenge', description=_description)
+    main('train_256_standard', description=_description)
+    main('val_256', description=_description)
+    # main('train_256_challenge', description=_description)
