@@ -93,8 +93,10 @@ class VariableImageResize(object):
     transform to be used before being called.
     """
 
-    def __init__(self, sizes):
+    def __init__(self, sizes, interpolation_mode='bilinear', antialias=False):
         self.sizes = sizes
+        self.interpolation_mode = interpolation_mode
+        self.antialias = antialias
         self.transform_bank = self.build_transform_bank()
         self.size_keys = list(self.transform_bank.keys())
 
@@ -102,9 +104,18 @@ class VariableImageResize(object):
         transform_bank = {}
         for size in self.sizes:
             size = int(size)
-            new_transform = transforms.Compose([transforms.Resize(size,
-                                                                  interpolation=transforms.InterpolationMode.BILINEAR,
-                                                                  antialias=True)])
+            if self.interpolation_mode == 'bilinear':
+                new_transform = transforms.Compose(
+                    [transforms.Resize(size, interpolation=transforms.InterpolationMode.BILINEAR,
+                                       antialias=self.antialias)]
+                )
+            elif self.interpolation_mode == 'bicubic':
+                new_transform = transforms.Compose(
+                    [transforms.Resize(size, interpolation=transforms.InterpolationMode.BICUBIC,
+                                       antialias=self.antialias)]
+                )
+            else:
+                raise Exception('Invalid interpolation_mode')
             transform_bank[size] = new_transform
         print('build_transform_bank called')
         return transform_bank
@@ -132,17 +143,26 @@ class VariableResolution(object):
     Randomly selects a resize transform per the sizes argument passed in the __init__() method
     """
 
-    def __init__(self, sizes):
+    def __init__(self, sizes, interpolation_mode='bilinear', antialias=False):
         self.sizes = sizes
+        self.interpolation_mode = interpolation_mode
+        self.antialias = antialias
         self.transform_bank = self.build_transform_bank()
 
     def build_transform_bank(self):
         transform_bank = []
         for size in self.sizes:
             size = int(size)
-            new_transform = transforms.Resize(size,
-                                              interpolation=transforms.InterpolationMode.BILINEAR,
-                                              antialias=True)
+            if self.interpolation_mode == 'bilinear':
+                new_transform = transforms.Resize(size,
+                                                  interpolation=transforms.InterpolationMode.BILINEAR,
+                                                  antialias=self.antialias)
+            elif self.interpolation_mode == 'bicubic':
+                new_transform = transforms.Resize(size,
+                                                  interpolation=transforms.InterpolationMode.BICUBIC,
+                                                  antialias=self.antialias)
+            else:
+                raise Exception('Invalid interpolation_mode')
             transform_bank.append(new_transform)
         print('build_transform_bank called')
         return transform_bank
