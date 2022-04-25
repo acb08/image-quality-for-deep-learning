@@ -1,6 +1,6 @@
 ---
 
-model_id: 'resnet50_places365_as_downloaded'
-new_model_id: 'resnet50_pretrained'
-new_model_filename: 'resnet50.pt'
-description: 'test of loading and logging pre-trained Places365 model'
+model_id: 'densenet161_places365_as_downloaded'
+new_model_id: 'densenet161_pretrained'
+new_model_filename: 'densenet161.pt'
+description: 'logging pre-trained places365 densenet model'
