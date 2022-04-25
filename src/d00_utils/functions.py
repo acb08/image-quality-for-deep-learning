@@ -20,7 +20,7 @@ def load_original_dataset(dataset_id):
 
     path_info = ORIGINAL_DATASETS[dataset_id]
     dataset_dir = path_info['rel_path']
-    img_dir = REL_PATHS['images']
+    # img_dir = REL_PATHS['images']
     label_filename = path_info['names_labels_filename']
     names_labels = []
 
@@ -33,7 +33,7 @@ def load_original_dataset(dataset_id):
 
     image_metadata = {
         'dataset_dir': dataset_dir,
-        'img_dir': img_dir,
+        # 'img_dir': img_dir,
         'names_labels': names_labels
     }
 
