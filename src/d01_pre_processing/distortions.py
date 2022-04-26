@@ -106,13 +106,17 @@ class VariableImageResize(object):
             size = int(size)
             if self.interpolation_mode == 'bilinear':
                 new_transform = transforms.Compose(
-                    [transforms.Resize(size, interpolation=transforms.InterpolationMode.BILINEAR,
-                                       antialias=self.antialias)]
+                    [transforms.ToTensor(),
+                     transforms.Resize(size, interpolation=transforms.InterpolationMode.BILINEAR,
+                                       antialias=self.antialias),
+                     transforms.ToPILImage()]
                 )
             elif self.interpolation_mode == 'bicubic':
                 new_transform = transforms.Compose(
-                    [transforms.Resize(size, interpolation=transforms.InterpolationMode.BICUBIC,
-                                       antialias=self.antialias)]
+                    [transforms.ToTensor(),
+                     transforms.Resize(size, interpolation=transforms.InterpolationMode.BICUBIC,
+                                       antialias=self.antialias),
+                     transforms.ToPILImage()]
                 )
             else:
                 raise Exception('Invalid interpolation_mode')
@@ -289,16 +293,34 @@ def r_scan_v2():
     return transform
 
 
+def r_scan_pl():
+    """
+    Initializes and returns a VariableImageResize instance designed to re-size SAT6 images
+    randomly between 25% and 100% of original images size. Intended for use in dataset distortion (as opposed to in
+    a dataloader)
+    """
+
+    max_size = 256
+    res_fractions = np.linspace(0.15, 1, num=20)
+    sizes = [int(res_frac * max_size) for res_frac in res_fractions]
+    transform = VariableImageResize(sizes)
+
+    return transform
+
+
 tag_to_image_distortion = {
+
     # _scan transforms intended for finding the point along each distortion axis at which performance of a
     # pre-trained model drops to chance
-    'r_scan': r_scan,
-    'r_scan_v2': r_scan_v2,
+    'r_scan': r_scan,  # sat6
+    'r_scan_v2': r_scan_v2,  # sat6
     'b_scan': b_scan,
     'b_scan_v2': b_scan_v2,
     # 'n_scan': n_scan, # n_scan did not replicate noise over image channels
     'n_scan_v2': n_scan_v2,
-    'n_scan_v3': n_scan_v3
+    'n_scan_v3': n_scan_v3,
+
+    'r_scan_pl': r_scan_pl  # places
 }
 
 tag_to_transform = {}
