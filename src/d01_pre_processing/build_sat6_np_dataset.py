@@ -8,9 +8,6 @@ import json
 import scipy.io
 
 
-wandb.login()
-
-
 def mat_to_numpy(data_x,
                  data_y,
                  num_images,
@@ -205,6 +202,8 @@ def build_log_numpy(config):
 
 
 if __name__ == "__main__":
+
+    wandb.login()
 
     _description = 'build basic pan train dataset'
     _num_images = 'all'
