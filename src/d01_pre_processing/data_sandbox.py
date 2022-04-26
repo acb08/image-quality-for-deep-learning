@@ -2,6 +2,8 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 import numpy as np
+from src.d00_utils.functions import load_data_vectors
+import matplotlib.pyplot as plt
 
 
 class NumpyDataset(Dataset):
@@ -35,44 +37,60 @@ def to_tensor_homebrew(array):
     return new_array
 
 
-num_samples = 10
-labels = np.arange(num_samples)
-shape = (num_samples, 256, 256, 1)
-data = np.random.randint(0, 255, shape, dtype=np.uint8)
-tensor = torch.tensor(data)
+# num_samples = 10
+# labels = np.arange(num_samples)
+# shape = (num_samples, 256, 256, 1)
+# data = np.random.randint(0, 255, shape, dtype=np.uint8)
+# tensor = torch.tensor(data)
+#
+# _transform = transforms.Compose([
+#     transforms.ToTensor()
+# ])
+#
+# dataset = NumpyDataset(data, labels, transform=_transform)
+# loader = DataLoader(dataset, batch_size=16, shuffle=True)
+#
+# mean_diffs = []
+#
+# for (images, labels) in loader:
+#
+#     print(np.shape(images), labels)
+#
+#     for i, label in enumerate(labels):
+#         original = get_original(data, int(label))
+#         original_torchified = to_tensor_homebrew(original)
+#         diff = images[i] - original_torchified
+#         mean_diffs.append(float(torch.mean(diff)))
+#
+#
+# def foo(a, b):
+#
+#     print(a)
+#     print(b)
+#
+#     return
+#
+#
+# _bar = {
+#     'a': 1,
+#     'b': 2,
+# }
+#
+# foo(**_bar)
 
-_transform = transforms.Compose([
-    transforms.ToTensor()
-])
+def view_npz_file_images(how_many, directory, filename):
 
-dataset = NumpyDataset(data, labels, transform=_transform)
-loader = DataLoader(dataset, batch_size=16, shuffle=True)
-
-mean_diffs = []
-
-for (images, labels) in loader:
-
-    print(np.shape(images), labels)
-
-    for i, label in enumerate(labels):
-        original = get_original(data, int(label))
-        original_torchified = to_tensor_homebrew(original)
-        diff = images[i] - original_torchified
-        mean_diffs.append(float(torch.mean(diff)))
+    image_vector, label_vector = load_data_vectors(filename, directory)
+    for i in range(how_many):
+        image = image_vector[i]
+        plt.figure()
+        plt.imshow(image)
+        plt.title(str(label_vector[i]))
+        plt.show()
 
 
-def foo(a, b):
+_directory = '/home/acb6595/places/datasets/train/0002_trn_trial/val_split'
+_filename = 'val_vectors_31.npz'
 
-    print(a)
-    print(b)
-
-    return
-
-
-_bar = {
-    'a': 1,
-    'b': 2,
-}
-
-foo(**_bar)
+view_npz_file_images(10, _directory, _filename)
 

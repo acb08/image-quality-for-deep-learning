@@ -9,7 +9,7 @@ import json
 import random
 
 
-def build_data_vector(image_dir, names_labels, image_shape, datatype_key, pan=True):
+def build_data_vector(image_dir, names_labels, image_shape, datatype_key, convert_to_pan=True):
 
     datatype = DATATYPE_MAP[datatype_key]
 
@@ -23,8 +23,9 @@ def build_data_vector(image_dir, names_labels, image_shape, datatype_key, pan=Tr
 
         image_path = Path(image_dir, image_name)
         image = Image.open(image_path).convert('RGB')
-        if pan:
+        if convert_to_pan:
             image = ImageOps.grayscale(image)
+            image = image.convert('RGB')  # grayscale, channel replicated
         image = np.asarray(image, dtype=datatype)
         image_vector[idx] = image
         label_vector[idx] = label
@@ -75,7 +76,7 @@ def transfer_to_numpy(parent_names_labels,
                       file_count_offset=0,
                       filename_stem=None,
                       parent_dataset_id=None,
-                      pan=True):
+                      convert_to_pan=True):
 
     """
     :param parent_names_labels: list of name label pairs
@@ -92,12 +93,15 @@ def transfer_to_numpy(parent_names_labels,
     is use_flag
     :param parent_dataset_id: optional, allows traceability of outputs for metrics across different
     distortions
-    :param pan: optional, if True, converts image to panchromatic/grayscale
+    :param convert_to_pan: optional, if True, converts image to panchromatic/grayscale
     :return: dict with filenames for .npz vector files and keys to access the files image vectors and label vectors
     """
 
     if not filename_stem:
         filename_stem = use_flag
+
+    if use_flag == 'pan' and not convert_to_pan:
+        raise Exception("Use flag == 'pan' but convert_to_pan is False.")
 
     starting_img_dir = Path(ROOT_DIR, starting_img_parent_rel_dir)
 
@@ -132,7 +136,7 @@ def transfer_to_numpy(parent_names_labels,
                                                        names_labels_subset,
                                                        image_shape,
                                                        datatype_key,
-                                                       pan=pan)
+                                                       convert_to_pan=convert_to_pan)
 
         name_label_filename = f'{filename_stem}_{file_count_offset + i}.npz'
         np.savez_compressed(Path(new_data_dir, name_label_filename),
@@ -201,6 +205,8 @@ def build_log_numpy(config):
                                                     train_path_flag,
                                                     new_dataset_abs_dir)
 
+            # note: if num_images != 'all', the actual ratio of train images to validation images will not match
+            # val_frac. val_frac sets the numbers of mages train_split and val_split
             dataset_val_split = transfer_to_numpy(val_split,
                                                   starting_img_parent_rel_dir,
                                                   num_images,
@@ -250,7 +256,7 @@ if __name__ == "__main__":
 
     _description = 'convert train dataset to numpy files'
     _num_images = 2048
-    _images_per_file = 1024
+    _images_per_file = 64
     _parent_dataset_id = 'train_256_standard'
 
     _pick_other_val_frac = False
