@@ -65,4 +65,4 @@ if __name__ == '__main__':
                    'identical to dataset_id when logging initial datasets'
     main('train_256_standard', description='logging train_256_standard dataset as W&B artifact')
     main('val_256', description=_description)
-    main('train_256_challenge', description='logging train_256_standard dataset as W&B artifact')
+    # main('train_256_challenge', description='logging train_256_standard dataset as W&B artifact')

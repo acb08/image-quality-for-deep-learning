@@ -1,18 +1,19 @@
 ---
 
-description: noise scan test dataset to find the noise level at which pre-trained performance drops to chance
+description: test of res scan in updated distortion script
 
-parent_dataset_id: sat6_full
+parent_dataset_id: val_256
 parent_artifact_alias: latest
 parent_artifact_filename: standard  # standard functions as a flag to use definitions.STANDARD_ARTIFACT_FILENAME
 
-num_images: 'all'
-images_per_file: 1000
-distortion_tags: ['n_scan']
-distortion_type_flags: ['noise']  # specifies distortion_tags associated distortion types
+num_images: 2048
+images_per_file: 64
+distortion_tags: ['r_scan_pl']
+distortion_type_flags: ['res']  # specifies distortion_tags associated distortion types
 iterations: 1
 artifact_type: test_dataset
 dataset_split_key: test  # used to mirror 'train'/'val' split in data structure
 artifact_filename: standard
 datatype_key: np.uint8
 
+image_shape: [256, 256, 3]  # only used by places scripts

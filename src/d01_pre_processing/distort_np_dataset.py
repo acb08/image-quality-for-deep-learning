@@ -302,6 +302,7 @@ def distort_log_numpy(config):
                                                     'pan',
                                                     new_dataset_abs_dir,
                                                     file_count_offset=file_count_offset,
+                                                    filename_stem='test',
                                                     parent_dataset_id=parent_dataset_id)
 
             subset_image_label_filenames = new_data_subset['image_and_label_filenames']
@@ -370,8 +371,6 @@ def distort_log_numpy(config):
         run.name = new_dataset_id
         log_config(new_dataset_abs_dir, dict(config), return_path=False)
 
-    pass
-
 
 if __name__ == '__main__':
 
@@ -383,13 +382,4 @@ if __name__ == '__main__':
     args_passed = parser.parse_args()
     run_config = get_config(args_passed)
 
-    if PROJECT_ID[:4] == 'sat6':
-        # sat6_distort_log_numpy(run_config)
-        distort_log_numpy(run_config)
-
-    elif PROJECT_ID[:6] == 'places':
-        distort_log_numpy(run_config)
-
-    else:
-        raise Exception('Invalid project ID')
-
+    distort_log_numpy(run_config)

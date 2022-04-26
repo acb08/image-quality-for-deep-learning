@@ -89,8 +89,12 @@ def view_npz_file_images(how_many, directory, filename):
         plt.show()
 
 
-_directory = '/home/acb6595/places/datasets/train/0002_trn_trial/val_split'
-_filename = 'val_vectors_31.npz'
+_directory = '/home/acb6595/places/datasets/test/0006_tst_r_scan_pl/1-res'
+_filenames = 'val_vectors_31.npz'
 
-view_npz_file_images(10, _directory, _filename)
+_filenames = [f'test_{i}.npz' for i in range(31)]
+
+for _filename in _filenames:
+
+    view_npz_file_images(1, _directory, _filename)
 
