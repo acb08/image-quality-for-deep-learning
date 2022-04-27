@@ -43,11 +43,12 @@ if __name__ == '__main__':
     # _result_id = '0003_rlt_0000_mdl_best_loss_0003_tst_r_scan_v2_res'
     # _result_id = '0009_rlt_0000_mdl_best_loss_0007_tst_n_scan_v3_noise'
 
-    _result_id = '0000_rlt_resnet18_pretrained_0000_tst_r_scan_pl_res'
-    _result_id = '0001_rlt_resnet50_pretrained_0000_tst_r_scan_pl_res'
+    # _result_id = '0000_rlt_resnet18_pretrained_0000_tst_r_scan_pl_res'
+    # _result_id = '0001_rlt_resnet50_pretrained_0000_tst_r_scan_pl_res'
+    _result_id = '0002_rlt_densenet161_pretrained_0000_tst_r_scan_pl_res'
 
     _distortion_id = 'res'
-    _identifier = 'rn50_r-scan'
+    _identifier = 'dn161_r-scan'
 
     _result, __ = get_model_distortion_performance_result(result_id=_result_id, identifier=_identifier,
                                                           distortion_ids=(_distortion_id,), make_dir=False)
