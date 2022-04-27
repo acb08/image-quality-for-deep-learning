@@ -9,7 +9,7 @@ test_dataset_artifact_alias: latest
 model_artifact_id: resnet50_pretrained
 model_artifact_alias: latest
 
-batch_size: 64
+batch_size: 32  # dropped to 32 to try to fit on P4 card
 num_workers: 4
 pin_memory: True
 crop_flag: False
