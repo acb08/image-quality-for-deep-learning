@@ -301,12 +301,15 @@ def save_model(model, model_metadata):
 
 def load_model(model_path, arch):
 
-    if arch == 'resnet18':
-        model = models.__dict__[arch](num_classes=365)
-        # model.load_state_dict(torch.load(model_path))
+    # if arch == 'resnet18':
+    #     model = models.__dict__[arch](num_classes=365)
+    #     # model.load_state_dict(torch.load(model_path))
 
     if arch == 'resnet18_sat6':
         model = Sat6ResNet()
+
+    else:
+        model = models.__dict__[arch](num_classes=365)
 
     model.load_state_dict(torch.load(model_path))
 
