@@ -320,8 +320,8 @@ def load_wandb_model_artifact(run, artifact_id, return_configs=False):
     artifact_abs_dir = Path(Path.cwd(), artifact_dir)
 
     helper_data = read_json_artifact(artifact_abs_dir, 'helper.json')
-    # arch = helper_data['arch']
-    arch = 'resnet18_sat6'
+    arch = helper_data['arch']
+    # arch = 'resnet18_sat6'
     artifact_type = helper_data['artifact_type']
     model_filename = helper_data['model_file_config']['model_filename']
     model_path = Path(artifact_dir, model_filename)
