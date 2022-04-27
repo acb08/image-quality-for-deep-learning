@@ -66,7 +66,8 @@ class ModelDistortionPerformanceResult(DistortedDataset):
 
     def __init__(self, run, result_id, identifier=None, convert_to_std=True, distortion_ids=('res', 'blur', 'noise')):
         self.convert_to_std = convert_to_std
-        self.dataset, self.result, self.dataset_id = load_dataset_and_result(run, result_id)
+        self.result_id = result_id
+        self.dataset, self.result, self.dataset_id = load_dataset_and_result(run, self.result_id)
         self.distortion_ids = distortion_ids
         DistortedDataset.__init__(self, self.dataset, convert_to_std=self.convert_to_std,
                                   distortion_ids=self.distortion_ids)
