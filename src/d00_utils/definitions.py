@@ -90,6 +90,22 @@ if PROJECT_ID[:4] == 'sat6':
             },
             'arch': 'resnet18_sat6',
             'artifact_type': 'model'
+        },
+        'resnet50_sat6': {
+            'model_file_config': {
+                'model_rel_dir': r'none',  # in torchvsion.models library
+                'model_filename': r'none',  # stored as string to avoid error in load_pretrained_model()
+            },
+            'arch': 'resnet50_sat6',
+            'artifact_type': 'model'
+        },
+        'densenet161_sat6': {
+            'model_file_config': {
+                'model_rel_dir': r'none',  # in torchvsion.models library
+                'model_filename': r'none',  # stored as string to avoid error in load_pretrained_model()
+            },
+            'arch': 'densenet161_sat6',
+            'artifact_type': 'model'
         }
     }
 

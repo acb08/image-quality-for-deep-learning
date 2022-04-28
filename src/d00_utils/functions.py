@@ -306,10 +306,10 @@ def load_model(model_path, arch):
     #     # model.load_state_dict(torch.load(model_path))
 
     if arch == 'resnet18_sat6':
-        # model = Sat6ResNet()
-        arch = 'resnet18'
+        model = Sat6ResNet()
 
-    model = models.__dict__[arch](num_classes=NUM_CLASSES)
+    else:
+        model = models.__dict__[arch](num_classes=NUM_CLASSES)
 
     model.load_state_dict(torch.load(model_path))
 

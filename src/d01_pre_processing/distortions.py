@@ -265,7 +265,7 @@ def b_scan_v2(img):
 
 def b_scan_v3(img):
 
-    kernel_size = 30
+    kernel_size = 31
     sigma_range = np.linspace(0.1, 5, num=21, endpoint=True)
     std = np.random.choice(sigma_range)
 
