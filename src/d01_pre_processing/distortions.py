@@ -263,6 +263,15 @@ def b_scan_v2(img):
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
 
 
+def b_scan_v3(img):
+
+    kernel_size = 30
+    sigma_range = np.linspace(0.1, 5, num=21, endpoint=True)
+    std = np.random.choice(sigma_range)
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
+
+
 def r_scan():
     """
     Initializes and returns a VariableImageResize instance designed to re-size SAT6 images
@@ -295,13 +304,28 @@ def r_scan_v2():
 
 def r_scan_pl():
     """
-    Initializes and returns a VariableImageResize instance designed to re-size SAT6 images
+    Initializes and returns a VariableImageResize instance designed to re-size Places365 images
     randomly between 25% and 100% of original images size. Intended for use in dataset distortion (as opposed to in
     a dataloader)
     """
 
     max_size = 256
     res_fractions = np.linspace(0.15, 1, num=20)
+    sizes = [int(res_frac * max_size) for res_frac in res_fractions]
+    transform = VariableImageResize(sizes)
+
+    return transform
+
+
+def r_scan_plv2():
+    """
+    Initializes and returns a VariableImageResize instance designed to re-size Places365 images
+    randomly between 25% and 100% of original images size. Intended for use in dataset distortion (as opposed to in
+    a dataloader)
+    """
+
+    max_size = 256
+    res_fractions = np.linspace(0.1, 1, num=20)
     sizes = [int(res_frac * max_size) for res_frac in res_fractions]
     transform = VariableImageResize(sizes)
 
@@ -316,11 +340,13 @@ tag_to_image_distortion = {
     'r_scan_v2': r_scan_v2,  # sat6
     'b_scan': b_scan,
     'b_scan_v2': b_scan_v2,
+    'b_scan_v3': b_scan_v3,
     # 'n_scan': n_scan, # n_scan did not replicate noise over image channels
     'n_scan_v2': n_scan_v2,
     'n_scan_v3': n_scan_v3,
 
-    'r_scan_pl': r_scan_pl  # places
+    'r_scan_pl': r_scan_pl,  # places
+    'r_scan_plv2': r_scan_plv2,
 }
 
 tag_to_transform = {}
