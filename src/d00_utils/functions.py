@@ -1,7 +1,7 @@
 import torchvision.models as models
 import torch
 from src.d00_utils.definitions import ROOT_DIR, REL_PATHS, ORIGINAL_DATASETS, KEY_LENGTH, ARTIFACT_TYPE_TAGS, \
-    STANDARD_CONFIG_USED_FILENAME
+    STANDARD_CONFIG_USED_FILENAME, NUM_CLASSES
 import json
 from pathlib import Path
 from yaml import safe_load, dump
@@ -306,10 +306,10 @@ def load_model(model_path, arch):
     #     # model.load_state_dict(torch.load(model_path))
 
     if arch == 'resnet18_sat6':
-        model = Sat6ResNet()
+        # model = Sat6ResNet()
+        arch = 'resnet18'
 
-    else:
-        model = models.__dict__[arch](num_classes=365)
+    model = models.__dict__[arch](num_classes=NUM_CLASSES)
 
     model.load_state_dict(torch.load(model_path))
 

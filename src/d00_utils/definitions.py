@@ -93,6 +93,8 @@ if PROJECT_ID[:4] == 'sat6':
         }
     }
 
+    NUM_CLASSES = 6
+
 elif PROJECT_ID[:6] == 'places':
 
     ORIGINAL_DATASETS = {
@@ -139,6 +141,8 @@ elif PROJECT_ID[:6] == 'places':
             'artifact_type': 'model'
         },
     }
+
+    NUM_CLASSES = 365
 
 else:
     raise Exception('Invalid project ID')
