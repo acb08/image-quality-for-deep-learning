@@ -42,8 +42,8 @@ class Sat6DenseNet161(nn.Module):
         self.model = models.densenet161(pretrained=True)
 
         # Change the output layer to output 6 classes instead of 1000 classes
-        num_ftrs = self.model.fc.in_features
-        self.model.fc = nn.Linear(num_ftrs, 6)
+        num_ftrs = self.model.classifier.in_features
+        self.model.classifier = nn.Linear(num_ftrs, 6)
 
     def forward(self, x):
         return self.model(x)

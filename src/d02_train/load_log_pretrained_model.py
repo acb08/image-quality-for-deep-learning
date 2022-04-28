@@ -3,7 +3,7 @@ import torch
 from pathlib import Path
 from src.d00_utils.definitions import ROOT_DIR, ORIGINAL_PRETRAINED_MODELS, PROJECT_ID, REL_PATHS
 from src.d00_utils.functions import get_model_path, save_model, get_config  # ,read_json_artifact, load_wandb_model
-from src.d00_utils.classes import Sat6ResNet
+from src.d00_utils.classes import Sat6ResNet, Sat6ResNet50, Sat6DenseNet161
 import argparse
 
 import wandb
@@ -59,6 +59,14 @@ def load_pretrained_model(model_id):
 
     if model_id == 'resnet18_sat6':
         model = Sat6ResNet()
+        return model
+
+    if model_id == 'resnet50_sat6':
+        model = Sat6ResNet50()
+        return model
+
+    if model_id == 'densenet161_sat6':
+        model = Sat6DenseNet161()
         return model
 
 
