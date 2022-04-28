@@ -16,3 +16,4 @@ dataset_split_key: test  # used to mirror 'train'/'val' split in data structure
 artifact_filename: standard
 datatype_key: np.uint8
 
+image_shape: [256, 256, 3]  # only used by places scripts
