@@ -175,7 +175,7 @@ def string_from_tags(tags):
 
     tag_string = ""
     for tag in tags:
-        tag_string = tag_string + f"_{tag}"
+        tag_string = tag_string + f"-{tag}"
 
     return tag_string
 
