@@ -316,7 +316,7 @@ def load_tune_model(config):
         distortion_tags = config['distortion_tags']
         crop_flag = config['crop_flag']
         transform = get_transform(distortion_tags, crop=crop_flag)
-        optimizer = getattr(torch.optim, config['optimizer'])(model.parameters())
+        optimizer = getattr(torch.optim, config['optimizer'], config['lr'])(model.parameters())
         loss_function = getattr(nn, config['loss_func'])()
         description = config['description']
         artifact_type = config['artifact_type']
