@@ -3,7 +3,7 @@
 description: test of pretrained densenet161 model on blur scan test dataset
 descriptive_tags: ['blur-scan']
 
-test_dataset_id: 0001_tst_b_scan_v2_blur # blur scan dataset
+test_dataset_id: 0005_tst_b_scan_v3_blur # second places blur scan dataset
 test_dataset_artifact_alias: latest
 
 model_artifact_id: densenet161_pretrained

@@ -3,7 +3,7 @@
 description: test of pretrained resnet18 model on resolution scan test dataset
 descriptive_tags: ['res-scan']
 
-test_dataset_id: 0000_tst_r_scan_pl_res # resolution scan dataset
+test_dataset_id: 0004_tst_r_scan_plv2_res # second places resolution scan dataset
 test_dataset_artifact_alias: latest
 
 model_artifact_id: resnet18_pretrained
