@@ -327,7 +327,10 @@ def load_tune_model(config):
         train_abs_dir = Path(ROOT_DIR, dataset_rel_dir, REL_PATHS['train_vectors'])
         val_abs_dir = Path(ROOT_DIR, dataset_rel_dir, REL_PATHS['val_vectors'])
 
-        new_model_id = id_from_tags(artifact_type, distortion_tags)
+        model_id_tags = [arch]
+        model_id_tags.extend(distortion_tags)
+
+        new_model_id = id_from_tags(artifact_type, model_id_tags)
         new_model_rel_dir = Path(REL_PATHS[artifact_type], new_model_id)
 
         new_model_checkpoint_file_config = {
