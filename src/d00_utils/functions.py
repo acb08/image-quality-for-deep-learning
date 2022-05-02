@@ -1,12 +1,12 @@
 import torchvision.models as models
 import torch
 from src.d00_utils.definitions import ROOT_DIR, REL_PATHS, ORIGINAL_DATASETS, KEY_LENGTH, ARTIFACT_TYPE_TAGS, \
-    STANDARD_CONFIG_USED_FILENAME
+    STANDARD_CONFIG_USED_FILENAME, NUM_CLASSES
 import json
 from pathlib import Path
 from yaml import safe_load, dump
 import numpy as np
-from src.d00_utils.classes import Sat6ResNet
+from src.d00_utils.classes import Sat6ResNet, Sat6ResNet50, Sat6DenseNet161
 import copy
 
 
@@ -159,7 +159,8 @@ def id_from_tags(artifact_type, tags, return_dir=False):
     type_tag = ARTIFACT_TYPE_TAGS[artifact_type]
 
     local_tags = copy.deepcopy(tags)  # avoids having the type tag inserted in the mutable list passed to the function
-    local_tags.insert(0, type_tag)
+    if type_tag != 'mdl':  # for models, tags[0] = arch (e.g. resnet18), so model type tag unnecessary
+        local_tags.insert(0, type_tag)
 
     tag_string = string_from_tags(local_tags)
     name = name + tag_string
@@ -175,7 +176,7 @@ def string_from_tags(tags):
 
     tag_string = ""
     for tag in tags:
-        tag_string = tag_string + f"_{tag}"
+        tag_string = tag_string + f"-{tag}"
 
     return tag_string
 
@@ -301,12 +302,19 @@ def save_model(model, model_metadata):
 
 def load_model(model_path, arch):
 
-    if arch == 'resnet18':
-        model = models.__dict__[arch](num_classes=365)
-        # model.load_state_dict(torch.load(model_path))
+    # if arch == 'resnet18':
+    #     model = models.__dict__[arch](num_classes=365)
+    #     # model.load_state_dict(torch.load(model_path))
 
     if arch == 'resnet18_sat6':
         model = Sat6ResNet()
+    elif arch == 'resnet50_sat6':
+        model = Sat6ResNet50()
+    elif arch == 'densenet161_sat6':
+        model = Sat6DenseNet161()
+
+    else:
+        model = models.__dict__[arch](num_classes=NUM_CLASSES)
 
     model.load_state_dict(torch.load(model_path))
 
@@ -320,8 +328,8 @@ def load_wandb_model_artifact(run, artifact_id, return_configs=False):
     artifact_abs_dir = Path(Path.cwd(), artifact_dir)
 
     helper_data = read_json_artifact(artifact_abs_dir, 'helper.json')
-    # arch = helper_data['arch']
-    arch = 'resnet18_sat6'
+    arch = helper_data['arch']
+    # arch = 'resnet18_sat6'
     artifact_type = helper_data['artifact_type']
     model_filename = helper_data['model_file_config']['model_filename']
     model_path = Path(artifact_dir, model_filename)

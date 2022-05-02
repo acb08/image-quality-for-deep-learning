@@ -21,6 +21,34 @@ class Sat6ResNet(nn.Module):
         return self.model(x)
 
 
+class Sat6ResNet50(nn.Module):
+    def __init__(self):
+        super(Sat6ResNet50, self).__init__()
+
+        self.model = models.resnet50(pretrained=True)
+
+        # Change the output layer to output 6 classes instead of 1000 classes
+        num_ftrs = self.model.fc.in_features
+        self.model.fc = nn.Linear(num_ftrs, 6)
+
+    def forward(self, x):
+        return self.model(x)
+
+
+class Sat6DenseNet161(nn.Module):
+    def __init__(self):
+        super(Sat6DenseNet161, self).__init__()
+
+        self.model = models.densenet161(pretrained=True)
+
+        # Change the output layer to output 6 classes instead of 1000 classes
+        num_ftrs = self.model.classifier.in_features
+        self.model.classifier = nn.Linear(num_ftrs, 6)
+
+    def forward(self, x):
+        return self.model(x)
+
+
 class NumpyDataset(Dataset):
 
     def __init__(self, image_array, label_array, transform=None):

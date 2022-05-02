@@ -47,6 +47,7 @@ _project_config_filename = 'project_config.yml'
 with open(Path(ROOT_DIR, REL_PATHS['project_config'], _project_config_filename), 'r') as file:
     _config = safe_load(file)  #
 PROJECT_ID = _config['PROJECT_ID']
+NATIVE_RESOLUTION = _config['NATIVE_RESOLUTION']
 
 DISTORTION_TYPES = ['pan', 'res', 'blur', 'noise']
 
@@ -89,8 +90,26 @@ if PROJECT_ID[:4] == 'sat6':
             },
             'arch': 'resnet18_sat6',
             'artifact_type': 'model'
+        },
+        'resnet50_sat6': {
+            'model_file_config': {
+                'model_rel_dir': r'none',  # in torchvsion.models library
+                'model_filename': r'none',  # stored as string to avoid error in load_pretrained_model()
+            },
+            'arch': 'resnet50_sat6',
+            'artifact_type': 'model'
+        },
+        'densenet161_sat6': {
+            'model_file_config': {
+                'model_rel_dir': r'none',  # in torchvsion.models library
+                'model_filename': r'none',  # stored as string to avoid error in load_pretrained_model()
+            },
+            'arch': 'densenet161_sat6',
+            'artifact_type': 'model'
         }
     }
+
+    NUM_CLASSES = 6
 
 elif PROJECT_ID[:6] == 'places':
 
@@ -138,6 +157,8 @@ elif PROJECT_ID[:6] == 'places':
             'artifact_type': 'model'
         },
     }
+
+    NUM_CLASSES = 365
 
 else:
     raise Exception('Invalid project ID')

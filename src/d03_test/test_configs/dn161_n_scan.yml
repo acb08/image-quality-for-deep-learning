@@ -1,12 +1,12 @@
 ---
 
-description: test of no-distortion model on noise scan v3 test dataset
-#descrptive_tags: ['noise-scan']
+description: test of pretrained densenet161 model on noise scan test dataset
+descriptive_tags: ['noise-scan']
 
-test_dataset_id: 0007_tst_n_scan_v3_noise # noise scan dataset
+test_dataset_id: 0002_tst_n_scan_v3_noise # blur scan dataset
 test_dataset_artifact_alias: latest
 
-model_artifact_id: 0000_mdl_best_loss
+model_artifact_id: densenet161_pretrained
 model_artifact_alias: latest
 
 batch_size: 64
