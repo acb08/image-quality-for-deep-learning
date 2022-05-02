@@ -159,7 +159,7 @@ def id_from_tags(artifact_type, tags, return_dir=False):
     type_tag = ARTIFACT_TYPE_TAGS[artifact_type]
 
     local_tags = copy.deepcopy(tags)  # avoids having the type tag inserted in the mutable list passed to the function
-    if type_tag != 'model':  # for models, tags[0] = arch (e.g. resnet18), so model type tag unnecessary
+    if type_tag != 'mdl':  # for models, tags[0] = arch (e.g. resnet18), so model type tag unnecessary
         local_tags.insert(0, type_tag)
 
     tag_string = string_from_tags(local_tags)
