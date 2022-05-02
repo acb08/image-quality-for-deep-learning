@@ -283,7 +283,7 @@ def b_scan_v2(img):
 
 def b_fr_s6(img):
 
-    kernel_size = 17
+    kernel_size = 11
     sigma_range = np.linspace(0.1, 1.5, num=21, endpoint=True)
     std = np.random.choice(sigma_range)
 
