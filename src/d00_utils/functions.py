@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from yaml import safe_load, dump
 import numpy as np
-from src.d00_utils.classes import Sat6ResNet
+from src.d00_utils.classes import Sat6ResNet, Sat6ResNet50, Sat6DenseNet161
 import copy
 
 
@@ -308,6 +308,10 @@ def load_model(model_path, arch):
 
     if arch == 'resnet18_sat6':
         model = Sat6ResNet()
+    elif arch == 'resnet50_sat6':
+        model = Sat6ResNet50()
+    elif arch == 'densenet161_sat6':
+        model = Sat6DenseNet161()
 
     else:
         model = models.__dict__[arch](num_classes=NUM_CLASSES)

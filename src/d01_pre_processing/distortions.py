@@ -302,6 +302,21 @@ def r_scan_v2():
     return transform
 
 
+def r_fr():
+    """
+    Initializes and returns a VariableImageResize instance designed to re-size SAT6 images
+    randomly between 25% and 100% of original images size. Intended for use in dataset distortion (as opposed to in
+    a dataloader). Distorts images across full distortion range for SAT6.
+    """
+
+    min_size = 7
+    max_size = 28
+    sizes = list(np.arange(min_size, max_size + 1))
+    transform = VariableImageResize(sizes)
+
+    return transform
+
+
 def r_scan_pl():
     """
     Initializes and returns a VariableImageResize instance designed to re-size Places365 images
