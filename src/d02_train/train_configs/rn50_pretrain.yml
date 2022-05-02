@@ -1,0 +1,20 @@
+---
+
+train_dataset_id: '0000_trn_train'
+train_dataset_artifact_alias: latest
+
+starting_model_id: 'resnet50_sat6'
+starting_model_artifact_alias: 'latest'
+
+crop_flag: False
+distortion_tags: []
+descriptive_tags: ['pre-train']
+num_epochs: 30
+batch_size: 64
+num_workers: 8
+pin_memory: True
+optimizer: 'Adam'
+lr: 0.001  # Adam default = 0.001
+loss_func: 'CrossEntropyLoss'
+description: 'pre-train a no-distortion resnet50 sat6 model'
+artifact_type: 'model'
