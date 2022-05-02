@@ -51,9 +51,12 @@ if __name__ == '__main__':
     # _result_id = '0009_rlt_resnet18_pretrained_0001_tst_b_scan_v2_blur'
     # _result_id = '0010_rlt_resnet18_pretrained_0002_tst_n_scan_v3_noise'
     # _result_id = '0006_rlt_densenet161_pretrained_0002_tst_n_scan_v3_noise'
-    _result_id = '0004_rlt_densenet161_pretrained_0001_tst_b_scan_v2_blur'
+    # _result_id = '0004_rlt_densenet161_pretrained_0001_tst_b_scan_v2_blur'
+    # _result_id = '0013_rlt_resnet18_pretrained_0004_tst_r_scan_plv2_res'
+    # _result_id = '0012_rlt_resnet50_pretrained_0004_tst_r_scan_plv2_res'
+    _result_id = '0011_rlt_resnet18_pretrained_0005_tst_b_scan_v3_blur'
     _distortion_id = 'blur'
-    _identifier = 'dn161_b-scan'
+    _identifier = 'rn18_b-scan'
 
     _result, __ = get_model_distortion_performance_result(result_id=_result_id, identifier=_identifier,
                                                           distortion_ids=(_distortion_id,), make_dir=False)
