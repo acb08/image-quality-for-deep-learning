@@ -255,7 +255,7 @@ if __name__ == "__main__":
     wandb.login()
 
     _description = 'debug trial to convert train challenge dataset to numpy files'
-    _num_images = 2048 * 4
+    _num_images = 'all'
     _images_per_file = 2048
     _parent_dataset_id = 'train_256_challenge'
 
