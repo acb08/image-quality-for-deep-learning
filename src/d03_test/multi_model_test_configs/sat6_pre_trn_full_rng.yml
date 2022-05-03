@@ -1,0 +1,21 @@
+---
+
+description: test of pretrained densenet161 model on blur scan test dataset
+descriptive_tags: ['blur-scan']
+
+test_dataset_id: 0005_tst_b_scan_v3_blur # second places blur scan dataset
+test_dataset_artifact_alias: latest
+
+model_artifact_ids:
+  - 0001-mdl-densenet161_sat6_best_loss
+  - 0001-mdl-resnet50_sat6_best_loss
+model_artifact_alias: latest
+
+batch_size: 64
+num_workers: 4
+pin_memory: True
+crop_flag: False
+dataset_split_key: test  # used to get to correct level of dataset dict (to mirror 'train'/'val' splits)
+last_distortion_type_flag: blur  # normally should be 'noise'
+loss_func: CrossEntropyLoss
+status_interval: 10000  # images
