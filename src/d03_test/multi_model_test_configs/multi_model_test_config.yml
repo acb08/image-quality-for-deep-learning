@@ -1,12 +1,17 @@
 ---
 
-description: test of no-distortion model on blur scan v2 test dataset
+description: test of pretrained densenet161 model on blur scan test dataset
 descriptive_tags: ['blur-scan']
 
-test_dataset_id: 0005_tst_b_scan_v2_blur # blur scan dataset
+test_dataset_id: 0005_tst_b_scan_v3_blur # second places blur scan dataset
 test_dataset_artifact_alias: latest
 
-model_artifact_id: 0000_mdl_best_loss
+model_artifact_ids:
+  - densenet161_pretrained
+  - another_model
+  - yet_another_model
+  - still_yet_another_model
+  - and_yet_one_more
 model_artifact_alias: latest
 
 batch_size: 64
