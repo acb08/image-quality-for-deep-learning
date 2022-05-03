@@ -254,7 +254,7 @@ if __name__ == "__main__":
 
     wandb.login()
 
-    _description = 'debug trial to convert train challenge dataset to numpy files'
+    _description = 'convert places train challenge dataset to numpy'
     _num_images = 'all'
     _images_per_file = 2048
     _parent_dataset_id = 'train_256_challenge'
@@ -269,6 +269,9 @@ if __name__ == "__main__":
         _val_frac = _other_val_frac
     else:
         raise Exception('Need to pick a valid val_frac or use default value')
+
+    print('parent dataset ID:', _parent_dataset_id)
+    print('val fraction:', _val_frac)
 
     _config = {
         'parent_dataset_id': _parent_dataset_id,
