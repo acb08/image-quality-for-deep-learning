@@ -280,7 +280,7 @@ if __name__ == "__main__":
         'datatype_key': 'np.uint8',
         'artifact_filename': STANDARD_DATASET_FILENAME,
         'description': _description,
-        'tags': ['trial'],
+        'tags': ['np'],
         'val_shuffle': False
     }
 
