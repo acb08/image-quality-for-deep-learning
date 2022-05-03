@@ -245,8 +245,10 @@ def n_scan_v3(img):
     return img_out, 'lambda_poisson', lambda_poisson
 
 
-def n_fr_s6(img):
+def n_fr(img):
     """
+    Full range noise distortion for both sat6 and places365.
+
     Adds zero-centered, channel-replicated Poisson noise up to 50 DN.
 
     :param img: image array, values on [0, 255]
@@ -291,6 +293,15 @@ def b_fr_s6(img):
 
 
 def b_scan_v3(img):
+
+    kernel_size = 31
+    sigma_range = np.linspace(0.1, 5, num=21, endpoint=True)
+    std = np.random.choice(sigma_range)
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
+
+
+def b_fr_pl(img):
 
     kernel_size = 31
     sigma_range = np.linspace(0.1, 5, num=21, endpoint=True)
@@ -376,6 +387,21 @@ def r_scan_plv2():
     return transform
 
 
+def r_fr_pl():
+    """
+    Initializes and returns a VariableImageResize instance designed to re-size Places365 images
+    randomly between 25% and 100% of original images size. Intended for use in dataset distortion (as opposed to in
+    a dataloader)
+    """
+
+    max_size = 256
+    res_fractions = np.linspace(0.1, 1, num=20)
+    sizes = [int(res_frac * max_size) for res_frac in res_fractions]
+    transform = VariableImageResize(sizes)
+
+    return transform
+
+
 tag_to_image_distortion = {
 
     # _scan transforms intended for finding the point along each distortion axis at which performance of a
@@ -386,18 +412,22 @@ tag_to_image_distortion = {
     'b_scan_v2': b_scan_v2,
     'b_scan_v3': b_scan_v3,
 
-    'b_fr_s6': b_fr_s6,
-
     # 'n_scan': n_scan, # n_scan did not replicate noise over image channels
     'n_scan_v2': n_scan_v2,
     'n_scan_v3': n_scan_v3,
 
-    'n_fr_s6': n_fr_s6,
-
     'r_scan_pl': r_scan_pl,  # places
     'r_scan_plv2': r_scan_plv2,
 
-    'r_fr_s6': r_fr_s6,
+    'r_fr_s6': r_fr_s6,  # sat6
+    'r_fr_pl': r_fr_pl,  # places
+
+    'b_fr_s6': b_fr_s6,  # sat6
+    'b_fr_pl': b_fr_pl,  # places
+
+    'n_fr_s6': n_fr,  # sat6 (same transform for places and sat6)
+    'n_fr_pl': n_fr,  # places (same transform for places and sat6)
+
 }
 
 tag_to_transform = {}
