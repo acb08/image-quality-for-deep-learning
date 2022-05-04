@@ -1,6 +1,7 @@
 from pathlib import Path
 import numpy as np
 from PIL import Image, ImageOps
+import PIL
 from src.d00_utils.definitions import ROOT_DIR, PROJECT_ID, STANDARD_DATASET_FILENAME
 from src.d00_utils.definitions import REL_PATHS, DATATYPE_MAP
 from src.d00_utils.functions import load_wandb_data_artifact, id_from_tags
@@ -10,6 +11,12 @@ import random
 
 
 def build_data_vector(image_dir, names_labels, image_shape, datatype_key, convert_to_pan=True):
+    """
+    Reads images from image_dir and loads into a numpy vector and loads corresponding labels into another numpy vector.
+
+    If an image file is corrupted or does not exist, the adjacent image and label are duplicated to replace the
+    corrupted image.
+    """
 
     datatype = DATATYPE_MAP[datatype_key]
 
@@ -19,22 +26,45 @@ def build_data_vector(image_dir, names_labels, image_shape, datatype_key, conver
     image_vector = np.zeros(image_vector_shape, dtype=datatype)
     label_vector = np.zeros(num_images_to_load, dtype=np.int32)
 
+    first_image_corrupted = False
+    corrupted_images = []
+
     for idx, (image_name, label) in enumerate(names_labels):
 
         image_path = Path(image_dir, image_name)
-        image = Image.open(image_path).convert('RGB')
-        if convert_to_pan:
-            image = ImageOps.grayscale(image)
-            image = image.convert('RGB')  # grayscale, channel replicated
-        image = np.asarray(image, dtype=datatype)
-        image_vector[idx] = image
-        label_vector[idx] = label
 
-    return image_vector, label_vector
+        try:
+            image = Image.open(image_path).convert('RGB')
+            if convert_to_pan:
+                image = ImageOps.grayscale(image)
+                image = image.convert('RGB')  # grayscale, channel replicated
+            image = np.asarray(image, dtype=datatype)
+            image_vector[idx] = image
+            label_vector[idx] = label
+        except PIL.UnidentifiedImageError:
+            if idx > 0:
+                image_vector[idx] = image_vector[idx - 1]
+                label_vector[idx] = label_vector[idx - 1]
+            else:
+                first_image_corrupted = True
+            corrupted_images.append([image_name, label])
+        except FileNotFoundError:
+            if idx > 0:
+                image_vector[idx] = image_vector[idx - 1]
+                label_vector[idx] = label_vector[idx - 1]
+            else:
+                first_image_corrupted = True
+            corrupted_images.append([image_name, label])
+
+    if first_image_corrupted:
+        print('first image corrupted')
+        image_vector[0] = image_vector[1]
+        label_vector[0] = label_vector[1]
+
+    return image_vector, label_vector, corrupted_images
 
 
 def train_val_split(all_names_labels, val_frac, val_shuffle=False):
-
     """
     :param all_names_labels: list [(image_name, image_label), ...]. Note: image name can also contain
     multiple elements of a relative filepath
@@ -77,7 +107,6 @@ def transfer_to_numpy(parent_names_labels,
                       filename_stem=None,
                       parent_dataset_id=None,
                       convert_to_pan=True):
-
     """
     :param parent_names_labels: list of name label pairs
     :param starting_img_parent_rel_dir: path to image directory
@@ -114,6 +143,7 @@ def transfer_to_numpy(parent_names_labels,
         Path.mkdir(new_data_dir)
 
     image_and_label_filenames = []  # filenames for image data files AND associated label files
+    corrupted_images = []
 
     if num_images == 'all':
         num_images = len(parent_names_labels)
@@ -128,25 +158,26 @@ def transfer_to_numpy(parent_names_labels,
         parent_dataset_ids[use_flag] = parent_dataset_id
 
     for i in range(num_new_files):
-
         start_idx, end_idx = i * images_per_file, (i + 1) * images_per_file
         names_labels_subset = parent_names_labels[start_idx:end_idx]
 
-        image_vector, label_vector = build_data_vector(starting_img_dir,
-                                                       names_labels_subset,
-                                                       image_shape,
-                                                       datatype_key,
-                                                       convert_to_pan=convert_to_pan)
+        image_vector, label_vector, file_corrupted_images = build_data_vector(starting_img_dir,
+                                                                              names_labels_subset,
+                                                                              image_shape,
+                                                                              datatype_key,
+                                                                              convert_to_pan=convert_to_pan)
 
         name_label_filename = f'{filename_stem}_{file_count_offset + i}.npz'
         np.savez_compressed(Path(new_data_dir, name_label_filename),
                             images=image_vector,
                             labels=label_vector)
         image_and_label_filenames.append(name_label_filename)
+        corrupted_images.extend(file_corrupted_images)
 
     numpy_dataset = {
         'image_and_label_filenames': image_and_label_filenames,
-        'parent_dataset_ids': parent_dataset_ids
+        'parent_dataset_ids': parent_dataset_ids,
+        'corrupted_images': corrupted_images
     }
 
     return numpy_dataset
@@ -221,6 +252,11 @@ def build_log_numpy(config):
                 'val': dataset_val_split
             }
 
+            train_corrupted_images = dataset_train_split['corrupted_images']
+            val_corrupted_images = dataset_val_split['corrupted_images']
+            print(f'{len(train_corrupted_images)} corrupted train images')
+            print(f'{len(val_corrupted_images)} corrupted val images')
+
         else:
             raise Exception('Expected artifact type of "train_dataset". '
                             'build_places_np_dataset.py should only be used to create train datasets')
@@ -254,7 +290,7 @@ if __name__ == "__main__":
 
     wandb.login()
 
-    _description = 'convert places train challenge dataset to numpy'
+    _description = 'test updated error handling'  # 'convert places train challenge dataset to numpy'
     _num_images = 'all'
     _images_per_file = 2048
     _parent_dataset_id = 'train_256_challenge'
