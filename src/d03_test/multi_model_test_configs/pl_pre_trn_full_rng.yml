@@ -1,9 +1,9 @@
 ---
 
-description: test of pretrained resnet50 and densenet161 models on full range test dataset
-descriptive_tags: ['pre-trained', 'full-range']
+description: test of pretrained densenet161 model on blur scan test dataset
+descriptive_tags: ['blur-scan']
 
-test_dataset_id: 0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise # full range dataset
+test_dataset_id: 0005_tst_b_scan_v3_blur # second places blur scan dataset
 test_dataset_artifact_alias: latest
 
 model_artifact_ids:
