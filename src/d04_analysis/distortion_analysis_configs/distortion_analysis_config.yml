@@ -1,4 +1,10 @@
 ---
 
-result_id: "0017_rlt_0027_mdl_rst1_b10_nf11_best_loss_0040_tst_rs1_bcs3_nfs3_noise"
-identifier: 'full-range'
+#result_id: "0017-rlt-densenet161_pretrained-0006-tst-r_fr_pl-b_fr_pl-n_fr_pl_noise"
+#identifier: 'DN161-pre-trained'
+
+#result_id: "0018-rlt-resnet50_pretrained-0006-tst-r_fr_pl-b_fr_pl-n_fr_pl_noise"
+#identifier: 'RN50-pre-trained'
+
+result_id: "0019-rlt-resnet18_pretrained-0006-tst-r_fr_pl-b_fr_pl-n_fr_pl_noise:v0"
+identifier: 'RN50-pre-trained'
