@@ -328,9 +328,15 @@ def load_tune_model(config):
         val_abs_dir = Path(ROOT_DIR, dataset_rel_dir, REL_PATHS['val_vectors'])
 
         model_id_tags = [arch]
-        model_id_tags.extend(distortion_tags)
 
-        new_model_id = id_from_tags(artifact_type, model_id_tags)
+        if 'name_string' in config.keys() and config['name_string'] is not None:
+            model_id_tags.append(config['name_string'])
+            new_model_id = id_from_tags(artifact_type, model_id_tags)
+
+        else:
+            model_id_tags.extend(distortion_tags)
+            new_model_id = id_from_tags(artifact_type, model_id_tags)
+
         new_model_rel_dir = Path(REL_PATHS[artifact_type], new_model_id)
 
         new_model_checkpoint_file_config = {
@@ -434,4 +440,3 @@ if __name__ == '__main__':
     run_config = get_config(args_passed)
 
     load_tune_model(run_config)
-

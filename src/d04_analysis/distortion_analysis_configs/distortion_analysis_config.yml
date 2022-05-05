@@ -6,5 +6,14 @@
 #result_id: "0018-rlt-resnet50_pretrained-0006-tst-r_fr_pl-b_fr_pl-n_fr_pl_noise"
 #identifier: 'RN50-pre-trained'
 
-result_id: "0019-rlt-resnet18_pretrained-0006-tst-r_fr_pl-b_fr_pl-n_fr_pl_noise:v0"
-identifier: 'RN50-pre-trained'
+#result_id: "0019-rlt-resnet18_pretrained-0006-tst-r_fr_pl-b_fr_pl-n_fr_pl_noise:v0"
+#identifier: 'RN50-pre-trained'
+#
+#result_id: "0012-rlt-0001-mdl-resnet50_sat6_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise"  # sat6
+#identifier: 'RN50-pre-trained'
+
+#result_id: "0011-rlt-0001-mdl-densenet161_sat6_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise"  # sat6
+#identifier: 'RN161-pre-trained'
+
+result_id: "0010-rlt-0000_mdl_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise"  # sat6
+identifier: 'RN18-pre-trained'
