@@ -19,4 +19,4 @@ loss_func: 'CrossEntropyLoss'
 description: 'pre-train a no-distortion sat6 model with a lower learning rate'
 artifact_type: 'model'
 
-name_string: 'pretrain_lower_lr'
+name_string: 'pretrain_lower_lr'  # set to null or comment out line to name model using distortion tags
