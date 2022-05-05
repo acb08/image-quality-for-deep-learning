@@ -1,6 +1,6 @@
 ---
 
-description: "test of no-distortion resnet50 model with lower learning rate, early stopping at v4 accidental"
+description: "test of no-distortion resnet50 model with lower learning rate, early stopping at v9 accidental"
 
 #descrptive_tags: ['noise-scan']
 
@@ -8,7 +8,7 @@ test_dataset_id:  0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise # full range mega-set
 test_dataset_artifact_alias: latest
 
 model_artifact_id: 0003-resnet50_sat6-pretrain_lower_lr
-model_artifact_alias: v4 # CHECKING EARLY STOP (hence not 'latest')
+model_artifact_alias: v9 # CHECKING EARLY STOP (hence not 'latest')
 
 batch_size: 64
 num_workers: 4
