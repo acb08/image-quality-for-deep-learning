@@ -1,6 +1,8 @@
 ---
 
-description: test of no-distortion resnet50 model from an early training epoch to see if over-fitting is decreased
+description: "test of no-distortion resnet50 model from an early training epoch to see if over-fitting is decreased
+by using a model from an early training epoch"
+
 #descrptive_tags: ['noise-scan']
 
 test_dataset_id:  0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise # full range mega-set

@@ -81,6 +81,7 @@ def test_model(config):
 
         __, dataset = load_wandb_data_artifact(run, dataset_artifact_id, STANDARD_DATASET_FILENAME)
         model = load_wandb_model_artifact(run, model_artifact_id)
+        torch.no_grad()
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         print('device: ', device)
         model.to(device)
