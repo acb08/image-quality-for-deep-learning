@@ -1,0 +1,22 @@
+---
+
+train_dataset_id: '0000_trn_train'
+train_dataset_artifact_alias: latest
+
+starting_model_id: 'resnet18_sat6'  # wait until initial model pre-trained
+starting_model_artifact_alias: 'latest'
+
+crop_flag: False
+distortion_tags: [] # ['rt_fr_s6', 'bt_fr_s6', 'nt_fr_s6']
+descriptive_tags: ['pretrain', 'lower_lr']
+num_epochs: 30
+batch_size: 64
+num_workers: 8
+pin_memory: True
+optimizer: 'Adam'
+lr: 0.0001  # Adam default = 0.001
+loss_func: 'CrossEntropyLoss'
+description: pretrain resnet18 with lower lr for less over fitting
+artifact_type: 'model'
+
+name_string: 'pretrain_lower_lr'  # set to null or comment out line to name model using distortion tags
