@@ -11,7 +11,7 @@ from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, ROOT_DIR, PROJE
 from src.d00_utils.definitions import STANDARD_CHECKPOINT_FILENAME, STANDARD_BEST_LOSS_FILENAME
 from src.d00_utils.functions import load_wandb_data_artifact, load_data_vectors, load_wandb_model_artifact
 from src.d00_utils.functions import id_from_tags, save_model, get_config
-from src.d01_pre_processing.distortions import tag_to_transform
+from src.d02_train.train_distortions import tag_to_transform
 from src.d00_utils.classes import NumpyDataset
 import wandb
 import os

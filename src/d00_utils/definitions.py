@@ -47,7 +47,20 @@ _project_config_filename = 'project_config.yml'
 with open(Path(ROOT_DIR, REL_PATHS['project_config'], _project_config_filename), 'r') as file:
     _config = safe_load(file)  #
 PROJECT_ID = _config['PROJECT_ID']
-NATIVE_RESOLUTION = _config['NATIVE_RESOLUTION']
+NATIVE_RESOLUTION = _config['NATIVE_RESOLUTION']  # kept in config file so can be used in multi-project functions
+
+DISTORTION_RANGE = {
+    'sat6': {
+        'res': (7, 28),  # where used, include check to ensure high end matches NATIVE_RESOLUTION
+        'blur': (11, 0.1, 1.5),  # (kernel size, sigma_min, sigma_max)
+        'noise': (0, 50)
+    },
+    'places365': {
+        'res': (0.1, 1),  # not units specified differently btw sat6 and places
+        'blur': (31, 0.1, 5),  # (kernel size, sigma_min, sigma_max)
+        'noise': (0, 50)
+    }
+}
 
 DISTORTION_TYPES = ['pan', 'res', 'blur', 'noise']
 

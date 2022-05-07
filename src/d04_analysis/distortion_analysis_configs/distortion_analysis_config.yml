@@ -15,5 +15,11 @@
 #result_id: "0011-rlt-0001-mdl-densenet161_sat6_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise"  # sat6
 #identifier: 'RN161-pre-trained'
 
-result_id: "0010-rlt-0000_mdl_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise"  # sat6
-identifier: 'RN18-pre-trained'
+#result_id: "0010-rlt-0000_mdl_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise"  # sat6
+#identifier: 'RN18-pre-trained'
+
+#result_id: 0013-rlt-0003-resnet50_sat6-pretrain_lower_lr-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise  # sat6
+#identifier: 'RN50-pt-low-lr-early-stop'
+
+result_id: 0014-rlt-0004-resnet50_sat6-pretrain_lower_lr_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise  # sat6
+identifier: 'RN50-pt-low-lr'
