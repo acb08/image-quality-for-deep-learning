@@ -50,6 +50,7 @@ AZ_EL_COMBINATIONS = {
 AXIS_LABELS = {
     'res': 'resolution',
     'blur': r'$\sigma$-blur',
+    'scaled_blur': r'$\sigma$-blur scaled',
     'noise': r'$\sqrt{\lambda}$-noise',
     'z': 'accuracy',
     'y': 'accuracy',

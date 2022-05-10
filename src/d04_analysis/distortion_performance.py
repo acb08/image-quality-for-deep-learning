@@ -56,6 +56,7 @@ class DistortedDataset(object):
 
         if self.res is not None and self.blur is not None:
             self.scaled_blur = self.blur / self.res
+            self.scaled_blur = self.quantize_scaled_blur()
 
         if self.noise is not None and convert_to_std:
             self.noise = np.sqrt(self.noise)
@@ -65,6 +66,16 @@ class DistortedDataset(object):
             'scaled_blur': self.scaled_blur,
             'noise': self.noise
         }
+
+    def quantize_scaled_blur(self):
+        blur_vals = np.unique(self.blur)
+        quantized_scaled_blur_vals = blur_vals
+        while max(quantized_scaled_blur_vals) < np.max(self.scaled_blur):
+            extension = blur_vals + max(quantized_scaled_blur_vals)
+            quantized_scaled_blur_vals = np.append(quantized_scaled_blur_vals, extension)
+        quantization_indices = np.digitize(self.scaled_blur, quantized_scaled_blur_vals, right=True)
+        quantized_scaled_blur = quantized_scaled_blur_vals[quantization_indices]
+        return quantized_scaled_blur
 
 
 class ModelDistortionPerformanceResult(DistortedDataset):
@@ -362,7 +373,11 @@ if __name__ == '__main__':
     _model_distortion_performance, _output_dir = get_model_distortion_performance_result(config=run_config)
 
     with open(Path(_output_dir, 'result_log.txt'), 'w') as output_file:
-        analyze_perf_1d(_model_distortion_performance, log_file=output_file, directory=_output_dir, per_class=False)
-        analyze_perf_1d(_model_distortion_performance, log_file=output_file, directory=_output_dir, per_class=True)
+        analyze_perf_1d(_model_distortion_performance, log_file=output_file, directory=_output_dir, per_class=False,
+                        distortion_ids=('res', 'blur', 'scaled_blur', 'noise'))
+        analyze_perf_1d(_model_distortion_performance, log_file=output_file, directory=_output_dir, per_class=True,
+                        distortion_ids=('res', 'blur', 'scaled_blur', 'noise'))
         analyze_perf_2d(_model_distortion_performance, log_file=output_file, directory=_output_dir)
+        analyze_perf_2d(_model_distortion_performance, log_file=output_file, directory=_output_dir,
+                        distortion_ids=('scaled_blur', 'noise'), distortion_combinations=((0, 1),))
         analyze_perf_3d(_model_distortion_performance, log_file=output_file, directory=_output_dir)
