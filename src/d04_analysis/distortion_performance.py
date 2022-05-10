@@ -36,6 +36,7 @@ class DistortedDataset(object):
         self.res = None
         self.blur = None
         self.noise = None
+        self.scaled_blur = None
 
         for i, distortion_id in enumerate(self.distortion_ids):
             distortion = self._distortion_data[i]
@@ -53,11 +54,15 @@ class DistortedDataset(object):
         if self.noise is not None:
             self.noise = np.asarray(self.noise)
 
+        if self.res is not None and self.blur is not None:
+            self.scaled_blur = self.blur / self.res
+
         if self.noise is not None and convert_to_std:
             self.noise = np.sqrt(self.noise)
         self.distortions = {
             'res': self.res,
             'blur': self.blur,
+            'scaled_blur': self.scaled_blur,
             'noise': self.noise
         }
 
