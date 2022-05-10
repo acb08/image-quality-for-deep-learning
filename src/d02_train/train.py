@@ -190,6 +190,7 @@ def propagate(model,
               optimizer,
               epoch,
               run):
+
     if train_eval_flag == 'train':
         random.shuffle(shard_ids)
         model.train()
@@ -320,9 +321,18 @@ def load_tune_model(config):
         loss_function = getattr(nn, config['loss_func'])()
         description = config['description']
         artifact_type = config['artifact_type']
-
         train_shard_ids = dataset['train']['image_and_label_filenames']
         val_shard_ids = dataset['val']['image_and_label_filenames']
+
+        if 'num_shards' in config.keys():
+            num_shards = config['num_shards']
+            if num_shards != 'all':
+                frac = num_shards / len(train_shard_ids)
+                train_shard_ids = train_shard_ids[:num_shards]
+                num_val_shards = int(frac * len(val_shard_ids))
+                num_val_shards = max(1, num_val_shards)  # ensure we get at least one val shard
+                val_shard_ids = val_shard_ids[:num_val_shards]
+
         dataset_rel_dir = dataset['dataset_rel_dir']
         train_abs_dir = Path(ROOT_DIR, dataset_rel_dir, REL_PATHS['train_vectors'])
         val_abs_dir = Path(ROOT_DIR, dataset_rel_dir, REL_PATHS['val_vectors'])

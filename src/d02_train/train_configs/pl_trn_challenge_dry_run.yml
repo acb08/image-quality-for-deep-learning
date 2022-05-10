@@ -1,0 +1,23 @@
+---
+
+train_dataset_id: '0001-trn-train'
+train_dataset_artifact_alias: latest
+
+starting_model_id: 'resnet18_pretrained'
+starting_model_artifact_alias: 'latest'
+
+crop_flag: False
+distortion_tags: ['rt_fr_pl', 'bt_fr_pl', 'nt_fr_pl']
+descriptive_tags: ['tran-challenge-np-checkout']
+num_epochs: 1  # 30
+batch_size: 64
+num_workers: 8
+pin_memory: True
+optimizer: 'Adam'
+lr: 0.0001  # Adam default = 0.001
+loss_func: 'CrossEntropyLoss'
+description: 'trial run with train challenge dataset'
+artifact_type: 'model'
+
+name_string: 'challenge_abbrev_trial'  # set to null or comment out line to name model using distortion tags
+num_shards: 5
