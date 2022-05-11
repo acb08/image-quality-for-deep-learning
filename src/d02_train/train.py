@@ -309,6 +309,7 @@ def load_tune_model(config):
         config['arch'] = arch  # ensures model metadata identifies correct model architecture
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        print('device: ', device)
         model.to(device)
         num_epochs = config['num_epochs']
         batch_size = config['batch_size']
