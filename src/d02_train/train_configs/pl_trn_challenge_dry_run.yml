@@ -1,6 +1,6 @@
 ---
 
-train_dataset_id: '0001-trn-train'
+train_dataset_id: '0001-trn-np'
 train_dataset_artifact_alias: latest
 
 starting_model_id: 'resnet18_pretrained'
