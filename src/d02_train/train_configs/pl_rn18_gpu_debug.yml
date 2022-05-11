@@ -1,0 +1,22 @@
+---
+
+train_dataset_id: '0001-trn-np'
+train_dataset_artifact_alias: latest
+
+starting_model_id: 'resnet18_pretrained'  # wait until initial model pre-trained
+starting_model_artifact_alias: 'latest'
+
+crop_flag: False
+distortion_tags: [] # ['rt_fr_s6', 'bt_fr_s6', 'nt_fr_s6']
+descriptive_tags: ['debug']
+num_epochs: 30
+batch_size: 64
+num_workers: 8
+pin_memory: True
+optimizer: 'Adam'
+lr: 0.0001  # Adam default = 0.001
+loss_func: 'CrossEntropyLoss'
+description: attempting to get train script to find gpu on a places365 run
+artifact_type: 'model'
+
+name_string: 'gpu_debug'  # set to null or comment out line to name model using distortion tags
