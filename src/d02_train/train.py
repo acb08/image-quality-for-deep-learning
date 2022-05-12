@@ -310,6 +310,9 @@ def load_tune_model(config):
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         print('device: ', device)
+        if device == 'cpu':
+            if not config['allow_cpu']:
+                raise Exception('device = cpu not allowed')
         model.to(device)
         num_epochs = config['num_epochs']
         batch_size = config['batch_size']
