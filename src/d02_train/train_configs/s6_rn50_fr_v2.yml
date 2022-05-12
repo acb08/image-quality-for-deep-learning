@@ -1,0 +1,22 @@
+---
+
+train_dataset_id: '0002-trn-train'
+train_dataset_artifact_alias: latest
+
+starting_model_id: '0004-resnet50_sat6-pretrain_lower_lr_best_loss'
+starting_model_artifact_alias: 'latest'
+
+crop_flag: False
+distortion_tags: ['rt_fr_s6', 'bt_fr_s6', 'nt_fr_s6']
+descriptive_tags: ['full_range']
+num_epochs: 30
+batch_size: 128
+num_workers: 8
+pin_memory: True
+optimizer: 'Adam'
+lr: 0.00005  # Adam default = 0.001
+loss_func: 'CrossEntropyLoss'
+description: train full range resnet50 model with larger batch size and compare results to smaller batch size
+artifact_type: 'model'
+
+name_string: 'full_range_v2'  # set to null or comment out line to name model using distortion tags
