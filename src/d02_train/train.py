@@ -17,22 +17,9 @@ import wandb
 import os
 
 os.environ["WANDB_START_MODE"] = 'thread'
+_LOGGING_STEP = 0
 
 wandb.login()
-
-
-# def load_data_vectors(shard_id, directory):
-#     """
-#     Extracts image and data vectors from the .npz file corresponding to shard_id in directory. Intended to provide
-#     image/label vectors to create an instance of the NumpyDatasetBatchDistortion class.
-#     """
-#
-#     data = load_npz_data(directory, shard_id)
-#
-#     image_vector = data['images']
-#     label_vector = data['labels']
-#
-#     return image_vector, label_vector
 
 
 def get_transform(distortion_tags, crop=True):
@@ -118,8 +105,8 @@ def get_raw_accuracy(predicts, targets):
 
 def run_shard(model, train_eval_flag, shard, batch_size, num_workers, pin_memory, device, loss_func, optimizer):
     """
-    Train OR evaluate (determined by train_eval_flag) a model on a single shard, where a shard is a Dataset object build from
-    a .npz file consisting of a numpy image vector and its associated numpy label vector.
+    Train OR evaluate (determined by train_eval_flag) a model on a single shard, where a shard is a Dataset object build
+    from a .npz file consisting of a numpy image vector and its associated numpy label vector.
 
     :param model: PyTorch model
     :param train_eval_flag: str, 'train' or 'eval' determines whether function runs in training or evaluation mode
@@ -158,6 +145,8 @@ def run_shard(model, train_eval_flag, shard, batch_size, num_workers, pin_memory
         model.zero_grad()
 
         images, targets = images.to(device), targets.to(device).long()
+        if len(targets) != batch_size:
+            print('actual/standard batch sizes', len(targets), batch_size)
         outputs = model(images)
         loss = loss_func(outputs, targets)
 
@@ -170,7 +159,7 @@ def run_shard(model, train_eval_flag, shard, batch_size, num_workers, pin_memory
             loss.backward()
             optimizer.step()
 
-        running_loss += loss.item() / len(targets)
+        running_loss += loss.item()  # removed divide by len(targets) because torch default norms by batch size
 
     accuracy = get_raw_accuracy(predicts, labels)
 
@@ -187,9 +176,7 @@ def propagate(model,
               pin_memory,
               device,
               loss_func,
-              optimizer,
-              epoch,
-              run):
+              optimizer):
 
     if train_eval_flag == 'train':
         random.shuffle(shard_ids)
@@ -220,7 +207,6 @@ def propagate(model,
 
         shard_accuracies.append(shard_accuracy)
         shard_lengths.append(shard_length)
-
         total_samples += shard_length
 
         scaled_loss = shard_loss / shard_length
@@ -228,23 +214,36 @@ def propagate(model,
         weighted_accuracy = shard_length * shard_accuracy
         weighted_accuracies.append(weighted_accuracy)
 
+        if train_eval_flag == 'train':
+            log_train_shard_stats(scaled_loss, shard_accuracy)
+
     mean_accuracy = get_mean_accuracy(weighted_accuracies, total_samples)
 
     return model, running_loss, mean_accuracy, shard_accuracies, shard_lengths
 
 
 def log_epoch_stats(train_loss, train_acc, val_loss, val_acc, train_shard_ct, epoch):
+    global _LOGGING_STEP  # don't judge :)
     wandb.log({
         'train_loss': train_loss,
         'train_acc': train_acc,
         'val_loss': val_loss,
         'val_acc': val_acc,
         'epoch': epoch,
-    }, step=epoch)
+    }, step=_LOGGING_STEP)
+    _LOGGING_STEP += 1
 
     print(f'Epoch {epoch} loss after ' + str(train_shard_ct).zfill(3) + f' train shards: '
                                                                         f'{train_loss:3f} (train), '
                                                                         f'{val_loss:3f} (val)')
+
+
+def log_train_shard_stats(shard_loss, shard_accuracy):
+    global _LOGGING_STEP
+    wandb.log({
+        'train_shard_loss': shard_loss,
+        'train_shard_accuracy': shard_accuracy}, step=_LOGGING_STEP)
+    _LOGGING_STEP += 1
 
 
 def log_checkpoint(model, model_metadata, new_model_artifact, run):
@@ -255,25 +254,6 @@ def log_checkpoint(model, model_metadata, new_model_artifact, run):
 
 
 def save_best_loss_model(model, model_metadata, val_losses, epoch):
-
-    # best_loss_model_metadata = model_metadata.copy.deepcopy()
-    #
-    # best_loss_model_file_config = best_loss_model_metadata['model_file_config']
-    # best_loss_model_rel_dir_parent = best_loss_model_file_config['model_rel_dir']
-    # best_loss_model_rel_dir = str(Path(best_loss_model_rel_dir_parent, r'best_loss'))
-    #
-    # # best_loss_model_file_config = {
-    # #     'model_rel_dir': best_loss_model_rel_dir,
-    # #     'model_filename': STANDARD_BEST_LOSS_FILENAME
-    # # }
-    #
-    # model_metadata['model_file_config'] = model_file_config  # probably redundant, but explicit update seems safer
-    # model_metadata['best_loss_epoch'] = epoch
-    # model_metadata['best_loss'] = val_losses[-1]
-    #
-    # model_path, helper_path = save_model(model, model_metadata)
-    #
-    # return model_path, helper_path
 
     model_file_config = model_metadata['model_file_config']
     model_rel_dir = model_file_config['model_rel_dir']
@@ -381,8 +361,7 @@ def load_tune_model(config):
                                                                                             device,
                                                                                             loss_function,
                                                                                             optimizer,
-                                                                                            epoch,
-                                                                                            run)
+                                                                                            )
 
             train_losses.append(train_loss)
             train_accuracies.append(train_acc)
@@ -399,9 +378,7 @@ def load_tune_model(config):
                                                                                           device,
                                                                                           loss_function,
                                                                                           optimizer,
-                                                                                          epoch,
-                                                                                          run)
-
+                                                                                          )
             val_losses.append(val_loss)
             val_accuracies.append(val_acc)
 

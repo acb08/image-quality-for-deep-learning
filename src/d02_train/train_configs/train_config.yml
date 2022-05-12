@@ -9,13 +9,13 @@ starting_model_artifact_alias: 'latest'
 crop_flag: False
 distortion_tags: ['rt_fr_s6', 'bt_fr_s6', 'nt_fr_s6']
 descriptive_tags: ['full-range-checkout']
-num_epochs: 10  # 30
+num_epochs: 2  # 30
 batch_size: 32  # 64
 num_workers: 8
 pin_memory: True
 optimizer: 'Adam'
 lr: 0.0001  # Adam default = 0.001
 loss_func: 'CrossEntropyLoss'
-description: 'train a full range sat6 model on an abbreviated dataset to debug'
+description: 'train a full range sat6 model on an abbreviated dataset to checkout updated wandb logging'
 artifact_type: 'model'
 
