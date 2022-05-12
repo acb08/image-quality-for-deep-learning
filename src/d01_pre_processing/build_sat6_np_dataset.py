@@ -207,7 +207,7 @@ if __name__ == "__main__":
 
     _description = 'build basic pan train dataset'
     _num_images = 'all'
-    _images_per_file = 1000
+    _images_per_file = 2048
 
     _config = {
         'parent_dataset_id': 'sat6_full',
