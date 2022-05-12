@@ -20,7 +20,7 @@ def rt_fr_s6():
 
     sizes = list(np.arange(min_size, max_size + 1))
 
-    return VariableResolution(sizes)
+    return VariableResolution(sizes, interpolation_mode='bilinear', antialias=False)
 
 
 def rt_0_s6():
@@ -42,7 +42,7 @@ def rt_0_s6():
 
     sizes = list(np.arange(min_size, max_size + 1))
 
-    return VariableResolution(sizes)
+    return VariableResolution(sizes, interpolation_mode='bilinear', antialias=False)
 
 
 def rt_1_s6():
@@ -65,7 +65,7 @@ def rt_1_s6():
 
     sizes = list(np.arange(min_size, max_size + 1))
 
-    return VariableResolution(sizes)
+    return VariableResolution(sizes, interpolation_mode='bilinear', antialias=False)
 
 
 def bt_fr_s6():
@@ -176,7 +176,7 @@ def rt_fr_pl():
 
     sizes = list(np.arange(min_size, max_size + 1))
 
-    return VariableResolution(sizes)
+    return VariableResolution(sizes, interpolation_mode='bilinear', antialias=False)
 
 
 def rt_0_pl():
@@ -198,7 +198,7 @@ def rt_0_pl():
 
     sizes = list(np.arange(min_size, max_size + 1))
 
-    return VariableResolution(sizes)
+    return VariableResolution(sizes, interpolation_mode='bilinear', antialias=False)
 
 
 def rt_1_pl():
@@ -221,7 +221,7 @@ def rt_1_pl():
 
     sizes = list(np.arange(min_size, max_size + 1))
 
-    return VariableResolution(sizes)
+    return VariableResolution(sizes, interpolation_mode='bilinear', antialias=False)
 
 
 def bt_fr_pl():
