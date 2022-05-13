@@ -20,4 +20,4 @@ description: 'train full range places resnet18 model with larger batch size to c
 artifact_type: 'model'
 
 name_string: 'batch_sweep_32_12'  # set to null or comment out line to name model using distortion tags
-num_shards: '32'
+num_shards: 32
