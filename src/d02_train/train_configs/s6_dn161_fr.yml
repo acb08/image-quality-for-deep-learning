@@ -10,7 +10,7 @@ crop_flag: False
 distortion_tags: ['rt_fr_s6', 'bt_fr_s6', 'nt_fr_s6']
 descriptive_tags: ['full_range']
 num_epochs: 30
-batch_size: 128
+batch_size: 64  # ran out of a100 memory at 128
 num_workers: 8
 pin_memory: True
 optimizer: 'Adam'
