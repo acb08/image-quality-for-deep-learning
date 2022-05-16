@@ -1,0 +1,23 @@
+---
+
+train_dataset_id: '0001-trn-np'
+train_dataset_artifact_alias: latest
+
+starting_model_id: 'resnet50_pretrained'
+starting_model_artifact_alias: 'latest'
+
+crop_flag: False
+distortion_tags: ['rt_fr_pl', 'bt_fr_pl', 'nt_fr_pl']
+descriptive_tags: ['train-challenge', 'full-range']
+num_epochs: 1 # 30
+batch_size: 64
+num_workers: 20
+pin_memory: True
+optimizer: 'Adam'
+lr: 0.00005  # Adam default = 0.001
+loss_func: 'CrossEntropyLoss'
+description: 'train full range places resnet18 model with larger batch size to compare train speed/performance'
+artifact_type: 'model'
+
+name_string: 'batch_sweep_64_20'  # set to null or comment out line to name model using distortion tags
+num_shards: 32

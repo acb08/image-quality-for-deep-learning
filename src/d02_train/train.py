@@ -15,10 +15,11 @@ from src.d02_train.train_distortions import tag_to_transform
 from src.d00_utils.classes import NumpyDataset
 import wandb
 import os
+import time
 
 os.environ["WANDB_START_MODE"] = 'thread'
 _LOGGING_STEP = 0
-
+_T0 = time.time()
 wandb.login()
 
 
@@ -230,6 +231,7 @@ def log_epoch_stats(train_loss, train_acc, val_loss, val_acc, train_shard_ct, ep
         'val_loss': val_loss,
         'val_acc': val_acc,
         'epoch': epoch,
+        'time': (time.time() - _T0)
     }, step=_LOGGING_STEP)
     _LOGGING_STEP += 1
 
@@ -242,7 +244,9 @@ def log_train_shard_stats(shard_loss, shard_accuracy):
     global _LOGGING_STEP
     wandb.log({
         'train_shard_loss': shard_loss,
-        'train_shard_accuracy': shard_accuracy}, step=_LOGGING_STEP)
+        'train_shard_accuracy': shard_accuracy,
+        'time': (time.time() - _T0)
+    }, step=_LOGGING_STEP)
     _LOGGING_STEP += 1
 
 
