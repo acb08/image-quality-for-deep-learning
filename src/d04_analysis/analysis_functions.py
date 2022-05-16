@@ -1,5 +1,7 @@
 import numpy as np
 
+from src.d04_analysis.fit import fit_hyperplane, eval_linear_fit
+
 
 def extract_combine_shard_vector_data(data, target_keys, check_keys=False):
     """
@@ -270,6 +272,118 @@ def conditional_extract_2d(x, y, z):
     return x_values, y_values, z_means, vector_data_extract
 
 
+def create_identifier(perf_results, dim_tag=None, dataset_identifier=None):
+    """
+    Creates identifier from a list of model performance results. Intended for use in plotting different
+    sets of results together (i.e. built to be called by plot_results_together())
+    """
 
 
+    for i, perf_result in enumerate(perf_results):
+        if i == 0:
+            identifier = str(perf_result)
+        else:
+            identifier = f'{identifier}_{str(perf_result)}'
 
+    if dim_tag:
+        identifier = f'{dim_tag}_{identifier}'
+
+    if dataset_identifier:
+        identifier = f'{dataset_identifier}_{identifier}'
+
+    return identifier
+
+
+def build_3d_field(x, y, z, f, data_dump=False):
+    """
+    x: array of length N containing nx unique values
+    y: array of length N containing ny unique values
+    z: array of length N containing nz unique values
+    f: array of length N, with values that will be sorted into a 3D (nx, ny, nz)-shape
+    array, with indices (i, j, k), where 0 <= i <= nx-1, 0 <= j <= ny-1, 0 <= k <= nz-1,
+    where each (i, j, k) represents a unique combination
+    of the unique values of x, y, and z. In other words, lets imagine that f is a
+    3d function of two variables sigma and lambda, and that we have N samples
+    of z, with each sample corresponding to a pair values sigma and lambda.
+    This function extracts the relevant values of z for each unique
+    (sigma, lambda) pair.
+
+    returns:
+
+        x_values: numpy array, where x_values[alpha] represents the alpha-th unique
+        value of x
+        y_values: numpy array, where y_values[beta] represents the beta-th unique
+        value of y
+        z_means: j x k array, where z_means[alpha, beta] is the mean of z
+        where x == x_values[alpha] and y == y_values[beta]
+        extracts: dictionary, where keys are tuples (alpha, beta) and values are
+        1D numpy arrays of z values where x == alpha and y == beta
+
+    """
+
+    full_extract = {}  # diagnostic
+    x_values = np.unique(x)
+    y_values = np.unique(y)
+    z_values = np.unique(z)
+    f_means = np.zeros((len(x_values), len(y_values), len(z_values)))
+
+    parameter_array = []  # for use in curve fits
+    performance_array = []  # for use in svd
+
+    for i, x_val in enumerate(x_values):
+        x_inds = np.where(x == x_val)
+        for j, y_val in enumerate(y_values):
+            y_inds = np.where(y == y_val)
+            for k, z_val in enumerate(z_values):
+                z_inds = np.where(z == z_val)
+                xy_inds = np.intersect1d(x_inds, y_inds)
+                xyz_inds = np.intersect1d(xy_inds, z_inds)
+
+                full_extract[(x_val, y_val, z_val)] = f[xyz_inds]
+                f_means[i, j, k] = np.mean(f[xyz_inds])
+                parameter_array.append([x_val, y_val, z_val])
+                performance_array.append(f_means[i, j, k])
+
+    if data_dump:
+        parameter_array = np.asarray(parameter_array, dtype=np.float32)
+        performance_array = np.atleast_2d(np.asarray(performance_array, dtype=np.float32)).T
+        return x_values, y_values, z_values, f_means, parameter_array, performance_array, full_extract
+    else:
+        return f_means
+
+
+def get_distortion_perf_2d(model_performance, x_id, y_id, add_bias=True, log_file=None):
+    result_name = str(model_performance)
+
+    accuracy_vector = model_performance.top_1_vec
+    x = model_performance.distortions[x_id]
+    y = model_performance.distortions[y_id]
+    x_values, y_values, accuracy_means, vector_data_extract = conditional_extract_2d(x, y, accuracy_vector)
+
+    distortion_param_array = vector_data_extract['param_array']
+    performance_array = vector_data_extract['performance_array']
+    fit_coefficients = fit_hyperplane(distortion_param_array, performance_array, add_bias=add_bias)
+    correlation = eval_linear_fit(fit_coefficients, distortion_param_array, performance_array, add_bias=add_bias)
+
+    print(f'{result_name} {x_id} {y_id} linear fit: ', fit_coefficients, file=log_file)
+    print(f'{result_name} {x_id} {y_id} linear fit correlation: ', correlation, '\n', file=log_file)
+
+    return x_values, y_values, accuracy_means, fit_coefficients, correlation, distortion_param_array
+
+
+def get_distortion_perf_1d(model_performance, distortion_id, log_file=None, add_bias=True, per_class=False):
+    result_name = str(model_performance)
+    distortion_vals, mean_accuracies = model_performance.conditional_accuracy(distortion_id, per_class=per_class)
+
+    fit_coefficients = fit_hyperplane(np.atleast_2d(distortion_vals).T,
+                                      np.atleast_2d(mean_accuracies).T,
+                                      add_bias=add_bias)
+
+    correlation = eval_linear_fit(fit_coefficients,
+                                  np.atleast_2d(distortion_vals).T,
+                                  np.atleast_2d(mean_accuracies).T)
+
+    print(f'{result_name} {distortion_id} (per_class = {per_class}) linear fit: ', fit_coefficients, file=log_file)
+    print(f'{result_name} {distortion_id} (per_class = {per_class}) linear fit correlation: ', correlation, '\n', file=log_file)
+
+    return distortion_vals, mean_accuracies, fit_coefficients, correlation

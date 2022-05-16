@@ -2,13 +2,10 @@ from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, STANDARD_TEST_R
     ROOT_DIR
 from src.d00_utils.functions import load_wandb_data_artifact, get_config
 from src.d04_analysis.analysis_functions import conditional_mean_accuracy, extract_embedded_vectors, \
-    conditional_extract_2d, get_class_accuracies
+    get_class_accuracies, build_3d_field, get_distortion_perf_2d, get_distortion_perf_1d
 from src.d04_analysis.fit import fit_hyperplane, eval_linear_fit
-from src.d04_analysis.tools3d import build_3d_field, plot_isosurf
-from src.d04_analysis.plot import AXIS_LABELS, COLORS, SCATTER_PLOT_MARKERS, \
-    plot_1d_linear_fit, plot_2d, plot_2d_linear_fit
+from src.d04_analysis.plot import plot_1d_linear_fit, plot_2d, plot_2d_linear_fit, plot_isosurf
 import numpy as np
-import matplotlib.pyplot as plt
 from pathlib import Path
 import wandb
 import argparse
@@ -84,6 +81,9 @@ class ModelDistortionPerformanceResult(DistortedDataset):
         self.convert_to_std = convert_to_std
         self.result_id = result_id
         self.dataset, self.result, self.dataset_id = load_dataset_and_result(run, self.result_id)
+        self._model_artifact_id = self.result['model_artifact_id']
+        self._model_artifact_alias = self.result['model_artifact_alias']
+        self.model_id = f'{self._model_artifact_id}:{self._model_artifact_alias}'
         self.distortion_ids = distortion_ids
         DistortedDataset.__init__(self, self.dataset, convert_to_std=self.convert_to_std,
                                   distortion_ids=self.distortion_ids)
@@ -138,24 +138,6 @@ def load_dataset_and_result(run, result_id,
     return dataset, result, dataset_id
 
 
-def get_distortion_perf_1d(model_performance, distortion_id, log_file=None, add_bias=True, per_class=False):
-    result_name = str(model_performance)
-    distortion_vals, mean_accuracies = model_performance.conditional_accuracy(distortion_id, per_class=per_class)
-
-    fit_coefficients = fit_hyperplane(np.atleast_2d(distortion_vals).T,
-                                      np.atleast_2d(mean_accuracies).T,
-                                      add_bias=add_bias)
-
-    correlation = eval_linear_fit(fit_coefficients,
-                                  np.atleast_2d(distortion_vals).T,
-                                  np.atleast_2d(mean_accuracies).T)
-
-    print(f'{result_name} {distortion_id} (per_class = {per_class}) linear fit: ', fit_coefficients, file=log_file)
-    print(f'{result_name} {distortion_id} (per_class = {per_class}) linear fit correlation: ', correlation, '\n', file=log_file)
-
-    return distortion_vals, mean_accuracies, fit_coefficients, correlation
-
-
 def analyze_perf_1d(model_performance,
                     distortion_ids=('res', 'blur', 'noise'),
                     directory=None,
@@ -196,114 +178,6 @@ def analyze_perf_2d(model_performance,
                            axis_labels='default',
                            az_el_combinations='all',
                            directory=directory)
-
-
-def plot_perf_2d_multi_result(model_performances,
-                              distortion_ids=('res', 'blur', 'noise'),
-                              distortion_combinations=((0, 1), (1, 2), (0, 2)),
-                              directory=None,
-                              log_file=None,
-                              add_bias=True,
-                              identifier=None):
-
-    for i, (idx_0, idx_1) in enumerate(distortion_combinations):
-
-        x_id, y_id = distortion_ids[idx_0], distortion_ids[idx_1]
-        mean_performances = {}
-
-        for model_performance in model_performances:
-            performance_key = str(model_performance)
-            x_values, y_values, accuracy_means, fit, corr, distortion_arr = get_distortion_perf_2d(model_performance,
-                                                                                                   x_id,
-                                                                                                   y_id,
-                                                                                                   add_bias=add_bias,
-                                                                                                   log_file=log_file)
-            mean_performances[performance_key] = accuracy_means
-
-        plot_2d(x_values, y_values, mean_performances, x_id, y_id,
-                result_identifier=identifier,
-                axis_labels='default',
-                az_el_combinations='all',
-                directory=directory)
-
-
-def plot_perf_1d_multi_result(model_performances,
-                              distortion_ids=('res', 'blur', 'noise'),
-                              directory=None,
-                              identifier=None,
-                              legend_loc='best'):
-    """
-    :param model_performances: list of model performance class instances
-    :param distortion_ids: distortion type tags to be analyzed
-    :param directory: output derectory
-    :param identifier: str for use as a filename seed
-    :param legend_loc: str to specify plot legend location
-    """
-
-    for i, distortion_id in enumerate(distortion_ids):
-        mean_performances = {}
-        for model_performance in model_performances:
-            performance_key = str(model_performance)
-            x, y, fit_coefficients, fit_correlation = get_distortion_perf_1d(model_performance, distortion_id)
-            mean_performances[performance_key] = y
-
-        plot_1d_performance(x, mean_performances, distortion_id, result_identifier=identifier, directory=directory,
-                            legend_loc=legend_loc)
-
-
-def plot_1d_performance(x, performance_dict, distortion_id,
-                        result_identifier=None,
-                        xlabel='default',
-                        ylabel='default',
-                        directory=None,
-                        legend_loc='best',
-                        legend=True):
-
-    if xlabel == 'default':
-        xlabel = AXIS_LABELS[distortion_id]
-    if ylabel == 'default':
-        ylabel = AXIS_LABELS['y']
-
-    if result_identifier:
-        save_name = f'{distortion_id}_{str(result_identifier)}_acc'
-    else:
-        save_name = f'{distortion_id}_acc'
-
-    if legend_loc and legend_loc != 'best':
-        save_name = f"{save_name}_{legend_loc.replace(' ', '_')}"
-
-    save_name = f"{save_name}.png"
-
-    plt.figure()
-    for i, key in enumerate(performance_dict):
-        plt.plot(x, performance_dict[key], color=COLORS[i])
-        plt.scatter(x, performance_dict[key], label=key, c=COLORS[i], marker=SCATTER_PLOT_MARKERS[i])
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    if legend:
-        plt.legend(loc=legend_loc)
-    if directory:
-        plt.savefig(Path(directory, save_name))
-    plt.show()
-
-
-def get_distortion_perf_2d(model_performance, x_id, y_id, add_bias=True, log_file=None):
-    result_name = str(model_performance)
-
-    accuracy_vector = model_performance.top_1_vec
-    x = model_performance.distortions[x_id]
-    y = model_performance.distortions[y_id]
-    x_values, y_values, accuracy_means, vector_data_extract = conditional_extract_2d(x, y, accuracy_vector)
-
-    distortion_param_array = vector_data_extract['param_array']
-    performance_array = vector_data_extract['performance_array']
-    fit_coefficients = fit_hyperplane(distortion_param_array, performance_array, add_bias=add_bias)
-    correlation = eval_linear_fit(fit_coefficients, distortion_param_array, performance_array, add_bias=add_bias)
-
-    print(f'{result_name} {x_id} {y_id} linear fit: ', fit_coefficients, file=log_file)
-    print(f'{result_name} {x_id} {y_id} linear fit correlation: ', correlation, '\n', file=log_file)
-
-    return x_values, y_values, accuracy_means, fit_coefficients, correlation, distortion_param_array
 
 
 def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noise', add_bias=True, log_file=None):

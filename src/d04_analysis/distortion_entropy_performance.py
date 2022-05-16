@@ -5,7 +5,7 @@ from src.d00_utils.functions import get_config
 from src.d04_analysis.distortion_performance import ModelDistortionPerformanceResult
 from src.d04_analysis.distortion_entropy import DistortionEntropyProperties
 from src.d04_analysis.distortion_entropy import analyze_entropy_3d
-from src.d04_analysis.tools3d import build_3d_field
+from src.d04_analysis.analysis_functions import build_3d_field
 import argparse
 from pathlib import Path
 import numpy as np

@@ -1,0 +1,24 @@
+---
+
+description: test of full range resnet18, resnet50, and densenet161 models on full range test dataset
+descriptive_tags: ['full-range-trained', 'full-range-test', 'mega-set-2']
+
+test_dataset_id: 0009-tst-full_range_mega_set_2_noise # full range dataset #2
+test_dataset_artifact_alias: latest
+
+model_artifact_ids:
+  - 0010-densenet161_sat6-full_range_best_loss
+  - 0011-resnet18_sat6-full_range_best_loss
+  - 0008-resnet50_sat6-full_range_v2_best_loss
+  - 0008-resnet18_sat6-full_range_best_loss
+  - 0005-resnet50_sat6-full_range_best_loss
+model_artifact_alias: latest
+
+batch_size: 64
+num_workers: 4
+pin_memory: True
+crop_flag: False
+dataset_split_key: test  # used to get to correct level of dataset dict (to mirror 'train'/'val' splits)
+# last_distortion_type_flag: noise  # normally should be 'noise', but not used by test script I believe
+loss_func: CrossEntropyLoss
+status_interval: 10000  # images

@@ -1,12 +1,13 @@
 import wandb
-from src.d00_utils.definitions import STANDARD_DATASET_FILENAME
+from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, STANDARD_TEST_RESULT_FILENAME
 from src.d00_utils.functions import read_json_artifact
+from pathlib import Path
 
 if __name__ == '__main__':
 
-    run = wandb.init()
-    artifact = run.use_artifact('austinbergstrom/places365/train_256_standard:v1', type='train_dataset')
+    run = wandb.init(project='sat6_v2')
+    artifact = run.use_artifact('0017-rlt-0005-resnet50_sat6-full_range_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0000')
     artifact_dir = artifact.download()
-    artifact_filename = STANDARD_DATASET_FILENAME
+    artifact_filename = STANDARD_TEST_RESULT_FILENAME
 
     dataset = read_json_artifact(artifact_dir, artifact_filename)

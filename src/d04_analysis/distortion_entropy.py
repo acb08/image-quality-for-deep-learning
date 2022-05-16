@@ -5,10 +5,9 @@ from src.d04_analysis.distortion_performance import DistortedDataset
 from src.d00_utils.functions import load_wandb_data_artifact, get_config, dict_val_lists_to_arrays
 from src.d04_analysis.measure_entropy_properties import get_entropy_artifact_name, get_effective_entropy_equiv
 from src.d04_analysis.analysis_functions import extract_embedded_vectors, conditional_mean_entropy, \
-    conditional_extract_2d
+    conditional_extract_2d, build_3d_field
 from src.d04_analysis.fit import fit_hyperplane, eval_linear_fit
 from src.d04_analysis.plot import plot_1d_linear_fit, AXIS_LABELS, plot_2d, plot_2d_linear_fit
-from src.d04_analysis.tools3d import build_3d_field
 import numpy as np
 import argparse
 from pathlib import Path
