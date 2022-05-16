@@ -17,3 +17,5 @@ artifact_filename: standard
 datatype_key: np.uint8
 
 image_shape: None  # only used by places scripts
+
+name_string: full_range_mega_set_2
