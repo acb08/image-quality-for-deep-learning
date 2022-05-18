@@ -1,0 +1,15 @@
+---
+
+result_id_pairs:
+  - ['0024-rlt-0005-resnet50_sat6-full_range_best_loss-0009-tst-full_range_mega_set_2_noise:v0',
+     'RN50-full-range-mega-2']
+  - ['0023-rlt-0008-resnet18_sat6-full_range_best_loss-0009-tst-full_range_mega_set_2_noise:v0',
+     'RN18_b64-full-range-mega-2']
+  - ['0022-rlt-0008-resnet50_sat6-full_range_v2_best_loss-0009-tst-full_range_mega_set_2_noise',
+     'RN50-full-range-v2-mega-2']
+  - ['0021-rlt-0011-resnet18_sat6-full_range_best_loss-0009-tst-full_range_mega_set_2_noise:v0',
+     'RN18_b128-full-range-mega-2']
+  - ['0020-rlt-0010-densenet161_sat6-full_range_best_loss-0009-tst-full_range_mega_set_2_noise:v0',
+     'RDN161-full-range-mega-2']
+
+print_to_file: True

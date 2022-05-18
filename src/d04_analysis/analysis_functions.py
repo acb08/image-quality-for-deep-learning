@@ -1,6 +1,78 @@
 import numpy as np
+from itertools import combinations_with_replacement
 
 from src.d04_analysis.fit import fit_hyperplane, eval_linear_fit
+
+
+def get_performance_correlations(performance_results, x_id='res', y_id='blur', z_id='noise', add_bias=True,):
+
+    model_ids = []
+    dataset_ids = []
+    result_ids = []
+    id_pairs = []
+
+    result_dict = {}
+    duplicates = {}
+
+    # start by organizing performance_results by (model_id, dataset_id) tuples and checking for results that are
+    # duplicates (i.e. instances of a model/dataset combo being tested twice)
+
+    distortion_array_check = None
+
+    for performance_result in performance_results:
+
+        model_id = performance_result.model_id
+        dataset_id = performance_result.dataset_id
+        result_id = performance_result.result_id
+
+        id_pair = (model_id, dataset_id)
+
+        if id_pair not in id_pairs:
+
+            id_pairs.append(id_pair)
+            result_ids.append(result_id)
+            model_ids.append(model_id)
+            dataset_ids.append(dataset_id)
+
+            x = performance_result.distortions[x_id]
+            y = performance_result.distortions[y_id]
+            z = performance_result.distortions[z_id]
+            accuracy_vector = performance_result.top_1_vec
+
+            x_values, y_values, z_values, perf_3d, distortion_array, perf_array, __ = build_3d_field(x, y, z,
+                                                                                                     accuracy_vector,
+                                                                                                     data_dump=True)
+            # verify that all results come from test datasets with identical distortion values
+            if distortion_array_check is None:
+                distortion_array_check = distortion_array
+
+            elif not np.array_equal(distortion_array_check, distortion_array):
+                raise Exception('performance results contain results with differing distortion parameters')
+
+            result_dict[id_pair] = {'performance': np.ravel(perf_array),
+                                    'result_id': result_id}
+
+        else:
+            duplicate_index = id_pairs.index(id_pair)
+            duplicate_id = result_ids[duplicate_index]
+            if duplicate_id not in duplicates.keys():
+                duplicates[duplicate_id] = [result_id]
+            else:
+                duplicates[duplicate_id].append(result_id)
+            print(f'result id {result_id} appears to be a duplicate of {duplicate_id}')
+
+    correlations = {}
+    correlations_alt_keys = {}
+    result_key_combinations = combinations_with_replacement(result_dict.keys(), 2)
+
+    for (id_pair_0, id_pair_1) in result_key_combinations:
+        p0, p0_id = result_dict[id_pair_0]['performance'], result_dict[id_pair_0]['result_id']
+        p1, p1_id = result_dict[id_pair_1]['performance'], result_dict[id_pair_1]['result_id']
+        correlation = np.corrcoef(p0, p1)[0, 1]
+        correlations[(id_pair_0, id_pair_1)] = correlation
+        correlations_alt_keys[(p0_id, p1_id)] = correlation
+
+    return correlations, correlations_alt_keys
 
 
 def extract_combine_shard_vector_data(data, target_keys, check_keys=False):
@@ -277,10 +349,10 @@ def create_identifier(perf_results, dim_tag=None, dataset_identifier=None):
     Creates identifier from a list of model performance results. Intended for use in plotting different
     sets of results together (i.e. built to be called by plot_results_together())
     """
+    identifier = None
 
-
-    for i, perf_result in enumerate(perf_results):
-        if i == 0:
+    for perf_result in perf_results:
+        if not identifier:
             identifier = str(perf_result)
         else:
             identifier = f'{identifier}_{str(perf_result)}'
@@ -314,10 +386,17 @@ def build_3d_field(x, y, z, f, data_dump=False):
         value of x
         y_values: numpy array, where y_values[beta] represents the beta-th unique
         value of y
-        z_means: j x k array, where z_means[alpha, beta] is the mean of z
-        where x == x_values[alpha] and y == y_values[beta]
-        extracts: dictionary, where keys are tuples (alpha, beta) and values are
-        1D numpy arrays of z values where x == alpha and y == beta
+        z_values: numpy array, where z_values[gamma] represents the gamma-th unique
+        value of z
+        f_means: nx x ny x nz array, where f_means[alpha, beta, gamma] is the mean of f
+        where x == x_values[alpha], y == y_values[beta], and z == y_values[gamma]
+        parameter_array: (nx * ny * nz) x 3 array, where each row contains a unique (x_value, y_value, z_value)
+        combination. Intended for use in fitting performance prediction functions using SVD.
+        performance_array: (nx * ny * nz) x 1 array, where each element represents the mean the mean performance where
+        x == x_values[alpha], y == y_values[beta], and z == y_values[gamma]. Contains the same information as f_means
+        arranged differently. Intended for use in fitting performance prediction functions using SVD.
+        extracts: dictionary, where keys are tuples (alpha, beta, gamma) and values are
+        1D numpy arrays of f values where x == x_values[alpha], y == y_values[beta], z == z_values[gamma]
 
     """
 
@@ -387,3 +466,6 @@ def get_distortion_perf_1d(model_performance, distortion_id, log_file=None, add_
     print(f'{result_name} {distortion_id} (per_class = {per_class}) linear fit correlation: ', correlation, '\n', file=log_file)
 
     return distortion_vals, mean_accuracies, fit_coefficients, correlation
+
+
+
