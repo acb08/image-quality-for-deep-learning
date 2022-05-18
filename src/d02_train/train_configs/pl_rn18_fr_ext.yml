@@ -1,0 +1,23 @@
+---
+
+train_dataset_id: '0001-trn-np'
+train_dataset_artifact_alias: latest
+
+starting_model_id: '0017-resnet18-full_range'
+starting_model_artifact_alias: 'v5'  # v5 happens to be latest
+
+crop_flag: False
+distortion_tags: ['rt_fr_pl', 'bt_fr_pl', 'nt_fr_pl']
+descriptive_tags: ['train-challenge', 'full-range']
+num_epochs: 4  # stopping all fr models at 10 epochs for performance comparison
+batch_size: 32
+num_workers: 16
+pin_memory: True
+optimizer: 'Adam'
+lr: 0.00005  # Adam default = 0.001
+loss_func: 'CrossEntropyLoss'
+description: 'train full range places resnet18 model. Restarting run killed due to full home directory'
+artifact_type: 'model'
+
+name_string: 'full_range'  # set to null or comment out line to name model using distortion tags
+num_shards: 'all'

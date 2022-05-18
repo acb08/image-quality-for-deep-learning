@@ -12,4 +12,4 @@ result_id_pairs:
   - ['0020-rlt-0010-densenet161_sat6-full_range_best_loss-0009-tst-full_range_mega_set_2_noise:v0',
      'RDN161-full-range-mega-2']
 
-print_to_file: True
+print_to_file: True  # functionality to actually do so not yet implemented
