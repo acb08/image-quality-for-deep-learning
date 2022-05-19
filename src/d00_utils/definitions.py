@@ -40,7 +40,8 @@ REL_PATHS = {
     'res': r'1-res',
     'blur': r'2-blur',
     'noise': r'3-noise',
-    'project_config': r'project_config'
+    'project_config': r'project_config',
+    'perf_correlations': r'perf_correlations'
 }
 
 _project_config_filename = 'project_config.yml'
