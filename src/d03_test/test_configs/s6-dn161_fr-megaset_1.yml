@@ -4,7 +4,7 @@ description: "test of full range densenet161 model on full range mega set 1"
 
 #descrptive_tags: ['noise-scan']
 
-test_dataset_id:  0009-tst-full_range_mega_set_2_noise # full range dataset #2
+test_dataset_id:  0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise # full range mega-set 1
 test_dataset_artifact_alias: latest
 
 model_artifact_id: 0010-densenet161_sat6-full_range_best_loss
