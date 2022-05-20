@@ -1,0 +1,22 @@
+---
+
+train_dataset_id: '0002-trn-train'
+train_dataset_artifact_alias: latest
+
+starting_model_id: '0011-resnet18_sat6-full_range_best_loss:v0'
+starting_model_artifact_alias: 'latest'
+
+crop_flag: False
+distortion_tags: ['rt_1_s6', 'bt_0_s6', 'nt_0_s6']
+descriptive_tags: ['octant-100']
+num_epochs: 30
+batch_size: 64
+num_workers: 8
+pin_memory: True
+optimizer: 'Adam'
+lr: 0.00005  # Adam default = 0.001
+loss_func: 'CrossEntropyLoss'
+description: train octant 100 resnet18 model
+artifact_type: 'model'
+
+name_string: 'oct_100'  # set to null or comment out line to name model using distortion tags
