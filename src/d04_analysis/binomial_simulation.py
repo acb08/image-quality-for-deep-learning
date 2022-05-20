@@ -1,6 +1,5 @@
 import numpy as np
 from numpy.random import default_rng
-import scipy
 
 rng = default_rng()
 
@@ -22,9 +21,9 @@ def run_binomial_accuracy_experiment(p_success, num_trials_per_experiment):
     return mean_success
 
 
-def measure_accuracy_correlations(result_0, result_1):
+def measure_accuracy_correlations(f0, f1):
 
-    correlation = np.corrcoef(result_0, result_1)[0, 1]
+    correlation = np.corrcoef(np.ravel(f0), np.ravel(f1))[0, 1]
 
     return correlation
 
