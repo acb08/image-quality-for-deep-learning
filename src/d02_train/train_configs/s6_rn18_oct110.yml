@@ -3,7 +3,7 @@
 train_dataset_id: '0002-trn-train'
 train_dataset_artifact_alias: latest
 
-starting_model_id: '0011-resnet18_sat6-full_range_best_loss:v0'
+starting_model_id: '0011-resnet18_sat6-full_range_best_loss'
 starting_model_artifact_alias: 'latest'
 
 crop_flag: False
