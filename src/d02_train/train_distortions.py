@@ -37,7 +37,7 @@ def rt_0_s6():
     max_res = (min_res_fr + max_res_fr) / 2  # midpoint of resolution range
     max_size = int(max_res)
 
-    if NATIVE_RESOLUTION != 256:
+    if NATIVE_RESOLUTION != 28:
         raise Exception('mismatch between max size and native resolution in project config')
 
     sizes = list(np.arange(min_size, max_size + 1))
@@ -324,7 +324,7 @@ tag_to_transform = {
 
     'nt_fr_s6': nt_fr_s6,
     'nt_0_s6': nt_0_s6,
-    'nt_1_s2': nt_1_s6,
+    'nt_1_s6': nt_1_s6,
 
     # places transforms
     'rt_fr_pl': rt_fr_pl,
