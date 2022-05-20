@@ -1,6 +1,6 @@
 ---
 
-result_id_pairs:
+test_result_identifiers:
   - ['0024-rlt-0005-resnet50_sat6-full_range_best_loss-0009-tst-full_range_mega_set_2_noise:v0',
      'RN50-full-range-mega-2']
   - ['0023-rlt-0008-resnet18_sat6-full_range_best_loss-0009-tst-full_range_mega_set_2_noise:v0',
@@ -12,15 +12,22 @@ result_id_pairs:
   - ['0020-rlt-0010-densenet161_sat6-full_range_best_loss-0009-tst-full_range_mega_set_2_noise:v0',
      'RDN161-full-range-mega-2']
 
-  - ['0019-rlt-0008-resnet18_sat6-full_range_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0',
-      'RN18_b64-full-range-mega-2']
-  - ['0018-rlt-0008-resnet50_sat6-full_range_v2_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0',
-      'RN50-full-range-v2-mega-1']
-  - ['0017-rlt-0005-resnet50_sat6-full_range_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0',
-      'RN50-full-range-mega-1']
-  - ['0016-rlt-0005-resnet50_sat6-full_range_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0',
-     'possible_duplicate_RN50-full-range-mega-1']
+# if a second set of test result identifiers is included here, inter-set results are cross correlated, whereas passing
+# only a single set of identifiers results in intra-set correlations being calculated.  In other words, passing a single
+# set results in a symmetric correlation matrix, whereas passing different sets will result in an asymmetric table
+different_test_result_identifiers:
+  - [ '0019-rlt-0008-resnet18_sat6-full_range_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0',
+      'RN18_b64-full-range-mega-1' ]
+  - [ '0018-rlt-0008-resnet50_sat6-full_range_v2_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0',
+      'RN50-full-range-v2-mega-1' ]
+  - [ '0017-rlt-0005-resnet50_sat6-full_range_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0',
+      'RN50-full-range-mega-1' ]
+  - [ '0016-rlt-0005-resnet50_sat6-full_range_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0',
+      'possible_duplicate_RN50-full-range-mega-1' ]
+  - [ '0025-rlt-0010-densenet161_sat6-full_range_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0',
+      'DN161-full-range-mega-1' ]
 
-overwrite: True
+overwrite: False
+manual_name: all-models-megasets-1-2-cross-cases
 
 
