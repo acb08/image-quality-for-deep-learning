@@ -23,10 +23,11 @@ def rt_fr_s6():
     return VariableResolution(sizes, interpolation_mode='bilinear', antialias=False)
 
 
-def rt_0_s6():
+def rt_1_s6():
 
     """
-    Resolution transform for lower half of full resolution range.
+    Resolution transform for lower half of full resolution range (i.e. the half of the resolution range with the greater
+    degree of downsampling).
 
     Intended for use in a dataloader.
     """
@@ -45,10 +46,11 @@ def rt_0_s6():
     return VariableResolution(sizes, interpolation_mode='bilinear', antialias=False)
 
 
-def rt_1_s6():
+def rt_0_s6():
 
     """
-    Resolution transform for upper half of full resolution range.
+    Resolution transform for upper half of full resolution range (i.e. the half of the resolution range with the lesser
+    degree of downsampling).
 
     Intended for use in a dataloader.
     """
@@ -179,10 +181,11 @@ def rt_fr_pl():
     return VariableResolution(sizes, interpolation_mode='bilinear', antialias=False)
 
 
-def rt_0_pl():
+def rt_1_pl():
 
     """
-    Resolution transform for lower half of full resolution range.
+    Resolution transform for lower half of full resolution range (i.e. the half of the resolution range with the greater
+    degree of downsampling).
 
     Intended for use in a dataloader.
     """
@@ -201,10 +204,11 @@ def rt_0_pl():
     return VariableResolution(sizes, interpolation_mode='bilinear', antialias=False)
 
 
-def rt_1_pl():
+def rt_0_pl():
 
     """
-    Resolution transform for upper half of full resolution range.
+    Resolution transform for upper half of full resolution range (i.e. the half of the resolution range with the lesser
+    degree of downsampling).
 
     Intended for use in a dataloader.
     """
