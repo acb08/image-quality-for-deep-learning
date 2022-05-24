@@ -7,8 +7,8 @@ test_dataset_id: 0009-tst-full_range_mega_set_2_noise # full range mega-set #2
 test_dataset_artifact_alias: latest
 
 model_artifact_ids:
-  - 0012-resnet18_sat6-oct_000_best_loss
-  - 0012-resnet18_sat6-oct_001_best_loss
+#  - 0012-resnet18_sat6-oct_000_best_loss  # first attempt died after first to models tested, commenting out to re-start
+#  - 0012-resnet18_sat6-oct_001_best_loss  # and continue testing where last run left off
   - 0012-resnet18_sat6-oct_010_best_loss
   - 0016-resnet18_sat6-oct_011_best_loss
   - 0012-resnet18_sat6-oct_100_best_loss
