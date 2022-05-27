@@ -11,7 +11,7 @@ from skimage.measure import marching_cubes
 
 from src.d04_analysis.fit import linear_predict
 from src.d04_analysis.analysis_functions import conditional_extract_2d, create_identifier, get_distortion_perf_2d, \
-    get_distortion_perf_1d
+    get_distortion_perf_1d, measure_log_perf_correlation
 
 # from src.d04_analysis.distortion_performance import plot_perf_2d_multi_result, plot_perf_1d_multi_result
 
@@ -210,9 +210,11 @@ def plot_2d_linear_fit(distortion_array, accuracy_means, fit, x_id, y_id,
             result_identifier=result_identifier)
 
 
-def plot_results_together(model_results, directory=None, make_subdir=False, dim_tag='2d', legend_loc='best'):
+def analyze_plot_results_together(model_results, directory=None, make_subdir=False, dim_tag='2d', legend_loc='best',
+                                  pairwise_analysis=False, log_file=None, create_log_file=False):
     """
-    Plots performance of multiple models together.
+    Plots performance of multiple models together. If pairwise_analysis is True and len(model_results) is 2, measures
+    the correlation coefficients between mean performances as a function of distortion combinations.
     """
     if dim_tag == '2d':
         identifier = create_identifier(model_results)
@@ -222,27 +224,41 @@ def plot_results_together(model_results, directory=None, make_subdir=False, dim_
     if directory and make_subdir:
         sub_dir = Path(directory, identifier)
         if not sub_dir.is_dir():
-            Path.mkdir(sub_dir)
+            Path.mkdir(sub_dir, parents=True)
 
         directory = sub_dir
 
+    if not log_file and create_log_file:
+        if pairwise_analysis:
+            log_file = open(Path(directory, 'pairwise_result_log.txt'), 'w')
+        else:
+            log_file = open(Path(directory, 'auto_result_log.txt'), 'w')
+
     if dim_tag == '2d':
-        plot_perf_2d_multi_result(model_results, directory=directory, identifier=identifier)
+        analyze_plot_perf_2d_multi_result(model_results, directory=directory, identifier=identifier,
+                                          pairwise_analysis=pairwise_analysis, log_file=log_file)
     else:
-        plot_perf_1d_multi_result(model_results, directory=directory, identifier=identifier, legend_loc=legend_loc)
+        analyze_plot_perf_1d_multi_result(model_results, directory=directory, identifier=identifier, legend_loc=legend_loc,
+                                          pairwise_analysis=pairwise_analysis, log_file=log_file)
+
+    log_file.close()
 
 
-def plot_perf_1d_multi_result(model_performances,
-                              distortion_ids=('res', 'blur', 'noise'),
-                              directory=None,
-                              identifier=None,
-                              legend_loc='best'):
+def analyze_plot_perf_1d_multi_result(model_performances,
+                                      distortion_ids=('res', 'blur', 'noise'),
+                                      directory=None,
+                                      identifier=None,
+                                      legend_loc='best',
+                                      pairwise_analysis=False,
+                                      log_file=None):
     """
     :param model_performances: list of model performance class instances
     :param distortion_ids: distortion type tags to be analyzed
     :param directory: output derectory
     :param identifier: str for use as a filename seed
     :param legend_loc: str to specify plot legend location
+    :param pairwise_analysis: bool, correlations between performance results measured if True
+    :param log_file: text fle for logging analysis results
     """
 
     for i, distortion_id in enumerate(distortion_ids):
@@ -252,17 +268,24 @@ def plot_perf_1d_multi_result(model_performances,
             x, y, fit_coefficients, fit_correlation = get_distortion_perf_1d(model_performance, distortion_id)
             mean_performances[performance_key] = y
 
+        if pairwise_analysis:
+            if len(model_performances) != 2:
+                raise Exception('model_performances must be length 2 for pairwise_analysis')
+
+            measure_log_perf_correlation(mean_performances, distortion_ids=distortion_id, log_file=log_file)
+
         plot_1d_performance(x, mean_performances, distortion_id, result_identifier=identifier, directory=directory,
                             legend_loc=legend_loc)
 
 
-def plot_perf_2d_multi_result(model_performances,
-                              distortion_ids=('res', 'blur', 'noise'),
-                              distortion_combinations=((0, 1), (1, 2), (0, 2)),
-                              directory=None,
-                              log_file=None,
-                              add_bias=True,
-                              identifier=None):
+def analyze_plot_perf_2d_multi_result(model_performances,
+                                      distortion_ids=('res', 'blur', 'noise'),
+                                      distortion_combinations=((0, 1), (1, 2), (0, 2)),
+                                      directory=None,
+                                      add_bias=True,
+                                      identifier=None,
+                                      pairwise_analysis=False,
+                                      log_file=None):
 
     for i, (idx_0, idx_1) in enumerate(distortion_combinations):
 
@@ -277,6 +300,12 @@ def plot_perf_2d_multi_result(model_performances,
                                                                                                    add_bias=add_bias,
                                                                                                    log_file=log_file)
             mean_performances[performance_key] = accuracy_means
+
+        if pairwise_analysis:
+            if len(model_performances) != 2:
+                raise Exception('model_performances must be length 2 for pairwise_analysis')
+
+            measure_log_perf_correlation(mean_performances, distortion_ids=(x_id, y_id), log_file=log_file)
 
         plot_2d(x_values, y_values, mean_performances, x_id, y_id,
                 result_identifier=identifier,

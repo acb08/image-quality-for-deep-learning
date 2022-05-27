@@ -6,18 +6,18 @@ test_result_identifiers:
      'RN18-oct111-megaset-1']
   - ['0033-rlt-0016-resnet18_sat6-oct_110_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0',
      'RN18-oct110-megaset-1']
-  - ['0032-rlt-0016-resnet18_sat6-oct_101_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0',
-     'RN18-oct101-megaset-1']
-  - ['0031-rlt-0012-resnet18_sat6-oct_100_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0',
-     'RN18-oct100-megaset-1']
-  - [ '0030-rlt-0016-resnet18_sat6-oct_011_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0',
-      'RN18-oct011-megaset-1' ]
-  - [ '0029-rlt-0012-resnet18_sat6-oct_010_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0',
-      'RN18-oct010-megaset-1' ]
-  - [ '0028-rlt-0012-resnet18_sat6-oct_001_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0',
-      'RN18-oct001-megaset-1' ]
-  - [ '0026-rlt-0012-resnet18_sat6-oct_000_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0',
-      'RN18-oct000-megaset-1' ]
+#  - ['0032-rlt-0016-resnet18_sat6-oct_101_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0',
+#     'RN18-oct101-megaset-1']
+#  - ['0031-rlt-0012-resnet18_sat6-oct_100_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0',
+#     'RN18-oct100-megaset-1']
+#  - [ '0030-rlt-0016-resnet18_sat6-oct_011_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0',
+#      'RN18-oct011-megaset-1' ]
+#  - [ '0029-rlt-0012-resnet18_sat6-oct_010_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0',
+#      'RN18-oct010-megaset-1' ]
+#  - [ '0028-rlt-0012-resnet18_sat6-oct_001_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0',
+#      'RN18-oct001-megaset-1' ]
+#  - [ '0026-rlt-0012-resnet18_sat6-oct_000_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0',
+#      'RN18-oct000-megaset-1' ]
 
 # if a second set of test result identifiers is included here, inter-set results are cross correlated, whereas passing
 # only a single set of identifiers results in intra-set correlations being calculated.  In other words, passing a single

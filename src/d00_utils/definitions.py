@@ -23,6 +23,7 @@ STANDARD_CONFIG_USED_FILENAME = 'config_used.yml'
 STANDARD_ENTROPY_PROPERTIES_FILENAME = 'entropy_properties.json'
 STANDARD_EFFECTIVE_ENTROPY_PROPERTIES_FILENAME = 'effective_entropy_properties.json'
 STANDARD_PROCESSED_DISTORTION_PERFORMANCE_PROPS_FILENAME = 'processed_distortion_performance_props.npz'
+STANDARD_COMPOSITE_DISTORTION_PERFORMANCE_PROPS_FILENAME = 'composite_distortion_performance_props.npz'
 KEY_LENGTH = 4
 
 # defines standard paths in project structure for different artifact types
@@ -43,7 +44,9 @@ REL_PATHS = {
     'noise': r'3-noise',
     'project_config': r'project_config',
     'perf_correlations': r'perf_correlations',
-    '_extracted_artifact_props': r'analysis/_extracted_artifact_props'
+    'pairwise': 'pairwise',
+    '_extracted_artifact_props': r'analysis/_extracted_artifact_props',
+    'composite_performance': r'analysis/composite_performance'
 }
 
 _project_config_filename = 'project_config.yml'

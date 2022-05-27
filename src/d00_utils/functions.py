@@ -342,6 +342,13 @@ def load_wandb_model_artifact(run, artifact_id, return_configs=False):
         return model, arch, artifact_type
 
 
+def increment_suffix(suffix):
+    suffix_num = int(suffix[1:])
+    suffix_num += 1
+    new_suffix = f'v{suffix_num}'
+    return new_suffix
+
+
 if __name__ == '__main__':
 
     # foo = key_from_dir(r'C:\Users\acb6595\Documents\Research\places2\project_portable\datasets\test')

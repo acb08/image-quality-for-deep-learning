@@ -1,3 +1,5 @@
+import itertools
+
 import numpy as np
 from itertools import combinations_with_replacement
 
@@ -392,9 +394,22 @@ def get_distortion_perf_1d(model_performance, distortion_id, log_file=None, add_
                                   np.atleast_2d(mean_accuracies).T)
 
     print(f'{result_name} {distortion_id} (per_class = {per_class}) linear fit: ', fit_coefficients, file=log_file)
-    print(f'{result_name} {distortion_id} (per_class = {per_class}) linear fit correlation: ', correlation, '\n', file=log_file)
+    print(f'{result_name} {distortion_id} (per_class = {per_class}) linear fit correlation: ', correlation, '\n',
+          file=log_file)
 
     return distortion_vals, mean_accuracies, fit_coefficients, correlation
 
 
+def measure_log_perf_correlation(performance_result_pair, distortion_ids, log_file=None):
 
+    if len(performance_result_pair) != 2:
+        raise Exception('performance_result_pair must be length 2')
+
+    if type(performance_result_pair) == dict:
+        performance_result_pair = list(performance_result_pair.values())
+
+    correlation = np.corrcoef(np.ravel(performance_result_pair[0]),
+                              np.ravel(performance_result_pair[1]))[0, 1]
+    print(f'{distortion_ids} pairwise result correlation: {correlation} \n', file=log_file)
+
+    return correlation
