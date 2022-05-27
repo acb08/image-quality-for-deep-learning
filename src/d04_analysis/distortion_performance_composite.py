@@ -342,3 +342,5 @@ if __name__ == '__main__':
     with open(Path(_output_dir, 'test_composite_result_log.txt'), 'w') as output_file:
         analyze_perf_1d(_composite_performance, log_file=output_file, directory=_output_dir, per_class=False,
                         distortion_ids=('res', 'blur', 'noise'))
+        analyze_perf_2d(_composite_performance, log_file=output_file, directory=_output_dir)
+        analyze_perf_3d(_composite_performance, log_file=output_file, directory=_output_dir)

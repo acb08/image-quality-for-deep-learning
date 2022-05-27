@@ -68,7 +68,7 @@ def _get_3d_distortion_perf_props(_self, distortion_ids):
     else:
         print('processing 3d props')
         res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array, __ = build_3d_field(
-            _self.res, _self.blur, _self.noise, _self.perf_predict_top_1_array, data_dump=True)
+            _self.res, _self.blur, _self.noise, _self.top_1_vec, data_dump=True)
         _self.archive_processed_props(res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array)
 
     return res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array, None
