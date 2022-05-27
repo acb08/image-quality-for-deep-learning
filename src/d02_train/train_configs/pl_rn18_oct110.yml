@@ -9,7 +9,7 @@ starting_model_artifact_alias: 'latest'
 crop_flag: False
 distortion_tags: ['rt_1_pl', 'bt_1_pl', 'nt_0_pl']
 descriptive_tags: ['octant-110']
-num_epochs: 30
+num_epochs: 10
 batch_size: 32
 num_workers: 16
 pin_memory: True
