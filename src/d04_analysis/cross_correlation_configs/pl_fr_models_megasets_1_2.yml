@@ -1,0 +1,30 @@
+---
+
+test_result_identifiers:
+
+  - ['0029-rlt-0020-resnet18-full_range_best_loss-0008-tst-full_range_mega_set_2_noise:v0',
+     'RN18-megaset-2']
+  - ['0028-rlt-0020-resnet50-full_range_best_loss-0008-tst-full_range_mega_set_2_noise:v0',
+     'RN50-megaset-2']
+  - ['0027-rlt-0020-densenet161-full_range_best_loss-0008-tst-full_range_mega_set_2_noise:v0',
+    'DN161-megaset-2']
+  - ['0026-rlt-0020-resnet18-full_range_best_loss-0006-tst-r_fr_pl-b_fr_pl-n_fr_pl_noise:v0',
+    'RN18-megaset-1']
+  - ['0025-rlt-0020-resnet50-full_range_best_loss-0006-tst-r_fr_pl-b_fr_pl-n_fr_pl_noise:v0',
+    'RN50-megaset-1']
+  - ['0024-rlt-0020-densenet161-full_range_best_loss-0006-tst-r_fr_pl-b_fr_pl-n_fr_pl_noise:v0',
+    'DN161-megaset-1']
+
+
+# if a second set of test result identifiers is included here, inter-set results are cross correlated, whereas passing
+# only a single set of identifiers results in intra-set correlations being calculated.  In other words, passing a single
+# set results in a symmetric correlation matrix, whereas passing different sets will result in an asymmetric table
+different_test_result_identifiers: null
+
+overwrite: False
+manual_name: octant-models-megaset-1
+analyze_3d: True
+analyze_pairwise: True
+
+
+

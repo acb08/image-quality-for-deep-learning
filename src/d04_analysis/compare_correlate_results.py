@@ -230,7 +230,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     # parser.add_argument('--config_name', default='cross_correlation_config.yml', help='config filename to be used')
-    parser.add_argument('--config_name', default='s6_oct_models_megaset_1.yml', help='config filename to be used')
+    parser.add_argument('--config_name', default='pl_fr_models_megasets_1_2.yml', help='config filename to be used')
     parser.add_argument('--config_dir',
                         default=Path(Path(__file__).parents[0], 'cross_correlation_configs'),
                         help="configuration file directory")
