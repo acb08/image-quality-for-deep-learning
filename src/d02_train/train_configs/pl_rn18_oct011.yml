@@ -7,8 +7,8 @@ starting_model_id: '0020-resnet18-full_range_best_loss'
 starting_model_artifact_alias: 'latest'
 
 crop_flag: False
-distortion_tags: ['rt_0_pl', 'bt_0_pl', 'nt_0_pl']
-descriptive_tags: ['octant-000']
+distortion_tags: ['rt_0_pl', 'bt_1_pl', 'nt_1_pl']
+descriptive_tags: ['octant-011']
 num_epochs: 10
 batch_size: 32
 num_workers: 16
@@ -16,8 +16,8 @@ pin_memory: True
 optimizer: 'Adam'
 lr: 0.00005  # Adam default = 0.001
 loss_func: 'CrossEntropyLoss'
-description: train octant 000 resnet18 model
+description: train octant 011 resnet18 model
 artifact_type: 'model'
 
-name_string: 'oct_000'  # set to null or comment out line to name model using distortion tags
+name_string: 'oct_011'  # set to null or comment out line to name model using distortion tags
 num_shards: 'all'

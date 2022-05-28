@@ -7,10 +7,10 @@ test_dataset_id: 0008-tst-full_range_mega_set_2_noise # full range megaset #1
 test_dataset_artifact_alias: latest
 
 model_artifact_ids:
-  - 0020-densenet161-full_range_best_loss:v0
-  - 0020-resnet50-full_range_best_loss:v0
-  - 0020-resnet18-full_range_best_loss:v0
-model_artifact_alias: # latest
+  - 0020-densenet161-full_range_best_loss
+  - 0020-resnet50-full_range_best_loss
+  - 0020-resnet18-full_range_best_loss
+model_artifact_alias: latest
 
 batch_size: 32
 num_workers: 4
