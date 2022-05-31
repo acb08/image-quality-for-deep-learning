@@ -25,11 +25,12 @@ def fit_hyperplane(x, y, add_bias=True):
 
 
 def eval_linear_fit(w, x, y, add_bias=True):
-    if add_bias:
-        n, m = np.shape(x)
-        bias_col = np.ones((n, 1))
-        x = np.append(x, bias_col, axis=1)
-    y_predict = np.matmul(x, w)
+    # if add_bias:
+    #     n, m = np.shape(x)
+    #     bias_col = np.ones((n, 1))
+    #     x = np.append(x, bias_col, axis=1)
+    # y_predict = np.matmul(x, w)
+    y_predict = linear_predict(w, x, add_bias=add_bias)
     correlation = np.corrcoef(np.ravel(y_predict), np.ravel(y))[0, 1]
     return correlation
 

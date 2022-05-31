@@ -13,7 +13,7 @@ import itertools
 
 
 def build_screen_performance_arrays(performance_results, x_id='res', y_id='blur', z_id='noise',
-                                    distortion_array_check=None):
+                                    distortion_array_check=None, return_fit=True):
     result_ids = []
     model_dataset_id_pairs = []
     manual_ids = []
