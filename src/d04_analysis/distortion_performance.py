@@ -99,8 +99,14 @@ class ModelDistortionPerformanceResult(DistortedDataset):
     def __len__(self):
         return len(self.labels)
 
+    def __str__(self):
+        if self.identifier:
+            return str(self.identifier)
+        else:
+            return self.__repr__()
+
     def __repr__(self):
-        return str(self.identifier)
+        return self.result_id
 
     def get_accuracy_vector(self):
         return np.equal(self.labels, self.predicts)
