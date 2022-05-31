@@ -28,7 +28,7 @@ def measure_accuracy_correlations(f0, f1):
     return correlation
 
 
-def ideal_correlation(p_underlying, total_trials, iterations=8):
+def get_ideal_correlation(p_underlying, total_trials, iterations=8):
     """
 
     Simulates a perfect binomial distributed accuracy trial across an underlying accuracy (i.e. success probability)
@@ -83,8 +83,8 @@ if __name__ == '__main__':
 
     _total_trials = 35000 * 20
 
-    _mean_correlation, _mean_fit_correlation, _correlations, _fit_correlations = ideal_correlation(_p_success,
-                                                                                                   _total_trials)
+    _mean_correlation, _mean_fit_correlation, _correlations, _fit_correlations = get_ideal_correlation(_p_success,
+                                                                                                       _total_trials)
 
     print(_mean_correlation)
     print(_mean_fit_correlation)

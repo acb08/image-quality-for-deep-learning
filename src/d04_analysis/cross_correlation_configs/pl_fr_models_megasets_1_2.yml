@@ -25,6 +25,3 @@ overwrite: False
 manual_name: full-range-models-megasets-1-2
 analyze_3d: True
 analyze_pairwise: True
-
-
-

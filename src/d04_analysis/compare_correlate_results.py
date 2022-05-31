@@ -2,7 +2,9 @@ import copy
 import json
 from src.d04_analysis.analysis_functions import build_3d_field
 from src.d04_analysis.distortion_performance import get_multiple_model_distortion_performance_results
+from src.d04_analysis.fit import fit_hyperplane, linear_predict
 from src.d04_analysis.plot import analyze_plot_results_together
+from src.d04_analysis.binomial_simulation import get_ideal_correlation
 from src.d00_utils.functions import get_config, log_config, increment_suffix
 from src.d00_utils.definitions import ROOT_DIR, REL_PATHS
 import argparse
@@ -13,11 +15,12 @@ import itertools
 
 
 def build_screen_performance_arrays(performance_results, x_id='res', y_id='blur', z_id='noise',
-                                    distortion_array_check=None, return_fit=True):
+                                    distortion_array_check=None, fit_perf=True):
     result_ids = []
     model_dataset_id_pairs = []
     manual_ids = []
     result_list = []
+    result_fit_predicts = []
 
     # start by organizing performance_results by (model_id, dataset_id) tuples and checking for results that are
     # duplicates (i.e. instances of a model/dataset combo being tested twice)
@@ -53,6 +56,7 @@ def build_screen_performance_arrays(performance_results, x_id='res', y_id='blur'
             x_values, y_values, z_values, perf_3d, distortion_array, perf_array, __ = build_3d_field(x, y, z,
                                                                                                      accuracy_vector,
                                                                                                      data_dump=True)
+
         # verify that all results come from test datasets with identical distortion values
         if distortion_array_check is None:
             distortion_array_check = distortion_array
@@ -62,33 +66,50 @@ def build_screen_performance_arrays(performance_results, x_id='res', y_id='blur'
 
         result_list.append(np.ravel(perf_array))
 
-    return result_list, model_dataset_id_pairs, result_ids, manual_ids, distortion_array_check
+        if fit_perf:
+            fit_coefficients = fit_hyperplane(distortion_array, perf_array, add_bias=True)
+            perf_fit_prediction = linear_predict(fit_coefficients, distortion_array)
+            perf_fit_prediction = np.clip(perf_fit_prediction, 0, 1)
+            result_fit_predicts.append(np.ravel(perf_fit_prediction))
+
+    return result_list, result_fit_predicts, model_dataset_id_pairs, result_ids, manual_ids, distortion_array_check
 
 
 def get_performance_correlations(performance_results, performance_results_second_set=None,
-                                 x_id='res', y_id='blur', z_id='noise'):
+                                 x_id='res', y_id='blur', z_id='noise', ideal_correlation_fit=True):
+
+    num_total_trials = len(performance_results[0].top_1_vec)
 
     if not performance_results_second_set:
-        results_0, model_dataset_id_pairs_0, result_ids_0, manual_ids_0, __ = build_screen_performance_arrays(
-            performance_results, x_id=x_id, y_id=y_id, z_id=z_id)
+        results_0, result_fit_predicts_0, model_dataset_id_pairs_0, result_ids_0, manual_ids_0, __ = (
+            build_screen_performance_arrays(performance_results, x_id=x_id, y_id=y_id, z_id=z_id,
+                                            fit_perf=ideal_correlation_fit))
         results_1 = copy.deepcopy(results_0)
+        # result_fit_predicts_1 = copy.deepcopy(result_fit_predicts_0)
         model_dataset_id_pairs_1 = copy.deepcopy(model_dataset_id_pairs_0)
         result_ids_1 = copy.deepcopy(result_ids_0)
         manual_ids_1 = copy.deepcopy(manual_ids_0)
 
     else:
-        results_0, model_dataset_id_pairs_0, result_ids_0, manual_ids_0, distortion_array_check = (
+        results_0, result_fit_predicts_0, model_dataset_id_pairs_0, result_ids_0, manual_ids_0, dist_array_check = (
             build_screen_performance_arrays(performance_results, x_id=x_id, y_id=y_id, z_id=z_id))
 
-        results_1, model_dataset_id_pairs_1, result_ids_1, manual_ids_1, __ = build_screen_performance_arrays(
-            performance_results_second_set, x_id=x_id, y_id=y_id, z_id=z_id,
-            distortion_array_check=distortion_array_check)
+        results_1, __, model_dataset_id_pairs_1, result_ids_1, manual_ids_1, __ = (
+            build_screen_performance_arrays(performance_results_second_set, x_id=x_id, y_id=y_id, z_id=z_id,
+                                            distortion_array_check=dist_array_check))
 
     correlations = np.zeros((len(results_0), len(results_1)))
+    ideal_correlations = []
     identifiers = {}
     array_index_id_dict = {}
 
     for i, r0 in enumerate(results_0):
+
+        if ideal_correlation_fit:
+            result_fit_predict = result_fit_predicts_0[i]
+            ideal_correlation = get_ideal_correlation(result_fit_predict, total_trials=num_total_trials)
+            ideal_correlations.append(ideal_correlation[0])
+
         for j, r1 in enumerate(results_1):
 
             correlation = np.corrcoef(r0, r1)[0, 1]
@@ -113,7 +134,7 @@ def get_performance_correlations(performance_results, performance_results_second
         'manual_ids': [manual_ids_0, manual_ids_1]
     }
 
-    return correlations, identifiers
+    return correlations, identifiers, ideal_correlations
 
 
 def get_correlation_result_dir(result_id_pairs, parent_dir='default', overwrite=True, suffix='v2', manual_name=None):
@@ -152,7 +173,8 @@ def get_correlation_result_dir(result_id_pairs, parent_dir='default', overwrite=
 
     else:  # recursion #nbd #nextlinustorvalds
         new_suffix = increment_suffix(suffix)
-        return get_correlation_result_dir(result_id_pairs, overwrite=overwrite, suffix=new_suffix)
+        return get_correlation_result_dir(result_id_pairs, overwrite=overwrite, manual_name=manual_name,
+                                          suffix=new_suffix)
 
 
 def analyze_correlations(config):
@@ -177,8 +199,9 @@ def analyze_correlations(config):
         different_performance_results = get_multiple_model_distortion_performance_results(different_result_identifiers)
 
     if analyze_3d:
-        correlations, identifiers = get_performance_correlations(performance_results, different_performance_results)
-        log_correlation_matrix_txt(correlations, identifiers, output_dir=output_dir)
+        correlations, identifiers, ideal_correlations = get_performance_correlations(performance_results,
+                                                                                     different_performance_results)
+        log_correlation_matrix_txt(correlations, ideal_correlations, identifiers, output_dir=output_dir)
         label_dict = identifiers['label_lists']
         make_log_dataframes(correlations, label_dict, output_dir=output_dir)
         log_config(output_dir, config)
@@ -203,10 +226,11 @@ def make_log_dataframes(correlations, label_dict, output_dir=None):
                 print(df.to_latex(index=True), file=file)
 
 
-def log_correlation_matrix_txt(correlations, identifiers, output_dir=None):
+def log_correlation_matrix_txt(correlations, ideal_correlations, identifiers, output_dir=None):
 
     with open(Path(output_dir, 'correlations.txt'), 'w') as file:
         print('cross correlation matrix: \n', correlations, '\n', file=file)
+        print('ideal correlations: \n', ideal_correlations, '\n', file=file)
         print(json.dumps(identifiers, indent=1), '\n', file=file)
 
 
