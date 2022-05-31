@@ -28,19 +28,19 @@ def measure_accuracy_correlations(f0, f1):
     return correlation
 
 
-def ideal_correlation(p_fit, total_trials, iterations=8):
+def ideal_correlation(p_underlying, total_trials, iterations=8):
     """
 
     Simulates a perfect binomial distributed accuracy trial across an underlying accuracy (i.e. success probability)
-    p_fit. Measures the correlation between two i.i.d. experiments sharing the same underlying accuracy p_fit as well as
-    the correlation between p_fit and each trial.
+    p_underlying. Measures the correlation between two i.i.d. experiments sharing the same underlying accuracy p_underlying as
+    well as the correlation between p_underlying and accuracy of each trial.
 
     Intended to simulate the correlation between models with identical accuracy being tested on i.i.d. datasets, where
-    p_fit is the underlying accuracy as a function of distortion.
+    p_underlying is the underlying accuracy as a function of distortion.
 
-    :param p_fit: estimate of intrinsic accuracy/p-success.
+    :param p_underlying: estimate of intrinsic accuracy/p-success.
     :param total_trials: number of total trials (i.e. number of images in test dataset), assumed o be spread evenly
-    across p_fit
+    across p_underlying
     :param iterations: number of times to simulate the experiment
     :return:
         mean_correlation: average correlation between accuracy of identical trials run independently.
@@ -53,19 +53,19 @@ def ideal_correlation(p_fit, total_trials, iterations=8):
         trials in range(iterations).
     """
 
-    num_trials_per_experiment = total_trials / len(p_fit)
+    num_trials_per_experiment = total_trials / len(p_underlying)
     correlations = []
     fit_correlations = []
 
     for j in range(iterations):
 
-        trial_accuracy_0 = run_binomial_accuracy_experiment(p_fit, num_trials_per_experiment)
-        trial_accuracy_1 = run_binomial_accuracy_experiment(p_fit, num_trials_per_experiment)
+        trial_accuracy_0 = run_binomial_accuracy_experiment(p_underlying, num_trials_per_experiment)
+        trial_accuracy_1 = run_binomial_accuracy_experiment(p_underlying, num_trials_per_experiment)
         correlation = measure_accuracy_correlations(trial_accuracy_0, trial_accuracy_1)
         correlations.append(correlation)
 
-        fit_correlation_0 = measure_accuracy_correlations(p_fit, trial_accuracy_0)
-        fit_correlation_1 = measure_accuracy_correlations(p_fit, trial_accuracy_0)
+        fit_correlation_0 = measure_accuracy_correlations(p_underlying, trial_accuracy_0)
+        fit_correlation_1 = measure_accuracy_correlations(p_underlying, trial_accuracy_0)
         fit_correlations.append((fit_correlation_0, fit_correlation_1))
 
     mean_correlation = np.mean(correlations)
