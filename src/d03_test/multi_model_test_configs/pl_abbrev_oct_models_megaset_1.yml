@@ -7,14 +7,14 @@ test_dataset_id: 0006-tst-r_fr_pl-b_fr_pl-n_fr_pl_noise # full range megaset #1
 test_dataset_artifact_alias: latest
 
 model_artifact_ids:
-  - 0023-resnet18-oct_000:v4  # abbreviated due to slow training run (likely a sporc config/job allocation issue)
-  - 0023-resnet18-oct_001:v4 # abbreviated due to slow training run (likely a sporc config/job allocation issue)
-  - 0023-resnet18-oct_010_best_loss:v0
-  - 0023-resnet18-oct_011_best_loss:v0
-  - 0023-resnet18-oct_100_best_loss:v0
-  - 0023-resnet18-oct_101_best_loss:v0
-  - 0023-resnet18-oct_110_best_loss:v0
-  - 0023-resnet18-oct_111_best_loss:v0
+  - 0023-resnet18-oct_000  # abbreviated due to slow training run (likely a sporc config/job allocation issue)
+  - 0023-resnet18-oct_001 # abbreviated due to slow training run (likely a sporc config/job allocation issue)
+  - 0023-resnet18-oct_010_best_loss
+  - 0023-resnet18-oct_011_best_loss
+  - 0023-resnet18-oct_100_best_loss
+  - 0023-resnet18-oct_101_best_loss
+  - 0023-resnet18-oct_110_best_loss
+  - 0023-resnet18-oct_111_best_loss
 model_artifact_alias: null
 
 batch_size: 32
