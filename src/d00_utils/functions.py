@@ -349,6 +349,17 @@ def increment_suffix(suffix):
     return new_suffix
 
 
+def construct_artifact_id(artifact_name, artifact_alias=None):
+
+    if ':' in artifact_name:
+        return artifact_name
+
+    if not artifact_alias:
+        return f'{artifact_name}:latest'
+
+    return f'{artifact_name}:{artifact_alias}'
+
+
 if __name__ == '__main__':
 
     # foo = key_from_dir(r'C:\Users\acb6595\Documents\Research\places2\project_portable\datasets\test')

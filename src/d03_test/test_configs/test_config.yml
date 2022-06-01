@@ -3,8 +3,8 @@
 description: test of no-distortion model on full range mega-set
 descrptive_tags: ['full-range-mega-set', 'pre-trained-model']
 
-test_dataset_id: 0040_tst_rs1_bcs3_nfs3_noise # full range mega-set
-test_dataset_artifact_alias: latest
+test_dataset_id: 0040_tst_rs1_bcs3_nfs3_noise:latest # full range mega-set
+test_dataset_artifact_alias: null
 
 model_artifact_id: "0001"
 model_artifact_alias: best # this alias only applies for the 0001 model
