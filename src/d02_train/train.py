@@ -10,7 +10,7 @@ import copy
 from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, ROOT_DIR, PROJECT_ID, REL_PATHS
 from src.d00_utils.definitions import STANDARD_CHECKPOINT_FILENAME, STANDARD_BEST_LOSS_FILENAME
 from src.d00_utils.functions import load_wandb_data_artifact, load_data_vectors, load_wandb_model_artifact
-from src.d00_utils.functions import id_from_tags, save_model, get_config
+from src.d00_utils.functions import id_from_tags, save_model, get_config, construct_artifact_id
 from src.d02_train.train_distortions import tag_to_transform
 from src.d00_utils.classes import NumpyDataset
 import wandb
@@ -284,8 +284,13 @@ def load_tune_model(config):
 
         config = wandb.config  # allows wandb parameter sweeps
 
-        dataset_artifact_id = f"{config['train_dataset_id']}:{config['train_dataset_artifact_alias']}"
-        starting_model_artifact_id = f"{config['starting_model_id']}:{config['starting_model_artifact_alias']}"
+        # dataset_artifact_id = f"{config['train_dataset_id']}:{config['train_dataset_artifact_alias']}"
+        dataset_artifact_id, __ = construct_artifact_id(config['train_dataset_id'],
+                                                        artifact_alias=config['train_dataset_artifact_alias'])
+
+        # starting_model_artifact_id = f"{config['starting_model_id']}:{config['starting_model_artifact_alias']}"
+        starting_model_artifact_id, __ = construct_artifact_id(config['starting_model_id'],
+                                                               artifact_alias=config['starting_model_artifact_alias'])
 
         __, dataset = load_wandb_data_artifact(run, dataset_artifact_id, STANDARD_DATASET_FILENAME)
 

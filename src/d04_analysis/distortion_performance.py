@@ -1,7 +1,7 @@
 import copy
 from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, STANDARD_TEST_RESULT_FILENAME, PROJECT_ID, REL_PATHS, \
     ROOT_DIR
-from src.d00_utils.functions import load_wandb_data_artifact, get_config
+from src.d00_utils.functions import load_wandb_data_artifact, get_config, construct_artifact_id
 from src.d04_analysis._shared_methods import _get_processed_instance_props_path, _check_extract_processed_props, \
     _archive_processed_props, _get_3d_distortion_perf_props
 from src.d04_analysis.analysis_functions import conditional_mean_accuracy, extract_embedded_vectors, \
@@ -342,6 +342,9 @@ def get_multiple_model_distortion_performance_results(result_id_pairs, distortio
     with wandb.init(project=PROJECT_ID, job_type='analyze_test_result') as run:
 
         for (artifact_id, identifier) in result_id_pairs:
+
+            artifact_id, __ = construct_artifact_id(artifact_id)
+
             performance_result, __ = _fetch_model_distortion_performance_result(run, artifact_id, identifier,
                                                                                 distortion_ids, make_dir=make_dir)
             if output_type == 'list':
