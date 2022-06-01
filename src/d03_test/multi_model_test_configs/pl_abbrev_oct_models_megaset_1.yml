@@ -15,7 +15,7 @@ model_artifact_ids:
   - 0023-resnet18-oct_101_best_loss
   - 0023-resnet18-oct_110_best_loss
   - 0023-resnet18-oct_111_best_loss
-model_artifact_alias: null
+model_artifact_alias: latest
 
 batch_size: 32
 num_workers: 4
