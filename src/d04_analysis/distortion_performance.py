@@ -112,7 +112,6 @@ class ModelDistortionPerformanceResult(DistortedDataset):
         return np.equal(self.labels, self.predicts)
 
     def conditional_accuracy(self, distortion_id, per_class=False):
-        # if per_class==True, returns mean per class accuracy rather than overall mean accuracy
         return conditional_mean_accuracy(self.labels, self.predicts, self.distortions[distortion_id],
                                          per_class=per_class)
 
@@ -126,63 +125,17 @@ class ModelDistortionPerformanceResult(DistortedDataset):
 
     def get_processed_instance_props_path(self):
         return _get_processed_instance_props_path(self)
-        # props_dir = Path(ROOT_DIR, REL_PATHS['_extracted_artifact_props'], self.result_id)
-        # if not props_dir.is_dir():
-        #     Path.mkdir(props_dir, parents=True)
-        # props_path = Path(props_dir, STANDARD_PROCESSED_DISTORTION_PERFORMANCE_PROPS_FILENAME)
-        # return props_path
 
     def check_extract_processed_props(self):
         return _check_extract_processed_props(self)
-        # processed_props_path = self.get_processed_instance_properties_path()
-        # if not Path.is_file(processed_props_path):
-        #     return False
-        #
-        # processed_props = np.load(processed_props_path)
-        # processed_props_hash = processed_props['_instance_hash']
-        # if self._instance_hash != processed_props_hash:
-        #     return False
-        #
-        # res_values = processed_props['res_values']
-        # blur_values = processed_props['blur_values']
-        # noise_values = processed_props['noise_values']
-        # perf_3d = processed_props['perf_3d']
-        # distortion_array = processed_props['distortion_array']
-        # perf_array = processed_props['perf_array']
-        #
-        # return res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array, None
 
     def archive_processed_props(self, res_values, blur_values, noise_values, perf_3d, distortion_array,
                                 perf_array):
         return _archive_processed_props(self, res_values, blur_values, noise_values, perf_3d, distortion_array,
                                         perf_array)
-        # processed_props_path = self.get_processed_instance_properties_path()
-        # np.savez_compressed(processed_props_path,
-        #                     _instance_hash=self._instance_hash,
-        #                     res_values=res_values,
-        #                     blur_values=blur_values,
-        #                     noise_values=noise_values,
-        #                     perf_3d=perf_3d,
-        #                     distortion_array=distortion_array,
-        #                     perf_array=perf_array)
 
     def get_3d_distortion_perf_props(self, distortion_ids):
         return _get_3d_distortion_perf_props(self, distortion_ids)
-
-        # if distortion_ids != ('res', 'blur', 'noise'):
-        #     raise ValueError('method requires distortion_ids (res, blur, noise)')
-        #
-        # existing_processed_props = self.check_extract_processed_props()
-        # if existing_processed_props:
-        #     print('loading existing processed properties')
-        #     res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array, __ = existing_processed_props
-        # else:
-        #     print('processing 3d props')
-        #     res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array, __ = build_3d_field(
-        #         self.res, self.blur, self.noise, self.top_1_vec, data_dump=True)
-        #     self.archive_processed_props(res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array)
-        #
-        # return res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array, None
 
 
 def load_dataset_and_result(run, result_id,
@@ -325,8 +278,8 @@ def get_model_distortion_performance_result(result_id=None, identifier=None, con
     return model_distortion_performance, output_dir
 
 
-def get_multiple_model_distortion_performance_results(result_id_pairs, distortion_ids=('res', 'blur', 'noise'), make_dir=True,
-                                                      output_type='list'):
+def get_multiple_model_distortion_performance_results(result_id_pairs, distortion_ids=('res', 'blur', 'noise'),
+                                                      make_dir=True, output_type='list'):
 
     if output_type == 'list':
         performance_results = []

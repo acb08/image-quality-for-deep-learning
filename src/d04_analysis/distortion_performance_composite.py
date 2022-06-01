@@ -214,8 +214,8 @@ class CompositePerformanceResult(object):
         model_map = {}
 
         for hash_val in set(self._distortion_pt_perf_predict_hashes):
-            sub_array = self.perf_predict_top_1_array[:,
-                        np.where(self._distortion_pt_perf_predict_hashes == hash_val)[0]]
+            sub_array = self.perf_predict_top_1_array[:, np.where(
+                self._distortion_pt_perf_predict_hashes == hash_val)[0]]
             model_accuracies = np.mean(sub_array, axis=1)
             best_model_id = self.model_ids[np.argmax(model_accuracies)]
             model_map[hash_val] = best_model_id
