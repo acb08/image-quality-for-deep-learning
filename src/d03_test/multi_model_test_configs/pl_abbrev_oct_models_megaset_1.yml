@@ -1,0 +1,27 @@
+---
+
+description: test of best octant models, with octants 000 and 001 abbreviated due to slow slow training run
+descriptive_tags: ['oct-models', 'full-range-test', '000-001-abbreviated']
+
+test_dataset_id: 0006-tst-r_fr_pl-b_fr_pl-n_fr_pl_noise # full range megaset #1
+test_dataset_artifact_alias: latest
+
+model_artifact_ids:
+  - 0023-resnet18-oct_000:v4  # abbreviated due to slow training run (likely a sporc config/job allocation issue)
+  - 0023-resnet18-oct_001:v4 # abbreviated due to slow training run (likely a sporc config/job allocation issue)
+  - 0023-resnet18-oct_010_best_loss:v0
+  - 0023-resnet18-oct_011_best_loss:v0
+  - 0023-resnet18-oct_100_best_loss:v0
+  - 0023-resnet18-oct_101_best_loss:v0
+  - 0023-resnet18-oct_110_best_loss:v0
+  - 0023-resnet18-oct_111_best_loss:v0
+model_artifact_alias: null
+
+batch_size: 32
+num_workers: 4
+pin_memory: True
+crop_flag: False
+dataset_split_key: test  # used to get to correct level of dataset dict (to mirror 'train'/'val' splits)
+#last_distortion_type_flag: noise  # normally should be 'noise'
+loss_func: CrossEntropyLoss
+status_interval: 10000  # images
