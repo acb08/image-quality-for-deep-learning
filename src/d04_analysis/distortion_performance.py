@@ -6,7 +6,7 @@ from src.d04_analysis._shared_methods import _get_processed_instance_props_path,
     _archive_processed_props, _get_3d_distortion_perf_props
 from src.d04_analysis.analysis_functions import conditional_mean_accuracy, extract_embedded_vectors, \
     get_class_accuracies, build_3d_field, get_distortion_perf_2d, get_distortion_perf_1d
-from src.d04_analysis.fit import fit_hyperplane, eval_linear_fit
+from src.d04_analysis.fit import fit_hyperplane, eval_linear_fit, nonlinear_fit, eval_nonlinear_fit
 from src.d04_analysis.plot import plot_1d_linear_fit, plot_2d, plot_2d_linear_fit, plot_isosurf
 import numpy as np
 from pathlib import Path
@@ -219,8 +219,16 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
     fit_coefficients = fit_hyperplane(distortion_array, perf_array, add_bias=add_bias)
     correlation = eval_linear_fit(fit_coefficients, distortion_array, perf_array, add_bias=add_bias)
 
+    nonlinear_fit_coefficients = nonlinear_fit(distortion_array, perf_array, distortion_ids=(x_id, y_id, z_id),
+                                               add_bias=add_bias)
+    nonlinear_correlation = eval_nonlinear_fit(nonlinear_fit_coefficients, distortion_array, perf_array,
+                                               distortion_ids=(x_id, y_id, z_id), add_bias=add_bias)
+
     print(f'{result_name} {x_id} {y_id} {z_id} linear fit: ', fit_coefficients, file=log_file)
     print(f'{result_name} {x_id} {y_id} {z_id} linear fit correlation: ', correlation, '\n', file=log_file)
+
+    print(f'{result_name} {x_id} {y_id} {z_id} non-linear fit: ', nonlinear_fit_coefficients, file=log_file)
+    print(f'{result_name} {x_id} {y_id} {z_id} nonlinear fit correlation: ', nonlinear_correlation, '\n', file=log_file)
 
     return x_values, y_values, z_values, perf_3d
 
