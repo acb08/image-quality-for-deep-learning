@@ -77,12 +77,12 @@ def test_model(config):
         # config = wandb.config
 
         # dataset_artifact_id = f"{config['test_dataset_id']}:{config['test_dataset_artifact_alias']}"
-        dataset_artifact_id = construct_artifact_id(config['test_dataset_id'],
-                                                    artifact_alias=config['test_dataset_artifact_alias'])
+        dataset_artifact_id, dataset_artifact_stem = construct_artifact_id(
+            config['test_dataset_id'], artifact_alias=config['test_dataset_artifact_alias'])
 
         # model_artifact_id = f"{config['model_artifact_id']}:{config['model_artifact_alias']}"
-        model_artifact_id = construct_artifact_id(config['model_artifact_id'],
-                                                  artifact_alias=config['model_artifact_alias'])
+        model_artifact_id, model_artifact_stem = construct_artifact_id(
+            config['model_artifact_id'], artifact_alias=config['model_artifact_alias'])
 
         __, dataset = load_wandb_data_artifact(run, dataset_artifact_id, STANDARD_DATASET_FILENAME)
         model = load_wandb_model_artifact(run, model_artifact_id)
@@ -139,7 +139,7 @@ def test_model(config):
             'accuracy': test_result['accuracy'],
         })
 
-        test_result_id = id_from_tags(artifact_type, [config['model_artifact_id'], config['test_dataset_id']])
+        test_result_id = id_from_tags(artifact_type, [model_artifact_stem, dataset_artifact_stem])
 
         test_result_rel_dir = Path(REL_PATHS[artifact_type], test_result_id)
         test_result_abs_dir = Path(ROOT_DIR, test_result_rel_dir)

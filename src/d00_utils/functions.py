@@ -352,12 +352,15 @@ def increment_suffix(suffix):
 def construct_artifact_id(artifact_name, artifact_alias=None):
 
     if ':' in artifact_name:
-        return artifact_name
+        artifact_stem = artifact_name.split(':')[0]
+        return artifact_name, artifact_stem
+
+    artifact_stem = artifact_name
 
     if not artifact_alias:
-        return f'{artifact_name}:latest'
+        return f'{artifact_name}:latest', artifact_stem
 
-    return f'{artifact_name}:{artifact_alias}'
+    return f'{artifact_name}:{artifact_alias}', artifact_stem
 
 
 if __name__ == '__main__':
