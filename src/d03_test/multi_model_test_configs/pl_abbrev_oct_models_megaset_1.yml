@@ -1,6 +1,7 @@
 ---
 
-description: test of best octant models, with octants 000 and 001 abbreviated due to slow slow training run
+description: 'test of best octant models, with octants 000 and 001 abbreviated due to slow slow training run. Re-start
+ of test run that crashed after testing 0023-resnet18-oct_010_best_loss due to W&B communication error'
 descriptive_tags: ['oct-models', 'full-range-test', '000-001-abbreviated']
 
 test_dataset_id: 0006-tst-r_fr_pl-b_fr_pl-n_fr_pl_noise # full range megaset #1
