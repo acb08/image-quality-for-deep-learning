@@ -238,10 +238,11 @@ def analyze_plot_results_together(model_results, directory=None, make_subdir=Fal
         analyze_plot_perf_2d_multi_result(model_results, directory=directory, identifier=identifier,
                                           pairwise_analysis=pairwise_analysis, log_file=log_file)
     else:
-        analyze_plot_perf_1d_multi_result(model_results, directory=directory, identifier=identifier, legend_loc=legend_loc,
+        analyze_plot_perf_1d_multi_result(model_results, directory=directory, identifier=identifier,
+                                          legend_loc=legend_loc,
                                           pairwise_analysis=pairwise_analysis, log_file=log_file)
-
-    log_file.close()
+    if log_file is not None:
+        log_file.close()
 
 
 def analyze_plot_perf_1d_multi_result(model_performances,

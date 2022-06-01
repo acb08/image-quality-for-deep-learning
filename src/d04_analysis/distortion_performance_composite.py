@@ -20,8 +20,7 @@ class CompositePerformanceResult(object):
     """
 
     def __init__(self, performance_prediction_result_ids, performance_eval_result_ids=None, identifier=None,
-                 distortion_ids=('res', 'blur', 'noise'), parent_dir='default',
-                 overwrite_extracted_props=True):
+                 distortion_ids=('res', 'blur', 'noise'), surrogate_model_id='composite'):
 
         self.performance_prediction_result_ids = performance_prediction_result_ids
         self.eval_result_ids = performance_eval_result_ids
@@ -92,6 +91,8 @@ class CompositePerformanceResult(object):
             '_noise_perf_predict': self._noise_perf_predict,
         }
 
+        self.model_id = surrogate_model_id
+
     # *** methods needed for compatibility with functions that use ModelDistortionPerformance instances ***************
     def get_processed_instance_props_path(self):
         return _get_processed_instance_props_path(self)
@@ -120,6 +121,12 @@ class CompositePerformanceResult(object):
         else:
             return len(self._distortion_pt_perf_predict_hashes)
 
+    def __str__(self):
+        if self.identifier is not None:
+            return self.identifier
+        else:
+            return self.result_id
+
     def _get_composite_result_id(self):
 
         composite_result_id = 'cr'
@@ -132,6 +139,9 @@ class CompositePerformanceResult(object):
                 composite_result_id = f'{composite_result_id}-{eval_result_id[:4]}'
 
         return composite_result_id
+
+    def _get_composite_model_id(self):
+        pass
 
     def _screen_dataset_ids(self):
 
@@ -317,7 +327,7 @@ def get_composite_performance_result(performance_prediction_result_ids=None, per
 
     composite_performance_result = CompositePerformanceResult(
         performance_prediction_result_ids, performance_eval_result_ids=performance_eval_result_ids,
-        identifier=identifier, parent_dir=parent_dir, overwrite_extracted_props=overwrite_extracted_props)
+        identifier=identifier)
 
     composite_result_id = composite_performance_result.result_id
     output_dir = Path(ROOT_DIR, REL_PATHS['composite_performance'], composite_result_id)
