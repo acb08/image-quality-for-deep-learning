@@ -1,0 +1,23 @@
+---
+
+train_dataset_id: '0001-trn-np'
+train_dataset_artifact_alias: latest
+
+starting_model_id: '0023-resnet18-oct_000'
+starting_model_artifact_alias: 'v4'
+
+crop_flag: False
+distortion_tags: ['rt_0_pl', 'bt_0_pl', 'nt_0_pl']
+descriptive_tags: ['octant-000']
+num_epochs: 5
+batch_size: 32
+num_workers: 16
+pin_memory: True
+optimizer: 'Adam'
+lr: 0.00005  # Adam default = 0.001
+loss_func: 'CrossEntropyLoss'
+description: train octant 000 resnet18 model.Initial training run ran slowly/timed out, extending from last model
+artifact_type: 'model'
+
+name_string: 'oct_000'  # set to null or comment out line to name model using distortion tags
+num_shards: 'all'
