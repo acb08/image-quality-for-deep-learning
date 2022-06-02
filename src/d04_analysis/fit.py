@@ -1,6 +1,19 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
+class DistortionTransform(object):
+
+    def __init__(self):
+        pass
+
+    def __call__(self, x):  # do the transform
+        pass
+
+    def __str__(self):
+        pass  # return a description of the transform
+
+
 def fit_hyperplane(x, y, add_bias=True):
 
     """
@@ -10,9 +23,6 @@ def fit_hyperplane(x, y, add_bias=True):
     """
 
     if add_bias:
-        # n, m = np.shape(x)
-        # bias_col = np.ones((n, 1))
-        # x = np.append(x, bias_col, axis=1)
         x = append_bias_col(x)
     ata = np.matmul(x.T, x)
     atb = np.matmul(x.T, y)
@@ -25,11 +35,6 @@ def fit_hyperplane(x, y, add_bias=True):
 
 
 def eval_linear_fit(w, x, y, add_bias=True):
-    # if add_bias:
-    #     n, m = np.shape(x)
-    #     bias_col = np.ones((n, 1))
-    #     x = np.append(x, bias_col, axis=1)
-    # y_predict = np.matmul(x, w)
     y_predict = linear_predict(w, x, add_bias=add_bias)
     correlation = np.corrcoef(np.ravel(y_predict), np.ravel(y))[0, 1]
     return correlation
@@ -37,9 +42,6 @@ def eval_linear_fit(w, x, y, add_bias=True):
 
 def linear_predict(w, x, add_bias=True):
     if add_bias:
-        # n, m = np.shape(x)
-        # bias_col = np.ones((n, 1))
-        # x = np.append(x, bias_col, axis=1)
         x = append_bias_col(x)
     y_predict = np.matmul(x, w)
     return y_predict
@@ -64,7 +66,7 @@ def distortion_transform(distortion_vector, distortion_ids=('res', 'blur', 'nois
     noise = distortion_vector[:, 2]
 
     f_res = np.log10(res)
-    f_blur = np.log10(1 / blur)
+    f_blur = np.log10(blur)
     f_noise = noise
     f_res_blur = blur / res
 

@@ -1,7 +1,4 @@
-import itertools
-
 import numpy as np
-from itertools import combinations_with_replacement
 
 from src.d04_analysis.fit import fit_hyperplane, eval_linear_fit
 
@@ -335,7 +332,8 @@ def build_3d_field(x, y, z, f, data_dump=False):
     x_values = np.unique(x)
     y_values = np.unique(y)
     z_values = np.unique(z)
-    f_means = np.zeros((len(x_values), len(y_values), len(z_values)))
+    f_means = np.zeros((len(x_values), len(y_values), len(z_values)))  # note: to re-create a similar array with
+    # np.meshgrid, we need to specify indexing='ij' indexing rather than the default 'xy' cartesian indexing
 
     parameter_array = []  # for use in curve fits
     performance_array = []  # for use in svd
@@ -413,3 +411,60 @@ def measure_log_perf_correlation(performance_result_pair, distortion_ids, log_fi
     print(f'{distortion_ids} pairwise result correlation: {correlation} \n', file=log_file)
 
     return correlation
+
+
+def flatten(f, x_vals, y_vals, z_vals, flatten_axis=0):
+    """
+    :param f: 3d array of shape (len(x_vals), len(y_vals), len(z_vals)), presumed to be a function f(x, y, z).
+    Note this shape corresponds to the array shape returned by np.meshgrid(x_vals, y_vals, z_vals, indexing='ij').
+    :param x_vals: independent variable values on to axis-0
+    :param y_vals: independent variable values on to axis-1
+    :param z_vals: independent variable values on to axis-2
+    :param flatten_axis: the axis along which f will be averaged (i.e. the axis to be removed by averaging out). Must be
+    0, 1, or 2.
+    :return: 2d array corresponding of f averaged along flatten axis, 1d array containing first remaining axis not
+    eliminated by averaging (i.e. x_vals or y_vals), and 1d array containing the second axis not eliminated by
+    averaging (i.e. y_vals or z_vals)
+    """
+
+    if flatten_axis not in range(3):
+        raise ValueError
+
+    f_2d = np.mean(f, axis=flatten_axis)
+    remaining_axes = keep_2_of_3(a=x_vals, b=y_vals, c=z_vals, discard_idx=flatten_axis)
+
+    return f_2d, remaining_axes[0], remaining_axes[1]
+
+
+def keep_2_of_3(a=None, b=None, c=None, discard_idx=0):
+    """
+    Intended for use with flatten() function to keep track of the remaining axes/labels when a 3d array is flattened to
+    its 2d average along one of its 3 axes. Essentially, if we average along the axes 2 (i.e z), keep_2_of_3() takes
+    the original 3 axes (or their labels) and returns the two remaining, in this case x and y.
+
+    NOTE: assumes that the 3d array in array in question uses 'ij' rather than 'xy' indexing.
+    """
+
+    if b is None and c is None:
+        if len(a) != 3:
+            raise Exception('if b and c are None, a must be length 3')
+        starters = a
+    # elif hasattr(a, '__len__'):
+    #     raise Exception('a must not have attribute __len__ if b and c are not None')
+    else:
+        starters = (a, b, c)
+        # if None in starters:
+        #     raise Exception('keep_2_of_3 requires either len(a) == 3 with b and c None, or else a, b, and c must not '
+        #                     'be None')
+
+    keepers = []
+    if discard_idx not in range(3):
+        raise ValueError
+
+    for i in range(3):
+        if i != discard_idx:
+            keepers.append(starters[i])
+
+    return keepers
+
+

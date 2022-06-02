@@ -6,8 +6,8 @@ from src.d04_analysis._shared_methods import _get_processed_instance_props_path,
     _archive_processed_props, _get_3d_distortion_perf_props
 from src.d04_analysis.analysis_functions import conditional_mean_accuracy, extract_embedded_vectors, \
     get_class_accuracies, build_3d_field, get_distortion_perf_2d, get_distortion_perf_1d
-from src.d04_analysis.fit import fit_hyperplane, eval_linear_fit, nonlinear_fit, eval_nonlinear_fit
-from src.d04_analysis.plot import plot_1d_linear_fit, plot_2d, plot_2d_linear_fit, plot_isosurf
+from src.d04_analysis.fit import fit_hyperplane, eval_linear_fit, nonlinear_fit, eval_nonlinear_fit, nonlinear_predict
+from src.d04_analysis.plot import plot_1d_linear_fit, plot_2d, plot_2d_linear_fit, plot_isosurf, compare_2d_views
 import numpy as np
 from pathlib import Path
 import wandb
@@ -206,11 +206,10 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
         x_values, y_values, z_values, perf_3d, distortion_array, perf_array, __ = (
             model_performance.get_3d_distortion_perf_props(distortion_ids=(x_id, y_id, z_id)))
     except ValueError:  # raised by get_3d_distortion_perf_props if distortion_ids != ('res', 'blur', 'noise')
-
+        accuracy_vector = model_performance.top_1_vec
         x = model_performance.distortions[x_id]
         y = model_performance.distortions[y_id]
         z = model_performance.distortions[z_id]
-        accuracy_vector = model_performance.perf_predict_top_1_array
 
         x_values, y_values, z_values, perf_3d, distortion_array, perf_array, __ = build_3d_field(x, y, z,
                                                                                                  accuracy_vector,
@@ -224,13 +223,22 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
     nonlinear_correlation = eval_nonlinear_fit(nonlinear_fit_coefficients, distortion_array, perf_array,
                                                distortion_ids=(x_id, y_id, z_id), add_bias=add_bias)
 
+    nonlinear_fit_prediction = nonlinear_predict(nonlinear_fit_coefficients, distortion_array,
+                                                 distortion_ids=(x_id, y_id, z_id), add_bias=add_bias)
+
+    _x_vals, _y_vals, _z_vals, nonllinear_perf_pred_3d, __, __, __ = build_3d_field(distortion_array[:, 0],
+                                                                                    distortion_array[:, 1],
+                                                                                    distortion_array[:, 2],
+                                                                                    nonlinear_fit_prediction,
+                                                                                    data_dump=True)
+
     print(f'{result_name} {x_id} {y_id} {z_id} linear fit: ', fit_coefficients, file=log_file)
     print(f'{result_name} {x_id} {y_id} {z_id} linear fit correlation: ', correlation, '\n', file=log_file)
 
     print(f'{result_name} {x_id} {y_id} {z_id} non-linear fit: ', nonlinear_fit_coefficients, file=log_file)
     print(f'{result_name} {x_id} {y_id} {z_id} nonlinear fit correlation: ', nonlinear_correlation, '\n', file=log_file)
 
-    return x_values, y_values, z_values, perf_3d
+    return x_values, y_values, z_values, perf_3d, nonllinear_perf_pred_3d
 
 
 def analyze_perf_3d(model_performance,
@@ -240,9 +248,11 @@ def analyze_perf_3d(model_performance,
                     directory=None,
                     isosurf_plot=False):
     x_id, y_id, z_id = distortion_ids
-    x_values, y_values, z_values, perf_3d = get_distortion_perf_3d(model_performance,
-                                                                   x_id=x_id, y_id=y_id, z_id=z_id,
-                                                                   add_bias=add_bias, log_file=log_file)
+    x_values, y_values, z_values, perf_3d, nlp_3d = get_distortion_perf_3d(model_performance,
+                                                                           x_id=x_id, y_id=y_id, z_id=z_id,
+                                                                           add_bias=add_bias, log_file=log_file)
+    compare_2d_views(perf_3d, nlp_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
+                     data_labels=('measured', 'nonlinear fit'), az_el_combinations='default')
     if isosurf_plot:
         save_name = f'{str(model_performance)}_isosurf.png'
         plot_isosurf(x_values, y_values, z_values, perf_3d,
@@ -329,11 +339,11 @@ if __name__ == '__main__':
     _model_distortion_performance, _output_dir = get_model_distortion_performance_result(config=run_config)
 
     with open(Path(_output_dir, 'result_log.txt'), 'w') as output_file:
-        analyze_perf_1d(_model_distortion_performance, log_file=output_file, directory=_output_dir, per_class=False,
-                        distortion_ids=('res', 'blur', 'scaled_blur', 'noise'))
-        analyze_perf_1d(_model_distortion_performance, log_file=output_file, directory=_output_dir, per_class=True,
-                        distortion_ids=('res', 'blur', 'scaled_blur', 'noise'))
-        analyze_perf_2d(_model_distortion_performance, log_file=output_file, directory=_output_dir)
-        analyze_perf_2d(_model_distortion_performance, log_file=output_file, directory=_output_dir,
-                        distortion_ids=('scaled_blur', 'noise'), distortion_combinations=((0, 1),))
+        # analyze_perf_1d(_model_distortion_performance, log_file=output_file, directory=_output_dir, per_class=False,
+        #                 distortion_ids=('res', 'blur', 'scaled_blur', 'noise'))
+        # analyze_perf_1d(_model_distortion_performance, log_file=output_file, directory=_output_dir, per_class=True,
+        #                 distortion_ids=('res', 'blur', 'scaled_blur', 'noise'))
+        # analyze_perf_2d(_model_distortion_performance, log_file=output_file, directory=_output_dir)
+        # analyze_perf_2d(_model_distortion_performance, log_file=output_file, directory=_output_dir,
+        #                 distortion_ids=('scaled_blur', 'noise'), distortion_combinations=((0, 1),))
         analyze_perf_3d(_model_distortion_performance, log_file=output_file, directory=_output_dir)

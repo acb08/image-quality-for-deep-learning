@@ -11,7 +11,7 @@ from skimage.measure import marching_cubes
 
 from src.d04_analysis.fit import linear_predict
 from src.d04_analysis.analysis_functions import conditional_extract_2d, create_identifier, get_distortion_perf_2d, \
-    get_distortion_perf_1d, measure_log_perf_correlation
+    get_distortion_perf_1d, measure_log_perf_correlation, flatten, keep_2_of_3
 
 # from src.d04_analysis.distortion_performance import plot_perf_2d_multi_result, plot_perf_1d_multi_result
 
@@ -500,3 +500,21 @@ def plot_1d_performance(x, performance_dict, distortion_id,
     if directory:
         plt.savefig(Path(directory, save_name))
     plt.show()
+
+
+def compare_2d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),
+                     flatten_axes=(0, 1, 2), data_labels=('f0', 'f1'), result_id='3d_projection',
+                     az_el_combinations='default'):
+
+    for flatten_axis in flatten_axes:
+        f0_2d, axis0, axis1 = flatten(f0, x_vals, y_vals, z_vals, flatten_axis=flatten_axis)
+        f1_2d, __, __ = flatten(f1, x_vals, y_vals, z_vals, flatten_axis=flatten_axis)
+        xlabel, ylabel = keep_2_of_3(a=distortion_ids, discard_idx=flatten_axis)
+
+        views_2d = {
+            data_labels[0]: f0_2d,
+            data_labels[1]: f1_2d
+        }
+
+        plot_2d(axis0, axis1, views_2d, x_id=xlabel, y_id=ylabel, result_identifier=result_id,
+                az_el_combinations=az_el_combinations)
