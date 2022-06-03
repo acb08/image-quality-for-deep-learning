@@ -504,7 +504,7 @@ def plot_1d_performance(x, performance_dict, distortion_id,
 
 def compare_2d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),
                      flatten_axes=(0, 1, 2), data_labels=('f0', 'f1'), result_id='3d_projection',
-                     az_el_combinations='default'):
+                     az_el_combinations='default', directory=None):
 
     for flatten_axis in flatten_axes:
         f0_2d, axis0, axis1 = flatten(f0, x_vals, y_vals, z_vals, flatten_axis=flatten_axis)
@@ -517,4 +517,4 @@ def compare_2d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blu
         }
 
         plot_2d(axis0, axis1, views_2d, x_id=xlabel, y_id=ylabel, result_identifier=result_id,
-                az_el_combinations=az_el_combinations)
+                az_el_combinations=az_el_combinations, directory=directory)

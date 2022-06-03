@@ -4,10 +4,11 @@ import argparse
 from src.d04_analysis.distortion_performance import get_multiple_model_distortion_performance_results
 from src.d04_analysis._shared_methods import _get_processed_instance_props_path, _check_extract_processed_props, \
     _archive_processed_props, _get_3d_distortion_perf_props
+from src.d04_analysis.fit import nonlinear_fit, eval_nonlinear_fit
 from src.d00_utils.definitions import STANDARD_COMPOSITE_DISTORTION_PERFORMANCE_PROPS_FILENAME, KEY_LENGTH, ROOT_DIR, \
     REL_PATHS
 from src.d00_utils.functions import get_config
-from src.d04_analysis.analysis_functions import conditional_mean_accuracy
+from src.d04_analysis.analysis_functions import conditional_mean_accuracy, build_3d_field
 from pathlib import Path
 from src.d04_analysis.distortion_performance import analyze_perf_1d, analyze_perf_2d, analyze_perf_3d
 
@@ -68,8 +69,12 @@ class CompositePerformanceResult(object):
         self._model_map = self._assign_models()
         self._hash_to_row_idx_map = self._get_hash_to_row_idx_map()
 
+        # self.filtered_predict_top_1_vec and self.filtered_perf_predict_predicts the top 1 vector and predict vector
+        # respectively that result from applying self._model_id_to_eval_id_map to the performance prediction array
+        self.filtered_predict_top_1_vec, self.filtered_perf_predict_predicts = self._make_perf_predict_arrays()
+
         if self.eval_results:
-            self.eval_top_1_array, self.eval_predict_array = self._make_eval_arrays()
+            self.eval_top_1_array, self.eval_prediction_array = self._make_eval_arrays()
             self.top_1_vec, self.predicts = self.eval_performance()  # eval predicts
         else:
             self.eval_top_1_array = None
@@ -92,6 +97,8 @@ class CompositePerformanceResult(object):
         }
 
         self.model_id = surrogate_model_id
+
+        self.perf_prediction_fit = None
 
     # *** methods needed for compatibility with functions that use ModelDistortionPerformance instances ***************
     def get_processed_instance_props_path(self):
@@ -144,6 +151,10 @@ class CompositePerformanceResult(object):
         pass
 
     def _screen_dataset_ids(self):
+        """
+        checks that all performance prediction results of each type come from the same underlying test dataset AND
+        checks that the performance prediction and eval dataset ids are not identical to each other
+        """
 
         performance_prediction_dataset_id = None
         eval_dataset_id = None
@@ -163,6 +174,9 @@ class CompositePerformanceResult(object):
                     raise Exception(f'eval dataset ids inconsistent, {eval_dataset_id} != '
                                     f'{result.dataset_id}')
 
+        if eval_dataset_id == performance_prediction_dataset_id:
+            raise Exception('eval dataset id and performance prediction dataset ids must be different')
+
         return performance_prediction_dataset_id, eval_dataset_id
 
     def _get_distortion_space(self):
@@ -175,8 +189,8 @@ class CompositePerformanceResult(object):
         self.noise_vals = np.unique(noise_p)
 
         if self.eval_results:
-            evaluative_result = next(iter(self.eval_results.values()))
-            res_e, blur_e, noise_e = evaluative_result.res, evaluative_result.blur, evaluative_result.noise
+            eval_result = next(iter(self.eval_results.values()))
+            res_e, blur_e, noise_e = eval_result.res, eval_result.blur, eval_result.noise
 
             if not np.array_equal(self.res_vals, np.unique(res_e)):
                 raise Exception('res distortion spaces unmatched')
@@ -195,6 +209,11 @@ class CompositePerformanceResult(object):
 
     def _assign_distortion_pt_hashes(self):
 
+        """
+        Generates arrays containing the hash value of each unique distortion distortion point (res, blur, noise)
+        for the combination of distortions applied to each performance predict and performance eval image.
+        """
+
         distortion_array_p = np.stack([self._res_perf_predict, self._blur_perf_predict, self._noise_perf_predict],
                                       axis=0)
         predict_hashes = [hash(tuple(distortion_array_p[:, i])) for i in range(len(distortion_array_p[0, :]))]
@@ -210,7 +229,10 @@ class CompositePerformanceResult(object):
         return predict_hashes, eval_hashes
 
     def _assign_models(self):
-
+        """
+        Finds the best performing model at each distortion point and maps it to the associated hash value for that
+        distortion point.
+        """
         model_map = {}
 
         for hash_val in set(self._distortion_pt_perf_predict_hashes):
@@ -227,6 +249,8 @@ class CompositePerformanceResult(object):
         model_ids = []
         for ppr_id, ppr in self.performance_prediction_results.items():
             model_id = ppr.model_id
+            if model_id in model_ids:
+                raise Exception(f'duplicate model id {model_id} found')
             model_ids.append(model_id)
             model_id_ppr_id_pairs.append((model_id, ppr_id))
         model_id_ppr_id_pairs = tuple(model_id_ppr_id_pairs)
@@ -237,13 +261,15 @@ class CompositePerformanceResult(object):
                     raise Exception(f'eval_results contains test result {er_id} from model {er.model_id} not included '
                                     f'in performance prediction results')
 
-        model_ids = tuple(model_ids)
-        model_id_ppr_id_pairs = tuple(model_id_ppr_id_pairs)
+        model_ids = tuple(model_ids)  # convert to tuple for immutability
+        model_id_ppr_id_pairs = tuple(model_id_ppr_id_pairs) # convert to tuple for immutability
 
         return model_ids, model_id_ppr_id_pairs
 
     def _map_model_ids_to_eval_result_ids(self):
-
+        """
+        Creates a dictionary linking model ids to their associated evaluation result id
+        """
         model_id_to_eval_id_map = {}
         for eval_result_id, eval_result in self.eval_results.items():
             model_id = eval_result.model_id
@@ -254,7 +280,10 @@ class CompositePerformanceResult(object):
         return model_id_to_eval_id_map
 
     def _make_perf_predict_arrays(self):
-
+        """
+        Creates arrays in which the rows are performance prediction result top 1 accuracy vectors and top 1 predict
+        vectors
+        """
         top_1_array = np.zeros(
             (len(self.performance_prediction_results), len(self._distortion_pt_perf_predict_hashes)))
         predict_array = np.zeros_like(top_1_array)
@@ -268,12 +297,15 @@ class CompositePerformanceResult(object):
         return top_1_array, predict_array
 
     def _make_eval_arrays(self):
-
+        """
+        Creates arrays in which the rows are performance eval result top 1 accuracy vectors and top 1 predict
+        vectors
+        """
         top_1_array = np.zeros(
             (len(self.eval_results), len(self._distortion_pt_eval_hashes)))
         predict_array = np.zeros_like(top_1_array)
 
-        for i, model_id in enumerate(self.model_ids):
+        for i, (model_id, __) in enumerate(self.model_id_ppr_id_pairs):
             eval_result_id = self._model_id_to_eval_id_map[model_id]
             eval_result = self.eval_results[eval_result_id]
             top_1_vec = eval_result.top_1_vec
@@ -284,7 +316,11 @@ class CompositePerformanceResult(object):
         return top_1_array, predict_array
 
     def _get_hash_to_row_idx_map(self):
-
+        """
+        Creates a dictionary linking each distortion point's hash value to the row index of is best performing model.
+        The CompositePerformanceResult class uses the ordering of self.model_id_ppr_id_pairs to ensure that each model
+        is assigned to the same row in the top 1 accuracy and predict arrays for both performance prediction and eval
+        """
         hash_to_row_idx_map = {}
         for hash_val, model_id in self._model_map.items():
             hash_to_row_idx_map[hash_val] = self.model_ids.index(model_id)
@@ -298,6 +334,11 @@ class CompositePerformanceResult(object):
         return np.max(self.perf_predict_top_1_array, axis=0)
 
     def eval_performance(self):
+        """
+        Uses the mapping of each distortion point hash value to the associated row index of the best performing model
+        at that distortion point to extract the associated eval_top_1_array and eval_prediction_array values, returning
+        the composite top 1 vector (top_1_vec) and composite prediction vector (predict vec)
+        """
         top_1_vec = -1 * np.ones(np.shape(self.eval_top_1_array)[1])
         predict_vec = -1 * np.ones_like(top_1_vec)
         for hash_val in self._hash_to_row_idx_map.keys():
@@ -305,7 +346,27 @@ class CompositePerformanceResult(object):
             row_index = self._hash_to_row_idx_map[hash_val]
 
             top_1_vec[column_indices] = self.eval_top_1_array[row_index, column_indices]
-            predict_vec[column_indices] = self.eval_predict_array[row_index, column_indices]
+            predict_vec[column_indices] = self.eval_prediction_array[row_index, column_indices]
+
+        assert -1 not in top_1_vec  # make sure every value has been written
+        assert -1 not in predict_vec
+
+        return top_1_vec, predict_vec
+
+    def eval_performance_predict(self):
+        """
+        Applies the same mapping used in self.eval_performance() to generate the equivalent top 1 and predict vectors
+        for the performance prediction results. Effectively gets the composite performance prediction that result from
+        picking the best performing model on the performance prediction dataset (akin to training accuracy)
+        """
+        top_1_vec = -1 * np.ones(np.shape(self.perf_predict_top_1_array)[1])
+        predict_vec = -1 * np.ones_like(top_1_vec)
+        for hash_val in self._hash_to_row_idx_map.keys():
+            column_indices = np.where(self._distortion_pt_eval_hashes == hash_val)[0]
+            row_index = self._hash_to_row_idx_map[hash_val]
+
+            top_1_vec[column_indices] = self.perf_predict_top_1_array[row_index, column_indices]
+            predict_vec[column_indices] = self.perf_predict_prediction_array[row_index, column_indices]
 
         assert -1 not in top_1_vec  # make sure every value has been written
         assert -1 not in predict_vec
@@ -313,7 +374,20 @@ class CompositePerformanceResult(object):
         return top_1_vec, predict_vec
 
     def eval_performance_cheating(self):
+
         pass
+
+    def fit(self, add_bias=True):
+
+        x_vals, y_vals, z_vals, perf_3d, distortion_array, perf_array = self.get_3d_distortion_perf_props(
+            distortion_ids=self.distortion_ids)
+        w = nonlinear_fit(distortion_array, perf_array, distortion_ids=self.distortion_ids, add_bias=add_bias)
+        self.perf_prediction_fit = w
+
+    def run_performance_prediction(self):
+        if self.perf_prediction_fit is None:
+            self.fit_performance_prediction()
+
 
 
 def get_composite_performance_result(performance_prediction_result_ids=None, performance_eval_result_ids=None,
@@ -352,7 +426,7 @@ if __name__ == '__main__':
 
     _composite_performance, _output_dir = get_composite_performance_result(config=run_config)
     with open(Path(_output_dir, 'test_composite_result_log.txt'), 'w') as output_file:
-        analyze_perf_1d(_composite_performance, log_file=output_file, directory=_output_dir, per_class=False,
-                        distortion_ids=('res', 'blur', 'noise'))
-        analyze_perf_2d(_composite_performance, log_file=output_file, directory=_output_dir)
+        # analyze_perf_1d(_composite_performance, log_file=output_file, directory=_output_dir, per_class=False,
+        #                 distortion_ids=('res', 'blur', 'noise'))
+        # analyze_perf_2d(_composite_performance, log_file=output_file, directory=_output_dir)
         analyze_perf_3d(_composite_performance, log_file=output_file, directory=_output_dir)

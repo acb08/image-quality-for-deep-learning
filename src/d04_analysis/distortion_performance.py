@@ -251,8 +251,9 @@ def analyze_perf_3d(model_performance,
     x_values, y_values, z_values, perf_3d, nlp_3d = get_distortion_perf_3d(model_performance,
                                                                            x_id=x_id, y_id=y_id, z_id=z_id,
                                                                            add_bias=add_bias, log_file=log_file)
+
     compare_2d_views(perf_3d, nlp_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
-                     data_labels=('measured', 'nonlinear fit'), az_el_combinations='default')
+                     data_labels=('measured', 'nonlinear fit'), az_el_combinations='all', directory=directory)
     if isosurf_plot:
         save_name = f'{str(model_performance)}_isosurf.png'
         plot_isosurf(x_values, y_values, z_values, perf_3d,

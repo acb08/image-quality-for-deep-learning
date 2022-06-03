@@ -56,19 +56,26 @@ def _archive_processed_props(_self, res_values, blur_values, noise_values, perf_
                         top_1_array_eval=top_1_array_eval)
 
 
-def _get_3d_distortion_perf_props(_self, distortion_ids):
+def _get_3d_distortion_perf_props(_self, distortion_ids, predict_eval_flag='predict'):
 
     if distortion_ids != ('res', 'blur', 'noise'):
         raise ValueError('method requires distortion_ids (res, blur, noise)')
 
-    existing_processed_props = _self.check_extract_processed_props()
-    if existing_processed_props:
-        print('loading existing processed properties')
-        res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array, __ = existing_processed_props
-    else:
-        print('processing 3d props')
-        res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array, __ = build_3d_field(
-            _self.res, _self.blur, _self.noise, _self.top_1_vec, data_dump=True)
-        _self.archive_processed_props(res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array)
+    if predict_eval_flag == 'predict':
+        existing_processed_props = _self.check_extract_processed_props()
+        if existing_processed_props:
+            print('loading existing processed properties')
+            res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array, __ = existing_processed_props
+        else:
+            print('processing 3d props')
+            res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array, __ = build_3d_field(
+                _self.res, _self.blur, _self.noise, _self.top_1_vec, data_dump=True)
+            _self.archive_processed_props(res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array)
 
-    return res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array, None
+        return res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array, None
+
+    elif predict_eval_flag == 'eval':
+        pass
+
+    else:
+        raise Exception("predict_eval_flag must be either 'predict' or 'eval'")
