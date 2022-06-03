@@ -386,8 +386,7 @@ class CompositePerformanceResult(object):
 
     def run_performance_prediction(self):
         if self.perf_prediction_fit is None:
-            self.fit_performance_prediction()
-
+            self.fit()
 
 
 def get_composite_performance_result(performance_prediction_result_ids=None, performance_eval_result_ids=None,
@@ -414,10 +413,10 @@ def get_composite_performance_result(performance_prediction_result_ids=None, per
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--config_name', default='composite_distortion_analysis_config.yml',
-    #                     help='config filename to be used')
-    parser.add_argument('--config_name', default='pl_abbrev_oct_composite_config.yml',
+    parser.add_argument('--config_name', default='composite_distortion_analysis_config.yml',
                         help='config filename to be used')
+    # parser.add_argument('--config_name', default='pl_abbrev_oct_composite_config.yml',
+    #                     help='config filename to be used')
     parser.add_argument('--config_dir',
                         default=Path(Path(__file__).parents[0], 'composite_performance_configs'),
                         help="configuration file directory")

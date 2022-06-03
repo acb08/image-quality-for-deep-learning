@@ -70,6 +70,21 @@ def rt_0_s6():
     return VariableResolution(sizes, interpolation_mode='bilinear', antialias=False)
 
 
+def rt_ep_s6():
+    """
+    Resolution transform for hte endpoint of the sat6 distortion space
+    """
+
+    min_res_fr = DISTORTION_RANGE['sat6']['res'][0]
+    size = min_res_fr
+
+    if NATIVE_RESOLUTION != 28:
+        raise Exception('mismatch between max size and native resolution in project config')
+
+    return transforms.Resize(size, interpolation=transforms.InterpolationMode.BILINEAR,
+                             antialias=False)
+
+
 def bt_fr_s6():
     """
     variable blur transform covering full range of the blur space
@@ -114,6 +129,15 @@ def bt_1_s6():
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)
 
 
+def bt_ep_s6():
+    """
+    Blur transform for the endpoint of the sat6 distortion space
+    """
+    kernel_size = DISTORTION_RANGE['sat6']['blur'][0]
+    std_max_fr = DISTORTION_RANGE['sat6']['blur'][2]
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std_max_fr)
+
+
 def nt_fr_s6():
     """
     returns a custom transform that adds zero-centered, channel-replicated Poisson noise from the sat6 noise range
@@ -155,6 +179,18 @@ def nt_1_s6():
     lambda_poisson_max = lambda_poisson_max_fr
     lambda_poisson_range = (lambda_poisson_min, lambda_poisson_max)
     clamp = True
+    return VariablePoissonNoiseChannelReplicated(lambda_poisson_range, clamp)
+
+
+def nt_ep_s6():
+    """
+    Noise transform at endpoint of sat6 distortion space
+    """
+
+    __, lambda_poisson_max_fr = DISTORTION_RANGE['sat6']['noise']
+    clamp = True
+    lambda_poisson_range = (lambda_poisson_max_fr, lambda_poisson_max_fr)
+
     return VariablePoissonNoiseChannelReplicated(lambda_poisson_range, clamp)
 
 # places365 transforms
@@ -228,6 +264,21 @@ def rt_0_pl():
     return VariableResolution(sizes, interpolation_mode='bilinear', antialias=False)
 
 
+def rt_ep_pl():
+    """
+    Resolution transform for hte endpoint of the sat6 distortion space
+    """
+
+    min_res_fr = DISTORTION_RANGE['places365']['res'][0]
+    size = int(min_res_fr * NATIVE_RESOLUTION)
+
+    if NATIVE_RESOLUTION != 256:
+        raise Exception('mismatch between max size and native resolution in project config')
+
+    return transforms.Resize(size, interpolation=transforms.InterpolationMode.BILINEAR,
+                             antialias=False)
+
+
 def bt_fr_pl():
     """
     variable blur transform covering full range of the places blur space
@@ -270,6 +321,15 @@ def bt_1_pl():
     std = (std_min, std_max)
 
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)
+
+
+def bt_ep_pl():
+    """
+    Blur transform for the endpoint of the sat6 distortion space
+    """
+    kernel_size = DISTORTION_RANGE['places365']['blur'][0]
+    std_max_fr = DISTORTION_RANGE['places365']['blur'][2]
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std_max_fr)
 
 
 def nt_fr_pl():
@@ -316,30 +376,48 @@ def nt_1_pl():
     return VariablePoissonNoiseChannelReplicated(lambda_poisson_range, clamp)
 
 
+def nt_ep_pl():
+    """
+    Noise transform at endpoint of sat6 distortion space
+    """
+
+    __, lambda_poisson_max_fr = DISTORTION_RANGE['places365']['noise']
+    clamp = True
+    lambda_poisson_range = (lambda_poisson_max_fr, lambda_poisson_max_fr)
+
+    return VariablePoissonNoiseChannelReplicated(lambda_poisson_range, clamp)
+
+
 tag_to_transform = {
     # sat6 transforms
     'rt_fr_s6': rt_fr_s6,
     'rt_0_s6': rt_0_s6,
     'rt_1_s6': rt_1_s6,
+    'rt_ep_s6': rt_ep_s6,
 
     'bt_fr_s6': bt_fr_s6,
     'bt_0_s6': bt_0_s6,
     'bt_1_s6': bt_1_s6,
+    'bt_ep_s6': bt_ep_s6,
 
     'nt_fr_s6': nt_fr_s6,
     'nt_0_s6': nt_0_s6,
     'nt_1_s6': nt_1_s6,
+    'nt_ep_s6': nt_ep_s6,
 
     # places transforms
     'rt_fr_pl': rt_fr_pl,
     'rt_0_pl': rt_0_pl,
     'rt_1_pl': rt_1_pl,
+    'rt_ep_pl': rt_ep_pl,
 
     'bt_fr_pl': bt_fr_pl,
     'bt_0_pl': bt_0_pl,
     'bt_1_pl': bt_1_pl,
+    'bt_ep_pl': bt_ep_pl,
 
     'nt_fr_pl': nt_fr_pl,
     'nt_0_pl': nt_0_pl,
-    'nt_1_pl': nt_1_pl
+    'nt_1_pl': nt_1_pl,
+    'nt_ep_pl': nt_ep_pl
 }
