@@ -1,6 +1,6 @@
 import numpy as np
 from torchvision import transforms
-
+from src.d00_utils.definitions import DISTORTION_RANGE, NATIVE_RESOLUTION
 from src.d00_utils.classes import VariableImageResize
 
 RNG = np.random.default_rng()
@@ -74,9 +74,26 @@ def n_fr(img):
     return img_out, 'lambda_poisson', lambda_poisson
 
 
-def n_ep(img):
+# def n_ep(img):
+#     """
+#     End point noise distortion for both sat6 and places365.
+#
+#     Adds 50 DN zero-centered, channel-replicated Poisson noise.
+#
+#     :param img: image array, values on [0, 255]
+#     :return: image + zero centered Poisson noise, where the resulting image is clamped to fall on [0, 255]
+#
+#     """
+#     sigma_poisson = 50
+#     lambda_poisson = int(sigma_poisson ** 2)  # convert from np.int64 to regular int for json serialization
+#     img_out = _add_zero_centered_channel_replicated_poisson_noise(img, lambda_poisson)
+#
+#     return img_out, 'lambda_poisson', lambda_poisson
+
+
+def n_ep_pl(img):
     """
-    End point noise distortion for both sat6 and places365.
+    End point noise distortion places365.
 
     Adds 50 DN zero-centered, channel-replicated Poisson noise.
 
@@ -84,7 +101,60 @@ def n_ep(img):
     :return: image + zero centered Poisson noise, where the resulting image is clamped to fall on [0, 255]
 
     """
-    sigma_poisson = 50
+    sigma_poisson_min, sigma_poisson_max = DISTORTION_RANGE['places365']['noise']
+    lambda_poisson = int(sigma_poisson_max ** 2)  # convert from np.int64 to regular int for json serialization
+    img_out = _add_zero_centered_channel_replicated_poisson_noise(img, lambda_poisson)
+
+    return img_out, 'lambda_poisson', lambda_poisson
+
+
+def n_ep_s6(img):
+    """
+    End point noise distortion for sat6.
+
+    Adds 50 DN zero-centered, channel-replicated Poisson noise.
+
+    :param img: image array, values on [0, 255]
+    :return: image + zero centered Poisson noise, where the resulting image is clamped to fall on [0, 255]
+
+    """
+    sigma_poisson_min, sigma_poisson_max = DISTORTION_RANGE['sat6']['noise']
+    lambda_poisson = int(sigma_poisson_max ** 2)  # convert from np.int64 to regular int for json serialization
+    img_out = _add_zero_centered_channel_replicated_poisson_noise(img, lambda_poisson)
+
+    return img_out, 'lambda_poisson', lambda_poisson
+
+
+def n_mp_s6(img):
+    """
+    Midpoint noise distortion for sat6.
+
+    Adds 25 DN zero-centered, channel-replicated Poisson noise.
+
+    :param img: image array, values on [0, 255]
+    :return: image + zero centered Poisson noise, where the resulting image is clamped to fall on [0, 255]
+
+    """
+    sigma_poisson_min, sigma_poisson_max = DISTORTION_RANGE['sat6']['noise']
+    sigma_poisson = (sigma_poisson_min + sigma_poisson_max) / 2
+    lambda_poisson = int(sigma_poisson ** 2)  # convert from np.int64 to regular int for json serialization
+    img_out = _add_zero_centered_channel_replicated_poisson_noise(img, lambda_poisson)
+
+    return img_out, 'lambda_poisson', lambda_poisson
+
+
+def n_mp_pl(img):
+    """
+    Midpoint noise distortion for sat6.
+
+    Adds 25 DN zero-centered, channel-replicated Poisson noise.
+
+    :param img: image array, values on [0, 255]
+    :return: image + zero centered Poisson noise, where the resulting image is clamped to fall on [0, 255]
+
+    """
+    sigma_poisson_min, sigma_poisson_max = DISTORTION_RANGE['places365']['noise']
+    sigma_poisson = (sigma_poisson_min + sigma_poisson_max) / 2
     lambda_poisson = int(sigma_poisson ** 2)  # convert from np.int64 to regular int for json serialization
     img_out = _add_zero_centered_channel_replicated_poisson_noise(img, lambda_poisson)
 
@@ -120,8 +190,16 @@ def b_fr_s6(img):
 
 def b_ep_s6(img):
 
-    kernel_size = 11
-    std = 1.5
+    kernel_size, min_blur, max_blur = DISTORTION_RANGE['sat6']['blur']
+    std = max_blur
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
+
+
+def b_mp_s6(img):
+
+    kernel_size, min_blur, max_blur = DISTORTION_RANGE['sat6']['blur']
+    std = (min_blur + max_blur) / 2
 
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
 
@@ -146,8 +224,16 @@ def b_fr_pl(img):
 
 def b_ep_pl(img):
 
-    kernel_size = 31
-    std = 5
+    kernel_size, min_blur, max_blur = DISTORTION_RANGE['places365']['blur']
+    std = max_blur
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
+
+
+def b_mp_pl(img):
+
+    kernel_size, min_blur, max_blur = DISTORTION_RANGE['places365']['blur']
+    std = (min_blur + max_blur) / 2
 
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
 
@@ -212,6 +298,19 @@ def r_ep_s6():
     return transform
 
 
+def r_mp_s6():
+
+    if NATIVE_RESOLUTION != 28:
+        raise Exception('mismatch between max size and native resolution in project config')
+
+    min_size, max_size = DISTORTION_RANGE['sat6']['res']
+    size = int((min_size + max_size) / 2)
+    sizes = [size]
+    transform = VariableImageResize(sizes, interpolation_mode='bilinear', antialias=False)
+
+    return transform
+
+
 def r_scan_pl():
     """
     Initializes and returns a VariableImageResize instance designed to re-size Places365 images
@@ -264,9 +363,28 @@ def r_ep_pl():
     a dataloader)
     """
 
-    max_size = 256
-    res_frac = 0.1
-    sizes = [int(res_frac * max_size)]
+    min_res, max_res = DISTORTION_RANGE['places365']['res']
+
+    if NATIVE_RESOLUTION != 256:
+        raise Exception('mismatch between max size and native resolution in project config')
+
+    sizes = [int(min_res * NATIVE_RESOLUTION)]
+    transform = VariableImageResize(sizes, interpolation_mode='bilinear', antialias=False)
+
+    return transform
+
+
+def r_mp_pl():
+
+    min_res, max_res = DISTORTION_RANGE['places365']['res']
+
+    if NATIVE_RESOLUTION != 256:
+        raise Exception('mismatch between max size and native resolution in project config')
+
+    min_size = NATIVE_RESOLUTION * min_res
+    max_size = NATIVE_RESOLUTION * max_res
+    size = int((min_size + max_size) / 2)
+    sizes = [size]
     transform = VariableImageResize(sizes, interpolation_mode='bilinear', antialias=False)
 
     return transform
@@ -293,14 +411,18 @@ tag_to_image_distortion = {
     'r_fr_pl': r_fr_pl,  # places
     'r_ep_s6': r_ep_s6,  # sat6
     'r_ep_pl': r_ep_pl,  # places
+    'r_mp_s6': r_mp_s6,
+    'r_mp_pl': r_mp_pl,
 
     'b_fr_s6': b_fr_s6,  # sat6
     'b_fr_pl': b_fr_pl,  # places
     'b_ep_s6': b_ep_s6,
     'b_ep_pl': b_ep_pl,
+    'b_mp_s6': b_mp_s6,
+    'b_mp_pl': b_mp_pl,
 
     'n_fr_s6': n_fr,  # sat6 (same transform for places and sat6)
     'n_fr_pl': n_fr,  # places (same transform for places and sat6)
-    'n_ep_s6': n_ep,  # sat6 (same transform for places and sat6)
-    'n_ep_pl': n_ep,  # places (same transform for places and sat6)
+    'n_ep_s6': n_ep_s6,  # sat6 (same transform for places and sat6)
+    'n_ep_pl': n_ep_pl,  # places (same transform for places and sat6)
 }

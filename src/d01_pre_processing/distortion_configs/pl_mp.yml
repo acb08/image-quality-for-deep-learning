@@ -1,14 +1,14 @@
 ---
 
-description: sat6 distortion space endpoint test dataset
+description: places distortion space endpoint test dataset
 
-parent_dataset_id: sat6_full
+parent_dataset_id: val_256
 parent_artifact_alias: latest
 parent_artifact_filename: standard  # standard functions as a flag to use definitions.STANDARD_ARTIFACT_FILENAME
 
 num_images: 'all'
 images_per_file: 1024
-distortion_tags: ['r_ep_s6', 'b_ep_s6', 'n_ep_s6']
+distortion_tags: ['r_mp_pl', 'b_mp_pl', 'n_mp_pl']
 distortion_type_flags: ['res', 'blur', 'noise']  # specifies distortion_tags associated distortion types
 iterations: 1
 artifact_type: test_dataset
@@ -16,6 +16,6 @@ dataset_split_key: test  # used to mirror 'train'/'val' split in data structure
 artifact_filename: standard
 datatype_key: np.uint8
 
-image_shape: None  # only used by places scripts
+image_shape: [256, 256, 3]  # only used by places scripts
 
 name_string: endpoint

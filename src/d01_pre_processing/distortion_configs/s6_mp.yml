@@ -1,6 +1,6 @@
 ---
 
-description: sat6 distortion space endpoint test dataset
+description: sat6 distortion space midpoint test dataset
 
 parent_dataset_id: sat6_full
 parent_artifact_alias: latest
@@ -8,7 +8,7 @@ parent_artifact_filename: standard  # standard functions as a flag to use defini
 
 num_images: 'all'
 images_per_file: 1024
-distortion_tags: ['r_ep_s6', 'b_ep_s6', 'n_ep_s6']
+distortion_tags: ['r_mp_s6', 'b_mp_s6', 'n_mp_s6']
 distortion_type_flags: ['res', 'blur', 'noise']  # specifies distortion_tags associated distortion types
 iterations: 1
 artifact_type: test_dataset
@@ -18,4 +18,4 @@ datatype_key: np.uint8
 
 image_shape: None  # only used by places scripts
 
-name_string: endpoint
+name_string: midpoint
