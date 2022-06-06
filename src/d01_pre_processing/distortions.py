@@ -425,4 +425,6 @@ tag_to_image_distortion = {
     'n_fr_pl': n_fr,  # places (same transform for places and sat6)
     'n_ep_s6': n_ep_s6,  # sat6 (same transform for places and sat6)
     'n_ep_pl': n_ep_pl,  # places (same transform for places and sat6)
+    'n_mp_s6': n_mp_s6,
+    'n_mp_pl': n_mp_pl
 }
