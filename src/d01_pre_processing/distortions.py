@@ -74,6 +74,23 @@ def n_fr(img):
     return img_out, 'lambda_poisson', lambda_poisson
 
 
+def n_ep(img):
+    """
+    End point noise distortion for both sat6 and places365.
+
+    Adds 50 DN zero-centered, channel-replicated Poisson noise.
+
+    :param img: image array, values on [0, 255]
+    :return: image + zero centered Poisson noise, where the resulting image is clamped to fall on [0, 255]
+
+    """
+    sigma_poisson = 50
+    lambda_poisson = int(sigma_poisson ** 2)  # convert from np.int64 to regular int for json serialization
+    img_out = _add_zero_centered_channel_replicated_poisson_noise(img, lambda_poisson)
+
+    return img_out, 'lambda_poisson', lambda_poisson
+
+
 def b_scan(img):
 
     kernel_size = 23
@@ -101,6 +118,14 @@ def b_fr_s6(img):
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
 
 
+def b_ep_s6(img):
+
+    kernel_size = 11
+    std = 1.5
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
+
+
 def b_scan_v3(img):
 
     kernel_size = 31
@@ -115,6 +140,14 @@ def b_fr_pl(img):
     kernel_size = 31
     sigma_range = np.linspace(0.1, 5, num=21, endpoint=True)
     std = np.random.choice(sigma_range)
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
+
+
+def b_ep_pl(img):
+
+    kernel_size = 31
+    std = 5
 
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
 
@@ -166,6 +199,19 @@ def r_fr_s6():
     return transform
 
 
+def r_ep_s6():
+    """
+    Initializes and returns a VariableImageResize instance designed to re-size SAT6 images
+    to 10% of original images size. Intended for use in dataset distortion (as opposed to in
+    a dataloader)
+    """
+
+    sizes = [7]
+    transform = VariableImageResize(sizes, interpolation_mode='bilinear', antialias=False)
+
+    return transform
+
+
 def r_scan_pl():
     """
     Initializes and returns a VariableImageResize instance designed to re-size Places365 images
@@ -199,7 +245,7 @@ def r_scan_plv2():
 def r_fr_pl():
     """
     Initializes and returns a VariableImageResize instance designed to re-size Places365 images
-    randomly between 25% and 100% of original images size. Intended for use in dataset distortion (as opposed to in
+    randomly between 10% and 100% of original images size. Intended for use in dataset distortion (as opposed to in
     a dataloader)
     """
 
@@ -207,6 +253,21 @@ def r_fr_pl():
     res_fractions = np.linspace(0.1, 1, num=20)
     sizes = [int(res_frac * max_size) for res_frac in res_fractions]
     transform = VariableImageResize(sizes)
+
+    return transform
+
+
+def r_ep_pl():
+    """
+    Initializes and returns a VariableImageResize instance designed to re-size Places365 images
+    to 10% of original images size. Intended for use in dataset distortion (as opposed to in
+    a dataloader)
+    """
+
+    max_size = 256
+    res_frac = 0.1
+    sizes = [int(res_frac * max_size)]
+    transform = VariableImageResize(sizes, interpolation_mode='bilinear', antialias=False)
 
     return transform
 
@@ -230,11 +291,16 @@ tag_to_image_distortion = {
 
     'r_fr_s6': r_fr_s6,  # sat6
     'r_fr_pl': r_fr_pl,  # places
+    'r_ep_s6': r_ep_s6,  # sat6
+    'r_ep_pl': r_ep_pl,  # places
 
     'b_fr_s6': b_fr_s6,  # sat6
     'b_fr_pl': b_fr_pl,  # places
+    'b_ep_s6': b_ep_s6,
+    'b_ep_pl': b_ep_pl,
 
     'n_fr_s6': n_fr,  # sat6 (same transform for places and sat6)
     'n_fr_pl': n_fr,  # places (same transform for places and sat6)
-
+    'n_ep_s6': n_ep,  # sat6 (same transform for places and sat6)
+    'n_ep_pl': n_ep,  # places (same transform for places and sat6)
 }
