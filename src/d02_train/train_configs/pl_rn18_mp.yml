@@ -1,0 +1,23 @@
+---
+
+train_dataset_id: '0001-trn-np'
+train_dataset_artifact_alias: latest
+
+starting_model_id: '0020-resnet18-full_range_best_loss'
+starting_model_artifact_alias: 'latest'
+
+crop_flag: False
+distortion_tags: ['rt_mp_pl', 'bt_mp_pl', 'nt_mp_pl']
+descriptive_tags: ['midpoint']
+num_epochs: 10
+batch_size: 32
+num_workers: 16
+pin_memory: True
+optimizer: 'Adam'
+lr: 0.00005  # Adam default = 0.001
+loss_func: 'CrossEntropyLoss'
+description: train resnet18 distortion midpoint model
+artifact_type: 'model'
+
+name_string: 'midpoint'  # set to null or comment out line to name model using distortion tags
+num_shards: 'all'

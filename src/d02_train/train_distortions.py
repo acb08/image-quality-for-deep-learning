@@ -72,11 +72,27 @@ def rt_0_s6():
 
 def rt_ep_s6():
     """
-    Resolution transform for hte endpoint of the sat6 distortion space
+    Resolution transform for the endpoint of the sat6 distortion space
     """
 
     min_res_fr = DISTORTION_RANGE['sat6']['res'][0]
     size = min_res_fr
+
+    if NATIVE_RESOLUTION != 28:
+        raise Exception('mismatch between max size and native resolution in project config')
+
+    return transforms.Resize(size, interpolation=transforms.InterpolationMode.BILINEAR,
+                             antialias=False)
+
+
+def rt_mp_s6():
+    """
+    Resolution transform for the midpoint of the sat6 distortion space
+    """
+
+    min_res_fr = DISTORTION_RANGE['sat6']['res'][0]
+    max_res_fr = DISTORTION_RANGE['sat6']['res'][1]
+    size = int((min_res_fr + max_res_fr) / 2)  # midpoint of resolution range
 
     if NATIVE_RESOLUTION != 28:
         raise Exception('mismatch between max size and native resolution in project config')
@@ -138,6 +154,17 @@ def bt_ep_s6():
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std_max_fr)
 
 
+def bt_mp_s6():
+    """
+    Blur transform for the midpoint of the sat6 distortion space
+    """
+    kernel_size = DISTORTION_RANGE['sat6']['blur'][0]
+    std_min_fr = DISTORTION_RANGE['sat6']['blur'][1]
+    std_max_fr = DISTORTION_RANGE['sat6']['blur'][2]
+    std = (std_min_fr + std_max_fr) / 2
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)
+
+
 def nt_fr_s6():
     """
     returns a custom transform that adds zero-centered, channel-replicated Poisson noise from the sat6 noise range
@@ -190,6 +217,19 @@ def nt_ep_s6():
     __, lambda_poisson_max_fr = DISTORTION_RANGE['sat6']['noise']
     clamp = True
     lambda_poisson_range = (lambda_poisson_max_fr, lambda_poisson_max_fr)
+
+    return VariablePoissonNoiseChannelReplicated(lambda_poisson_range, clamp)
+
+
+def nt_mp_s6():
+    """
+    Noise transform at midpoint of sat6 distortion space
+    """
+
+    lambda_poisson_min_fr, lambda_poisson_max_fr = DISTORTION_RANGE['sat6']['noise']
+    lambda_poisson_midpoint = int((lambda_poisson_min_fr + lambda_poisson_max_fr) / 2)
+    clamp = True
+    lambda_poisson_range = (lambda_poisson_midpoint, lambda_poisson_midpoint)
 
     return VariablePoissonNoiseChannelReplicated(lambda_poisson_range, clamp)
 
@@ -279,6 +319,22 @@ def rt_ep_pl():
                              antialias=False)
 
 
+def rt_mp_pl():
+    """
+    Resolution transform for the midpoint of the places distortion space
+    """
+    min_res_fr = DISTORTION_RANGE['places365']['res'][0]
+    max_res_fr = DISTORTION_RANGE['places365']['res'][1]
+
+    res = (min_res_fr + max_res_fr) / 2  # midpoint of resolution range
+    size = int(res * NATIVE_RESOLUTION)
+
+    if NATIVE_RESOLUTION != 256:
+        raise Exception('mismatch between max size and native resolution in project config')
+
+    return VariableResolution(size, interpolation_mode='bilinear', antialias=False)
+
+
 def bt_fr_pl():
     """
     variable blur transform covering full range of the places blur space
@@ -325,11 +381,22 @@ def bt_1_pl():
 
 def bt_ep_pl():
     """
-    Blur transform for the endpoint of the sat6 distortion space
+    Blur transform for the endpoint of the places365 distortion space
     """
     kernel_size = DISTORTION_RANGE['places365']['blur'][0]
     std_max_fr = DISTORTION_RANGE['places365']['blur'][2]
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std_max_fr)
+
+
+def bt_mp_pl():
+    """
+    Blur transform for the midpoint of the places365 distortion space
+    """
+    kernel_size = DISTORTION_RANGE['places365']['blur'][0]
+    std_min_fr = DISTORTION_RANGE['places365']['blur'][1]
+    std_max_fr = DISTORTION_RANGE['places365']['blur'][2]
+    std = (std_min_fr + std_max_fr) / 2
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)
 
 
 def nt_fr_pl():
@@ -380,10 +447,21 @@ def nt_ep_pl():
     """
     Noise transform at endpoint of sat6 distortion space
     """
-
     __, lambda_poisson_max_fr = DISTORTION_RANGE['places365']['noise']
     clamp = True
     lambda_poisson_range = (lambda_poisson_max_fr, lambda_poisson_max_fr)
+
+    return VariablePoissonNoiseChannelReplicated(lambda_poisson_range, clamp)
+
+
+def nt_mp_pl():
+    """
+    Noise transform at midpoint of places365 distortion space
+    """
+    lambda_poisson_min_fr, lambda_poisson_max_fr = DISTORTION_RANGE['places365']['noise']
+    lambda_poisson_midpoint = int((lambda_poisson_min_fr + lambda_poisson_max_fr) / 2)
+    clamp = True
+    lambda_poisson_range = (lambda_poisson_midpoint, lambda_poisson_midpoint)
 
     return VariablePoissonNoiseChannelReplicated(lambda_poisson_range, clamp)
 
@@ -394,30 +472,36 @@ tag_to_transform = {
     'rt_0_s6': rt_0_s6,
     'rt_1_s6': rt_1_s6,
     'rt_ep_s6': rt_ep_s6,
+    'rt_mp_s6': rt_mp_s6,
 
     'bt_fr_s6': bt_fr_s6,
     'bt_0_s6': bt_0_s6,
     'bt_1_s6': bt_1_s6,
     'bt_ep_s6': bt_ep_s6,
+    'bt_mp_s6': bt_mp_s6,
 
     'nt_fr_s6': nt_fr_s6,
     'nt_0_s6': nt_0_s6,
     'nt_1_s6': nt_1_s6,
     'nt_ep_s6': nt_ep_s6,
+    'nt_mp_s6': nt_mp_s6,
 
     # places transforms
     'rt_fr_pl': rt_fr_pl,
     'rt_0_pl': rt_0_pl,
     'rt_1_pl': rt_1_pl,
     'rt_ep_pl': rt_ep_pl,
+    'rt_mp_pl': rt_mp_pl,
 
     'bt_fr_pl': bt_fr_pl,
     'bt_0_pl': bt_0_pl,
     'bt_1_pl': bt_1_pl,
     'bt_ep_pl': bt_ep_pl,
+    'bt_mp_pl': bt_mp_pl,
 
     'nt_fr_pl': nt_fr_pl,
     'nt_0_pl': nt_0_pl,
     'nt_1_pl': nt_1_pl,
-    'nt_ep_pl': nt_ep_pl
+    'nt_ep_pl': nt_ep_pl,
+    'nt_mp_pl': nt_mp_pl
 }
