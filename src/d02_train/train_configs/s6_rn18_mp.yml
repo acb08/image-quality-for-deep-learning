@@ -8,7 +8,7 @@ starting_model_artifact_alias: 'latest'
 
 crop_flag: False
 distortion_tags: ['rt_mp_s6', 'bt_mp_s6', 'nt_mp_s6']
-descriptive_tags: ['endpoint']
+descriptive_tags: ['midpoint']
 num_epochs: 30
 batch_size: 64
 num_workers: 8
@@ -16,7 +16,8 @@ pin_memory: True
 optimizer: 'Adam'
 lr: 0.00005  # Adam default = 0.001
 loss_func: 'CrossEntropyLoss'
-description: train octant 111 resnet18 model
+description: train midpoint resnet18 model
 artifact_type: 'model'
 
-name_string: 'endpoint'  # set to null or comment out line to name model using distortion tags
+name_string: 'midpoint'  # set to null or comment out line to name model using distortion tags
+num_shards: 'all'
