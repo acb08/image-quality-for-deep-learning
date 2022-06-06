@@ -1,6 +1,6 @@
 ---
 
-description: places distortion space endpoint test dataset
+description: places distortion space midpoint test dataset
 
 parent_dataset_id: val_256
 parent_artifact_alias: latest
