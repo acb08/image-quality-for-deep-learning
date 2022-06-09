@@ -332,7 +332,8 @@ def rt_mp_pl():
     if NATIVE_RESOLUTION != 256:
         raise Exception('mismatch between max size and native resolution in project config')
 
-    return VariableResolution(size, interpolation_mode='bilinear', antialias=False)
+    return transforms.Resize(size, interpolation=transforms.InterpolationMode.BILINEAR,
+                             antialias=False)
 
 
 def bt_fr_pl():
