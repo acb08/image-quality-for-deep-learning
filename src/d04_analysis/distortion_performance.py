@@ -6,7 +6,7 @@ from src.d04_analysis._shared_methods import _get_processed_instance_props_path,
     _archive_processed_props, _get_3d_distortion_perf_props
 from src.d04_analysis.analysis_functions import conditional_mean_accuracy, extract_embedded_vectors, \
     get_class_accuracies, build_3d_field, get_distortion_perf_2d, get_distortion_perf_1d
-from src.d04_analysis.fit import fit_hyperplane, eval_linear_fit, fit, eval_fit, fit_predict
+from src.d04_analysis.fit import fit, eval_fit, fit_predict
 from src.d04_analysis.plot import plot_1d_linear_fit, plot_2d, plot_2d_linear_fit, plot_isosurf, compare_2d_views
 from src.d04_analysis.binomial_simulation import get_ideal_correlation
 import numpy as np
@@ -14,6 +14,7 @@ from pathlib import Path
 import wandb
 import argparse
 import matplotlib.pyplot as plt
+from hashlib import blake2b
 
 wandb.login()
 
@@ -95,8 +96,10 @@ class ModelDistortionPerformanceResult(DistortedDataset):
         self.predicts = np.asarray(self.predicts)
         self.labels = np.asarray(self.labels)
         self.top_1_vec = self.get_accuracy_vector()
+        self.top_1_vec_predict = self.top_1_vec  # needed for forward compatibility where CompositePerformanceResult
+        # objects are also used
         self.identifier = identifier
-        self.instance_hash = hash(tuple(self.top_1_vec))
+        self.instance_hashes = {'predict': blake2b(str(self.top_1_vec).encode('utf-8')).hexdigest()}
 
     def __len__(self):
         return len(self.labels)
@@ -125,19 +128,19 @@ class ModelDistortionPerformanceResult(DistortedDataset):
         __, class_accuracies = self.class_accuracies()
         return np.mean(class_accuracies)
 
-    def get_processed_instance_props_path(self):
-        return _get_processed_instance_props_path(self)
+    def get_processed_instance_props_path(self, predict_eval_flag='predict'):
+        return _get_processed_instance_props_path(self, predict_eval_flag=predict_eval_flag)
 
-    def check_extract_processed_props(self):
-        return _check_extract_processed_props(self)
+    def check_extract_processed_props(self, predict_eval_flag=None):
+        return _check_extract_processed_props(self, predict_eval_flag=predict_eval_flag)
 
     def archive_processed_props(self, res_values, blur_values, noise_values, perf_3d, distortion_array,
-                                perf_array):
+                                perf_array, predict_eval_flag):
         return _archive_processed_props(self, res_values, blur_values, noise_values, perf_3d, distortion_array,
-                                        perf_array)
+                                        perf_array, predict_eval_flag)
 
-    def get_3d_distortion_perf_props(self, distortion_ids):
-        return _get_3d_distortion_perf_props(self, distortion_ids)
+    def get_3d_distortion_perf_props(self, distortion_ids, predict_eval_flag='predict'):
+        return _get_3d_distortion_perf_props(self, distortion_ids, predict_eval_flag=predict_eval_flag)
 
 
 def load_dataset_and_result(run, result_id,
@@ -208,9 +211,10 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
 
     try:
         x_values, y_values, z_values, perf_3d, distortion_array, perf_array, __ = (
-            model_performance.get_3d_distortion_perf_props(distortion_ids=(x_id, y_id, z_id)))
+            model_performance.get_3d_distortion_perf_props(distortion_ids=(x_id, y_id, z_id),
+                                                           predict_eval_flag='predict'))
     except ValueError:  # raised by get_3d_distortion_perf_props if distortion_ids != ('res', 'blur', 'noise')
-        accuracy_vector = model_performance.top_1_vec
+        accuracy_vector = model_performance.top_1_vec_predict
         x = model_performance.distortions[x_id]
         y = model_performance.distortions[y_id]
         z = model_performance.distortions[z_id]
@@ -220,7 +224,7 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
                                                                                                  data_dump=True)
 
     # add a try/except section so that composite performance results can fit on performance predict results and
-    # evaluate on eval results  
+    # evaluate on eval results
 
     fit_coefficients = fit(distortion_array, perf_array, distortion_ids=(x_id, y_id, z_id), fit_key=fit_key,
                            add_bias=add_bias)
@@ -253,25 +257,6 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
     return x_values, y_values, z_values, perf_3d, performance_prediction_3d
 
 
-def check_histograms(distortion_performance, performance_fit, directory=None):
-
-    plt.figure()
-    plt.hist(np.ravel(distortion_performance))
-    plt.ylabel('occurrences')
-    plt.xlabel('accuracy')
-    if directory:
-        plt.savefig(Path(directory, 'hist_performance.png'))
-    plt.show()
-
-    plt.figure()
-    plt.hist(np.ravel(performance_fit))
-    plt.ylabel('occurrences')
-    plt.xlabel('accuracy')
-    if directory:
-        plt.savefig(Path(directory, 'hist_fit.png'))
-    plt.show()
-
-
 def analyze_perf_3d(model_performance,
                     distortion_ids=('res', 'blur', 'noise'),
                     log_file=None,
@@ -293,6 +278,25 @@ def analyze_perf_3d(model_performance,
         save_name = f'{str(model_performance)}_isosurf.png'
         plot_isosurf(x_values, y_values, z_values, perf_3d,
                      level=np.mean(perf_3d), save_name=save_name, save_dir=directory)
+
+
+def check_histograms(distortion_performance, performance_fit, directory=None):
+
+    plt.figure()
+    plt.hist(np.ravel(distortion_performance))
+    plt.ylabel('occurrences')
+    plt.xlabel('accuracy')
+    if directory:
+        plt.savefig(Path(directory, 'hist_performance.png'))
+    plt.show()
+
+    plt.figure()
+    plt.hist(np.ravel(performance_fit))
+    plt.ylabel('occurrences')
+    plt.xlabel('accuracy')
+    if directory:
+        plt.savefig(Path(directory, 'hist_fit.png'))
+    plt.show()
 
 
 def check_extraction_method(model_performance):

@@ -73,9 +73,9 @@ class CompositePerformanceResult(object):
         self._model_map = self._assign_models()
         self._hash_to_row_idx_map = self._get_hash_to_row_idx_map()
 
-        # self.filtered_predict_top_1_vec and self.filtered_perf_predict_predicts the top 1 vector and predict vector
+        # self.top_1_vec_predict and self.filtered_perf_predict_predicts are the top 1 vector and predict vector
         # respectively that result from applying self._model_id_to_eval_id_map to the performance prediction array
-        self.filtered_predict_top_1_vec, self.filtered_perf_predict_predicts = self._make_perf_predict_arrays()
+        self.top_1_vec_predict, self.filtered_perf_predict_predicts = self.eval_performance_predict()
 
         if self.eval_results:
             self.eval_top_1_array, self.eval_prediction_array = self._make_eval_arrays()
@@ -85,11 +85,9 @@ class CompositePerformanceResult(object):
             self.top_1_vec = None
 
         # other attributes needed for compatibility with functions that use ModelDistortionPerformance instances
+        self.instance_hashes = {'predict': blake2b(str(self.top_1_vec_predict).encode('utf-8')).hexdigest()}
         if self.top_1_vec is not None:
-            self.instance_hash = blake2b(str(self.top_1_vec).encode('utf-8')).hexdigest()
-            # using top-1 based hash to ensure no changes
-        else:
-            self.instance_hash = self.uid
+            self.instance_hashes['eval'] = blake2b(str(self.top_1_vec).encode('utf-8')).hexdigest()
 
         self.distortions = {
             'res': self.res,
@@ -102,22 +100,22 @@ class CompositePerformanceResult(object):
         }
 
         self.model_id = surrogate_model_id
-        self.perf_prediction_fit = None
+        self.perf_prediction_fit = None  # tuple of form (fit_coefficients, fit_key) once assigned
 
     # *** methods needed for compatibility with functions that use ModelDistortionPerformance instances ***************
-    def get_processed_instance_props_path(self):
-        return _get_processed_instance_props_path(self)
+    def get_processed_instance_props_path(self, predict_eval_flag):
+        return _get_processed_instance_props_path(self, predict_eval_flag=predict_eval_flag)
 
-    def check_extract_processed_props(self):
-        return _check_extract_processed_props(self)
+    def check_extract_processed_props(self, predict_eval_flag):
+        return _check_extract_processed_props(self, predict_eval_flag=predict_eval_flag)
 
     def archive_processed_props(self, res_values, blur_values, noise_values, perf_3d, distortion_array,
-                                perf_array):
+                                perf_array, predict_eval_flag):
         return _archive_processed_props(self, res_values, blur_values, noise_values, perf_3d, distortion_array,
-                                        perf_array)
+                                        perf_array, predict_eval_flag=predict_eval_flag)
 
-    def get_3d_distortion_perf_props(self, distortion_ids):
-        return _get_3d_distortion_perf_props(self, distortion_ids)
+    def get_3d_distortion_perf_props(self, distortion_ids, predict_eval_flag):
+        return _get_3d_distortion_perf_props(self, distortion_ids, predict_eval_flag=predict_eval_flag)
 
     def conditional_accuracy(self, distortion_id, per_class=False):
         assert per_class is False
@@ -373,7 +371,7 @@ class CompositePerformanceResult(object):
         top_1_vec = -1 * np.ones(np.shape(self.perf_predict_top_1_array)[1])
         predict_vec = -1 * np.ones_like(top_1_vec)
         for hash_val in self._hash_to_row_idx_map.keys():
-            column_indices = np.where(self._distortion_pt_eval_hashes == hash_val)[0]
+            column_indices = np.where(self._distortion_pt_perf_predict_hashes == hash_val)[0]
             row_index = self._hash_to_row_idx_map[hash_val]
 
             top_1_vec[column_indices] = self.perf_predict_top_1_array[row_index, column_indices]
@@ -388,12 +386,12 @@ class CompositePerformanceResult(object):
 
         pass
 
-    def fit(self, add_bias=True):
+    def fit(self, add_bias=True, fit_key='linear'):
 
         x_vals, y_vals, z_vals, perf_3d, distortion_array, perf_array = self.get_3d_distortion_perf_props(
             distortion_ids=self.distortion_ids)
-        w = fit(distortion_array, perf_array, distortion_ids=self.distortion_ids, add_bias=add_bias)
-        self.perf_prediction_fit = w
+        w = fit(distortion_array, perf_array, distortion_ids=self.distortion_ids, add_bias=add_bias, fit_key=fit_key)
+        self.perf_prediction_fit = (w, fit_key)
 
     def run_performance_prediction(self):
         if self.perf_prediction_fit is None:
@@ -560,6 +558,6 @@ if __name__ == '__main__':
     if analyze_3d:
         sub_dir_3d, log_filename = get_sub_dir_and_log_filename(_output_dir, '3d')
         with open((Path(sub_dir_3d, log_filename)), 'w') as output_file:
-            for fit_key in fit_keys:
-                fit_sub_dir, __ = get_sub_dir_and_log_filename(sub_dir_3d, fit_key)
-                analyze_perf_3d(_composite_performance, log_file=output_file, directory=fit_sub_dir, fit_key=fit_key)
+            for _fit_key in fit_keys:
+                fit_sub_dir, __ = get_sub_dir_and_log_filename(sub_dir_3d, _fit_key)
+                analyze_perf_3d(_composite_performance, log_file=output_file, directory=fit_sub_dir, fit_key=_fit_key)
