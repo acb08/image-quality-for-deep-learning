@@ -214,7 +214,7 @@ def load_wandb_data_artifact(run, artifact_id, artifact_filename, retries=10):
     while attempts < retries and not success:
         try:
             artifact = run.use_artifact(artifact_id)
-        except ValueError:
+        except:
             print(f'wandb artifact access failed attempt {attempts}')
             attempts += 1
             time.sleep(60)
