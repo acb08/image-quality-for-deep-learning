@@ -28,12 +28,12 @@ def measure_accuracy_correlations(f0, f1):
     return correlation
 
 
-def get_ideal_correlation(p_underlying, total_trials, iterations=8):
+def get_ideal_correlation(p_underlying, total_trials, iterations=10):
     """
 
     Simulates a perfect binomial distributed accuracy trial across an underlying accuracy (i.e. success probability)
-    p_underlying. Measures the correlation between two i.i.d. experiments sharing the same underlying accuracy p_underlying as
-    well as the correlation between p_underlying and accuracy of each trial.
+    p_underlying. Measures the correlation between two i.i.d. experiments sharing the same underlying accuracy
+    p_underlying as well as the correlation between p_underlying and accuracy of each trial.
 
     Intended to simulate the correlation between models with identical accuracy being tested on i.i.d. datasets, where
     p_underlying is the underlying accuracy as a function of distortion.
@@ -53,9 +53,14 @@ def get_ideal_correlation(p_underlying, total_trials, iterations=8):
         trials in range(iterations).
     """
 
+    p_underlying = np.ravel(p_underlying)
+
     num_trials_per_experiment = total_trials / len(p_underlying)
     correlations = []
     fit_correlations = []
+
+    print('total_trials:', total_trials)
+    print('num_trials_per_experiment:', num_trials_per_experiment)
 
     for j in range(iterations):
 

@@ -54,7 +54,14 @@ def append_bias_col(x):
     return x
 
 
-def distortion_transform(distortion_vector, distortion_ids=('res', 'blur', 'noise')):
+def linear_transform(distortion_vector, distortion_ids):
+    """
+    Used for compatibility with fit functions that can also use non-linear axis transforms.
+    """
+    return distortion_vector
+
+
+def nonlinear_transform_0(distortion_vector, distortion_ids=('res', 'blur', 'noise')):
 
     if distortion_ids != ('res', 'blur', 'noise'):
         raise Exception('distortion_ids must == (res, blur, noise)')
@@ -80,13 +87,44 @@ def distortion_transform(distortion_vector, distortion_ids=('res', 'blur', 'nois
     return transformed_distortion_vector
 
 
-def nonlinear_fit(x, y, transform=distortion_transform, distortion_ids=('res', 'blur', 'noise'), add_bias=True):
+def nonlinear_transform_1(distortion_vector, distortion_ids=('res', 'blur', 'noise')):
+
+    if distortion_ids != ('res', 'blur', 'noise'):
+        raise Exception('distortion_ids must == (res, blur, noise)')
+
+    n, m = np.shape(distortion_vector)
+
+    res = distortion_vector[:, 0]
+    blur = distortion_vector[:, 1]
+    noise = distortion_vector[:, 2]
+
+    f_res = np.log10(res)
+    f_blur = blur
+    f_noise = noise
+    f_res_blur = blur / res
+
+    transformed_distortion_vector = np.zeros((n, 4))
+
+    transformed_distortion_vector[:, 0] = f_res
+    transformed_distortion_vector[:, 1] = f_blur
+    transformed_distortion_vector[:, 2] = f_noise
+    transformed_distortion_vector[:, 3] = f_res_blur
+
+    return transformed_distortion_vector
+
+
+def fit(x, y, distortion_ids=('res', 'blur', 'noise'), add_bias=True, fit_key='linear'):
+
+    transform = _transforms[fit_key]
     x = transform(x, distortion_ids=distortion_ids)
+
     w = fit_hyperplane(x, y, add_bias=add_bias)
     return w
 
 
-def nonlinear_predict(w, x, distortion_ids=('res', 'blur', 'noise'), transform=distortion_transform, add_bias=True):
+def fit_predict(w, x, distortion_ids=('res', 'blur', 'noise'), fit_key='linear', add_bias=True):
+
+    transform = _transforms[fit_key]
     x = transform(x, distortion_ids=distortion_ids)
     if add_bias:
         x = append_bias_col(x)
@@ -94,11 +132,17 @@ def nonlinear_predict(w, x, distortion_ids=('res', 'blur', 'noise'), transform=d
     return y_predict
 
 
-def eval_nonlinear_fit(w, x, y, distortion_ids=('res', 'blur', 'noise'), transform=distortion_transform, add_bias=True):
-    y_predict = nonlinear_predict(w, x, distortion_ids=distortion_ids, transform=transform, add_bias=add_bias)
+def eval_fit(w, x, y, distortion_ids=('res', 'blur', 'noise'), fit_key='linear', add_bias=True):
+    y_predict = fit_predict(w, x, distortion_ids=distortion_ids, fit_key=fit_key, add_bias=add_bias)
     correlation = np.corrcoef(np.ravel(y_predict), np.ravel(y))[0, 1]
     return correlation
 
+
+_transforms = {
+    'linear': linear_transform,
+    'nonlinear_0': nonlinear_transform_0,
+    'nonlinear_1': nonlinear_transform_1,
+}
 
 # if __name__ == '__main__':
 #

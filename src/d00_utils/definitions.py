@@ -24,6 +24,7 @@ STANDARD_ENTROPY_PROPERTIES_FILENAME = 'entropy_properties.json'
 STANDARD_EFFECTIVE_ENTROPY_PROPERTIES_FILENAME = 'effective_entropy_properties.json'
 STANDARD_PROCESSED_DISTORTION_PERFORMANCE_PROPS_FILENAME = 'processed_distortion_performance_props.npz'
 STANDARD_COMPOSITE_DISTORTION_PERFORMANCE_PROPS_FILENAME = 'composite_distortion_performance_props.npz'
+STANDARD_UID_FILENAME = 'uid.json'
 KEY_LENGTH = 4
 
 # defines standard paths in project structure for different artifact types

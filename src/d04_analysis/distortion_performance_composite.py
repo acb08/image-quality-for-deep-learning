@@ -1,16 +1,18 @@
-import copy
+import json
 import numpy as np
 import argparse
 from src.d04_analysis.distortion_performance import get_multiple_model_distortion_performance_results
 from src.d04_analysis._shared_methods import _get_processed_instance_props_path, _check_extract_processed_props, \
     _archive_processed_props, _get_3d_distortion_perf_props
-from src.d04_analysis.fit import nonlinear_fit, eval_nonlinear_fit
-from src.d00_utils.definitions import STANDARD_COMPOSITE_DISTORTION_PERFORMANCE_PROPS_FILENAME, KEY_LENGTH, ROOT_DIR, \
+from src.d04_analysis.fit import fit
+from src.d00_utils.definitions import STANDARD_UID_FILENAME, KEY_LENGTH, ROOT_DIR, \
     REL_PATHS
-from src.d00_utils.functions import get_config
-from src.d04_analysis.analysis_functions import conditional_mean_accuracy, build_3d_field
+from src.d00_utils.functions import get_config, log_config, increment_suffix
+from src.d04_analysis.analysis_functions import conditional_mean_accuracy
 from pathlib import Path
 from src.d04_analysis.distortion_performance import analyze_perf_1d, analyze_perf_2d, analyze_perf_3d
+from hashlib import blake2b
+import copy
 
 
 class CompositePerformanceResult(object):
@@ -38,6 +40,8 @@ class CompositePerformanceResult(object):
             self.eval_results = None
 
         self.result_id = self._get_composite_result_id()
+        self.uid = get_composite_result_uid(self.performance_prediction_result_ids,
+                                            self.eval_result_ids)
         self.identifier = identifier
         if not self.identifier:
             self.identifier = self.result_id
@@ -82,9 +86,10 @@ class CompositePerformanceResult(object):
 
         # other attributes needed for compatibility with functions that use ModelDistortionPerformance instances
         if self.top_1_vec is not None:
-            self.instance_hash = hash(tuple(self.top_1_vec))
+            self.instance_hash = blake2b(str(self.top_1_vec).encode('utf-8')).hexdigest()
+            # using top-1 based hash to ensure no changes
         else:
-            self.instance_hash = hash(tuple(self.performance_prediction_result_ids))
+            self.instance_hash = self.uid
 
         self.distortions = {
             'res': self.res,
@@ -97,7 +102,6 @@ class CompositePerformanceResult(object):
         }
 
         self.model_id = surrogate_model_id
-
         self.perf_prediction_fit = None
 
     # *** methods needed for compatibility with functions that use ModelDistortionPerformance instances ***************
@@ -133,6 +137,9 @@ class CompositePerformanceResult(object):
             return self.identifier
         else:
             return self.result_id
+
+    def __repr__(self):
+        return self.result_id
 
     def _get_composite_result_id(self):
 
@@ -212,6 +219,10 @@ class CompositePerformanceResult(object):
         """
         Generates arrays containing the hash value of each unique distortion distortion point (res, blur, noise)
         for the combination of distortions applied to each performance predict and performance eval image.
+
+        Note: these hash values will change from run to run due to a random seed in the underlying hash function. They
+        should not be saved for later user without recognizing that computing hashes for comparison after the fact
+        will fail.
         """
 
         distortion_array_p = np.stack([self._res_perf_predict, self._blur_perf_predict, self._noise_perf_predict],
@@ -239,7 +250,7 @@ class CompositePerformanceResult(object):
             sub_array = self.perf_predict_top_1_array[:, np.where(
                 self._distortion_pt_perf_predict_hashes == hash_val)[0]]
             model_accuracies = np.mean(sub_array, axis=1)
-            best_model_id = self.model_ids[np.argmax(model_accuracies)]
+            best_model_id = self.model_ids[int(np.argmax(model_accuracies))]
             model_map[hash_val] = best_model_id
 
         return model_map
@@ -262,7 +273,7 @@ class CompositePerformanceResult(object):
                                     f'in performance prediction results')
 
         model_ids = tuple(model_ids)  # convert to tuple for immutability
-        model_id_ppr_id_pairs = tuple(model_id_ppr_id_pairs) # convert to tuple for immutability
+        model_id_ppr_id_pairs = tuple(model_id_ppr_id_pairs)  # convert to tuple for immutability
 
         return model_ids, model_id_ppr_id_pairs
 
@@ -381,7 +392,7 @@ class CompositePerformanceResult(object):
 
         x_vals, y_vals, z_vals, perf_3d, distortion_array, perf_array = self.get_3d_distortion_perf_props(
             distortion_ids=self.distortion_ids)
-        w = nonlinear_fit(distortion_array, perf_array, distortion_ids=self.distortion_ids, add_bias=add_bias)
+        w = fit(distortion_array, perf_array, distortion_ids=self.distortion_ids, add_bias=add_bias)
         self.perf_prediction_fit = w
 
     def run_performance_prediction(self):
@@ -390,33 +401,143 @@ class CompositePerformanceResult(object):
 
 
 def get_composite_performance_result(performance_prediction_result_ids=None, performance_eval_result_ids=None,
-                                     identifier=None, parent_dir='default', config=None, overwrite_extracted_props=True,
-                                     make_dir=True):
+                                     identifier=None, config=None, suffix=None):
     if config:
         performance_prediction_result_ids = config['performance_prediction_result_ids']
         performance_eval_result_ids = config['performance_eval_result_ids']
         identifier = config['identifier']
-        overwrite_extracted_props = config['overwrite_extracted_props']
+        # overwrite_extracted_props = config['overwrite_extracted_props']
 
     composite_performance_result = CompositePerformanceResult(
         performance_prediction_result_ids, performance_eval_result_ids=performance_eval_result_ids,
         identifier=identifier)
 
-    composite_result_id = composite_performance_result.result_id
-    output_dir = Path(ROOT_DIR, REL_PATHS['composite_performance'], composite_result_id)
+    composite_result_id = str(composite_performance_result)
+    uid = composite_performance_result.uid
+    output_dir = get_composite_performance_result_output_directory(composite_result_id, uid, suffix=suffix)
 
-    if make_dir and not output_dir.is_dir():
-        Path.mkdir(output_dir, parents=True)
+    if config:
+        log_config(output_dir, config)
 
     return composite_performance_result, output_dir
 
 
+def get_composite_performance_result_output_directory(composite_result_id, uid, suffix=None):
+    """
+    Finds or makes directory for composite performance result outputs. If the directory already exists, verifies that
+    the unique id (built using hashes of performance result ids) logged in the directory matches the unique id passed
+    (uid). If unique ids match, the directory is returned. Otherwise, the suffix is incremented and the function is
+    called again, creating and returning a new directory or returning an existing directory containing a matching
+    uid.
+    """
+
+    if not suffix:
+        output_dir = Path(ROOT_DIR, REL_PATHS['composite_performance'], composite_result_id)
+    else:
+        dir_name = f'{composite_result_id}-{suffix}'
+        output_dir = Path(ROOT_DIR, REL_PATHS['composite_performance'], dir_name)
+
+    if not output_dir.is_dir():
+        Path.mkdir(output_dir, parents=True)
+        log_uid(output_dir, uid)
+        return output_dir
+
+    else:
+        uid_check = check_cr_uid(output_dir, uid=uid)
+        if uid_check is None:  # happens in the event that the directory exists but no uid has been logged yet
+            log_uid(output_dir, uid)
+            return output_dir
+
+    if uid_check:  # logged uid matches composite result uid
+        return output_dir
+
+    else:
+        if not suffix:
+            suffix = 'v2'
+            return get_composite_performance_result_output_directory(composite_result_id, uid, suffix=suffix)
+        else:
+            suffix = increment_suffix(suffix)
+            return get_composite_performance_result_output_directory(composite_result_id, uid, suffix=suffix)
+
+
+def get_composite_result_uid(performance_prediction_result_ids, eval_result_ids):
+    """
+    Returns a unique id for each unique set of consisting of performance_prediction_result_ids and eval_result_ids.
+    """
+
+    ids = copy.deepcopy(performance_prediction_result_ids)
+    ids.sort()
+
+    if eval_result_ids:
+
+        eval_ids = copy.deepcopy(eval_result_ids)
+        eval_ids.sort()
+        ids.extend(eval_ids)
+
+    uid = blake2b(str(ids).encode('utf-8')).hexdigest()
+
+    return uid
+
+
+def check_cr_uid(directory, uid=None, composite_result=None):
+    """
+    Checks to see whether target directory contains matching uid
+    """
+    if not uid:
+        uid = composite_result.uid
+    existing_uid = read_existing_uid(directory)
+
+    if existing_uid is None:
+        return existing_uid
+    else:
+        return uid == existing_uid
+
+
+def read_existing_uid(directory):
+
+    uid_filepath = Path(directory, STANDARD_UID_FILENAME)
+    if not uid_filepath.is_file():
+        return None
+
+    with open(uid_filepath, 'r') as file:
+        uid_log = json.load(file)
+
+    uid = uid_log['uid']
+    return uid
+
+
+def log_uid(directory, uid):
+
+    uid_filepath = Path(directory, STANDARD_UID_FILENAME)
+    uid_log = {'uid': uid}
+
+    with open(uid_filepath, 'w') as file:
+        json.dump(uid_log, file)
+
+
+def get_sub_dir_and_log_filename(output_dir, analysis_type):
+    sub_directory = Path(output_dir, analysis_type)
+    if not sub_directory.is_dir():
+        sub_directory.mkdir()
+    filename = f'composite_result_log_{analysis_type}.txt'
+    return sub_directory, filename
+
+
 if __name__ == '__main__':
+
+    config_filename = 'pl_oct_composite_config.yml'
+    analyze_1d = False
+    analyze_2d = False
+    analyze_3d = True
+
+    fit_keys = ['linear', 'nonlinear_0', 'nonlinear_1']
+
+    if not config_filename:
+        config_filename = 'composite_distortion_analysis_config.yml'
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_name', default='composite_distortion_analysis_config.yml',
+    parser.add_argument('--config_name', default=config_filename,
                         help='config filename to be used')
-    # parser.add_argument('--config_name', default='pl_abbrev_oct_composite_config.yml',
-    #                     help='config filename to be used')
     parser.add_argument('--config_dir',
                         default=Path(Path(__file__).parents[0], 'composite_performance_configs'),
                         help="configuration file directory")
@@ -424,8 +545,21 @@ if __name__ == '__main__':
     run_config = get_config(args_passed)
 
     _composite_performance, _output_dir = get_composite_performance_result(config=run_config)
-    with open(Path(_output_dir, 'test_composite_result_log.txt'), 'w') as output_file:
-        # analyze_perf_1d(_composite_performance, log_file=output_file, directory=_output_dir, per_class=False,
-        #                 distortion_ids=('res', 'blur', 'noise'))
-        # analyze_perf_2d(_composite_performance, log_file=output_file, directory=_output_dir)
-        analyze_perf_3d(_composite_performance, log_file=output_file, directory=_output_dir)
+
+    if analyze_1d:
+        sub_dir, log_filename = get_sub_dir_and_log_filename(_output_dir, '1d')
+        with open(Path(sub_dir, log_filename), 'w') as output_file:
+            analyze_perf_1d(_composite_performance, log_file=output_file, directory=sub_dir, per_class=False,
+                            distortion_ids=('res', 'blur', 'noise'))
+
+    if analyze_2d:
+        sub_dir, log_filename = get_sub_dir_and_log_filename(_output_dir, '2d')
+        with open((Path(sub_dir, log_filename)), 'w') as output_file:
+            analyze_perf_2d(_composite_performance, log_file=output_file, directory=sub_dir)
+
+    if analyze_3d:
+        sub_dir_3d, log_filename = get_sub_dir_and_log_filename(_output_dir, '3d')
+        with open((Path(sub_dir_3d, log_filename)), 'w') as output_file:
+            for fit_key in fit_keys:
+                fit_sub_dir, __ = get_sub_dir_and_log_filename(sub_dir_3d, fit_key)
+                analyze_perf_3d(_composite_performance, log_file=output_file, directory=fit_sub_dir, fit_key=fit_key)
