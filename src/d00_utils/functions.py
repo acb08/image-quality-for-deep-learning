@@ -8,7 +8,7 @@ from yaml import safe_load, dump
 import numpy as np
 from src.d00_utils.classes import Sat6ResNet, Sat6ResNet50, Sat6DenseNet161
 import copy
-
+import time
 
 def load_original_dataset(dataset_id):
 
@@ -206,9 +206,20 @@ def potential_overwrite(path):
     return path.exists()
 
 
-def load_wandb_data_artifact(run, artifact_id, artifact_filename):
+def load_wandb_data_artifact(run, artifact_id, artifact_filename, retries=10):
 
-    artifact = run.use_artifact(artifact_id)
+    attempts = 0
+    success = False
+    while attempts < retries and not success:
+        try:
+            artifact = run.use_artifact(artifact_id)
+        except ValueError:
+            attempts += 1
+            time.sleep(60)
+            print(f'wandb artifact access failed attempt {attempts}')
+        else:
+            success = True
+
     artifact_dir = artifact.download()
     data = read_json_artifact(artifact_dir, artifact_filename)
 

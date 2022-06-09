@@ -217,7 +217,6 @@ def distort_log_numpy(config):
             parent_artifact, parent_dataset = load_wandb_data_artifact(run,
                                                                        parent_artifact_name,
                                                                        artifact_filename)
-
             new_dataset = distort_dataset(parent_dataset,
                                           new_dataset_abs_dir,
                                           distortion_tag,
