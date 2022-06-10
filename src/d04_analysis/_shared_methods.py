@@ -58,33 +58,34 @@ def _archive_processed_props(_self, res_values, blur_values, noise_values, perf_
                         perf_array=perf_array)
 
 
-def _get_3d_distortion_perf_props(_self, distortion_ids, predict_eval_flag=None):
+def _get_3d_distortion_perf_props(_self, distortion_ids, predict_eval_flag='predict'):
 
     if distortion_ids != ('res', 'blur', 'noise'):
         raise ValueError('method requires distortion_ids (res, blur, noise)')
 
-    if predict_eval_flag is None:
-        predict_eval_flag = 'predict'
+    existing_processed_props = _self.check_extract_processed_props(predict_eval_flag=predict_eval_flag)
 
-    if predict_eval_flag == 'predict':
-        existing_processed_props = _self.check_extract_processed_props(predict_eval_flag=predict_eval_flag)
-        if existing_processed_props:
-            print('loading existing processed properties')
-            res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array, __ = existing_processed_props
-        else:
+    if existing_processed_props:
+        print('loading existing processed properties')
+        res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array, __ = existing_processed_props
+    else:
+        if predict_eval_flag == 'predict':
             print('processing 3d props')
             res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array, __ = build_3d_field(
                 _self.res_predict, _self.blur_predict, _self.noise_predict, _self.top_1_vec_predict, data_dump=True)
             _self.archive_processed_props(res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array,
                                           predict_eval_flag)
+        elif predict_eval_flag == 'eval':
+            print('processing 3d props')
+            res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array, __ = build_3d_field(
+                _self.res, _self.blur, _self.noise, _self.top_1_vec, data_dump=True)
+            _self.archive_processed_props(res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array,
+                                          predict_eval_flag)
+        else:
+            raise Exception('invalid predict_eval_flag')
 
-        return res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array, None
 
-    elif predict_eval_flag == 'eval':
-        pass
-
-    else:
-        raise Exception("predict_eval_flag must be either 'predict' or 'eval'")
+    return res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array, None
 
 
 def get_instance_hash(performance_array, distortion_array):

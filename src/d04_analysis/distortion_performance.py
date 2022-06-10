@@ -101,6 +101,11 @@ class ModelDistortionPerformanceResult(DistortedDataset):
         self.identifier = identifier
         self.instance_hashes = {'predict': blake2b(str(self.top_1_vec).encode('utf-8')).hexdigest()}
 
+        # _predict attributes used for forward compatibility with scripts using CompositePerformanceResult class
+        self.res_predict = self.res
+        self.blur_predict = self.blur
+        self.noise_predict = self.noise
+
     def __len__(self):
         return len(self.labels)
 
@@ -228,17 +233,31 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
 
     fit_coefficients = fit(distortion_array, perf_array, distortion_ids=(x_id, y_id, z_id), fit_key=fit_key,
                            add_bias=add_bias)
-    fit_correlation = eval_fit(fit_coefficients, distortion_array, perf_array, distortion_ids=(x_id, y_id, z_id),
-                               fit_key=fit_key, add_bias=add_bias)
+    fit_direct_correlation = eval_fit(fit_coefficients, distortion_array, perf_array, distortion_ids=(x_id, y_id, z_id),
+                                      fit_key=fit_key, add_bias=add_bias)
 
-    nonlinear_fit_prediction = fit_predict(fit_coefficients, distortion_array, distortion_ids=(x_id, y_id, z_id),
-                                           fit_key=fit_key, add_bias=add_bias)
+    if hasattr(model_performance, 'eval_results'):
+        __, __, __, perf_3d_eval, distortion_array_eval, perf_array_eval, __ = (
+            model_performance.get_3d_distortion_perf_props(distortion_ids=(x_id, y_id, z_id),
+                                                           predict_eval_flag='eval'))
+    else:
+        perf_3d_eval = perf_3d
+        distortion_array_eval = distortion_array
+        # perf_array_eval = perf_array
 
-    _x_vals, _y_vals, _z_vals, performance_prediction_3d, __, __, __ = build_3d_field(distortion_array[:, 0],
-                                                                                      distortion_array[:, 1],
-                                                                                      distortion_array[:, 2],
-                                                                                      nonlinear_fit_prediction,
-                                                                                      data_dump=True)
+    fit_prediction = fit_predict(fit_coefficients, distortion_array_eval, distortion_ids=(x_id, y_id, z_id),
+                                 fit_key=fit_key, add_bias=add_bias)
+
+    performance_prediction_3d = build_3d_field(distortion_array[:, 0],
+                                               distortion_array[:, 1],
+                                               distortion_array[:, 2],
+                                               fit_prediction,
+                                               data_dump=False)
+
+    eval_fit_correlation = eval_fit(fit_coefficients, distortion_array_eval, perf_3d_eval,
+                                    distortion_ids=(x_id, y_id, z_id), fit_key=fit_key, add_bias=add_bias)
+    _eval_fit_correlation = np.corrcoef(np.ravel(performance_prediction_3d), np.ravel(perf_3d_eval))[0, 1]
+    assert eval_fit_correlation == _eval_fit_correlation
 
     p_simulate = np.clip(performance_prediction_3d, 0, 1)
     num_clipped_points = np.count_nonzero(np.where(p_simulate != performance_prediction_3d))
@@ -248,13 +267,16 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
                                                           total_trials=total_sim_trials)
 
     print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} fit: \n', fit_coefficients, file=log_file)
-    print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} fit correlation: ', fit_correlation, file=log_file)
+    print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} direct fit correlation: ', fit_direct_correlation,
+          file=log_file)
+    print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} eval fit correlation: ', eval_fit_correlation,
+          file=log_file)
     print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} ideal fit correlation: ', ideal_correlation, '\n',
           file=log_file)
     print(f'{result_name} ideal fit simulation clipped values: {num_clipped_points}, '
           f'{100 * num_clipped_points / len(np.ravel(performance_prediction_3d))}% of total', '\n', file=log_file)
 
-    return x_values, y_values, z_values, perf_3d, performance_prediction_3d
+    return x_values, y_values, z_values, perf_3d, perf_3d_eval, performance_prediction_3d
 
 
 def analyze_perf_3d(model_performance,
@@ -265,10 +287,8 @@ def analyze_perf_3d(model_performance,
                     isosurf_plot=False,
                     fit_key='linear'):
     x_id, y_id, z_id = distortion_ids
-    x_values, y_values, z_values, perf_3d, fit_3d = get_distortion_perf_3d(model_performance,
-                                                                           x_id=x_id, y_id=y_id, z_id=z_id,
-                                                                           add_bias=add_bias, log_file=log_file,
-                                                                           fit_key=fit_key)
+    x_values, y_values, z_values, perf_3d, perf_3d_eval, fit_3d = get_distortion_perf_3d(
+        model_performance, x_id=x_id, y_id=y_id, z_id=z_id, add_bias=add_bias, log_file=log_file, fit_key=fit_key)
 
     check_histograms(perf_3d, fit_3d, directory=directory)
 
