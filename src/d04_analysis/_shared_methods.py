@@ -5,7 +5,7 @@ relationships.
 from pathlib import Path
 # from src.d04_analysis.distortion_performance import ModelDistortionPerformanceResult
 import numpy as np
-
+from hashlib import blake2b
 from src.d00_utils.definitions import ROOT_DIR, REL_PATHS, STANDARD_PROCESSED_DISTORTION_PERFORMANCE_PROPS_FILENAME
 from src.d04_analysis.analysis_functions import build_3d_field
 
@@ -74,7 +74,7 @@ def _get_3d_distortion_perf_props(_self, distortion_ids, predict_eval_flag=None)
         else:
             print('processing 3d props')
             res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array, __ = build_3d_field(
-                _self.res, _self.blur, _self.noise, _self.top_1_vec_predict, data_dump=True)
+                _self.res_predict, _self.blur_predict, _self.noise_predict, _self.top_1_vec_predict, data_dump=True)
             _self.archive_processed_props(res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array,
                                           predict_eval_flag)
 
@@ -85,3 +85,8 @@ def _get_3d_distortion_perf_props(_self, distortion_ids, predict_eval_flag=None)
 
     else:
         raise Exception("predict_eval_flag must be either 'predict' or 'eval'")
+
+
+def get_instance_hash(performance_array, distortion_array):
+    mega_string = str(performance_array) + str(distortion_array)
+    return blake2b(mega_string.encode('utf-8')).hexdigest()

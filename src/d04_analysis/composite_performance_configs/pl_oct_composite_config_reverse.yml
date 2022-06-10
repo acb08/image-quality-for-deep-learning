@@ -1,0 +1,34 @@
+---
+
+identifier: oct-models-mega-1-mega-2-reversed  # megaset 2 used for prediction, megaset 1 for eval
+
+performance_prediction_result_ids:
+  - 0045-rlt-0023-resnet18-oct_111_best_loss-0008-tst-full_range_mega_set_2_noise:v0
+  - 0043-rlt-0023-resnet18-oct_110_best_loss-0008-tst-full_range_mega_set_2_noise:v0
+  - 0041-rlt-0023-resnet18-oct_101_best_loss-0008-tst-full_range_mega_set_2_noise:v0
+  - 0039-rlt-0023-resnet18-oct_100_best_loss-0008-tst-full_range_mega_set_2_noise:v0
+  - 0037-rlt-0023-resnet18-oct_011_best_loss-0008-tst-full_range_mega_set_2_noise:v0
+  - 0035-rlt-0023-resnet18-oct_010_best_loss-0008-tst-full_range_mega_set_2_noise:v0
+  - 0059-rlt-0031-resnet18-oct_001_best_loss-0008-tst-full_range_mega_set_2_noise:v0
+  - 0058-rlt-0031-resnet18-oct_000_best_loss-0008-tst-full_range_mega_set_2_noise:v0
+
+performance_eval_result_ids:
+  - 0053-rlt-0023-resnet18-oct_111_best_loss-0006-tst-r_fr_pl-b_fr_pl-n_fr_pl_noise:v0
+  - 0052-rlt-0023-resnet18-oct_110_best_loss-0006-tst-r_fr_pl-b_fr_pl-n_fr_pl_noise:v0
+  - 0051-rlt-0023-resnet18-oct_101_best_loss-0006-tst-r_fr_pl-b_fr_pl-n_fr_pl_noise:v0
+  - 0050-rlt-0023-resnet18-oct_100_best_loss-0006-tst-r_fr_pl-b_fr_pl-n_fr_pl_noise:v0
+  - 0049-rlt-0023-resnet18-oct_011_best_loss-0006-tst-r_fr_pl-b_fr_pl-n_fr_pl_noise:v0
+  - 0048-rlt-0023-resnet18-oct_010_best_loss-0006-tst-r_fr_pl-b_fr_pl-n_fr_pl_noise:v0
+  - 0057-rlt-0031-resnet18-oct_001_best_loss-0006-tst-r_fr_pl-b_fr_pl-n_fr_pl_noise:v0
+  - 0055-rlt-0031-resnet18-oct_000_best_loss-0006-tst-r_fr_pl-b_fr_pl-n_fr_pl_noise:v0
+
+
+
+
+
+
+
+
+
+
+

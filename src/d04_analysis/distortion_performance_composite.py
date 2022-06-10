@@ -3,7 +3,7 @@ import numpy as np
 import argparse
 from src.d04_analysis.distortion_performance import get_multiple_model_distortion_performance_results
 from src.d04_analysis._shared_methods import _get_processed_instance_props_path, _check_extract_processed_props, \
-    _archive_processed_props, _get_3d_distortion_perf_props
+    _archive_processed_props, _get_3d_distortion_perf_props, get_instance_hash
 from src.d04_analysis.fit import fit
 from src.d00_utils.definitions import STANDARD_UID_FILENAME, KEY_LENGTH, ROOT_DIR, \
     REL_PATHS
@@ -48,9 +48,9 @@ class CompositePerformanceResult(object):
 
         self.performance_prediction_dataset_id, self.dataset_id = self._screen_dataset_ids()
 
-        self._res_perf_predict = None
-        self._blur_perf_predict = None
-        self._noise_perf_predict = None
+        self.res_predict = None
+        self.blur_predict = None
+        self.noise_predict = None
         self.res = None  # eval
         self.blur = None  # eval
         self.noise = None  # eval
@@ -85,18 +85,19 @@ class CompositePerformanceResult(object):
             self.top_1_vec = None
 
         # other attributes needed for compatibility with functions that use ModelDistortionPerformance instances
-        self.instance_hashes = {'predict': blake2b(str(self.top_1_vec_predict).encode('utf-8')).hexdigest()}
+        self.instance_hashes = {'predict': get_instance_hash(self.top_1_vec_predict,
+                                                             self.noise_predict)}
         if self.top_1_vec is not None:
-            self.instance_hashes['eval'] = blake2b(str(self.top_1_vec).encode('utf-8')).hexdigest()
+            self.instance_hashes['eval'] = get_instance_hash(self.top_1_vec, self.noise)
 
         self.distortions = {
             'res': self.res,
             'blur': self.blur,
             'noise': self.noise,
 
-            '_res_perf_predict': self._res_perf_predict,
-            '_blur_perf_predict': self._blur_perf_predict,
-            '_noise_perf_predict': self._noise_perf_predict,
+            '_res_perf_predict': self.res_predict,
+            '_blur_perf_predict': self.blur_predict,
+            '_noise_perf_predict': self.noise_predict,
         }
 
         self.model_id = surrogate_model_id
@@ -208,9 +209,9 @@ class CompositePerformanceResult(object):
             self.blur = blur_e
             self.noise = noise_e
 
-        self._res_perf_predict = res_p
-        self._blur_perf_predict = blur_p
-        self._noise_perf_predict = noise_p
+        self.res_predict = res_p
+        self.blur_predict = blur_p
+        self.noise_predict = noise_p
 
     def _assign_distortion_pt_hashes(self):
 
@@ -223,7 +224,7 @@ class CompositePerformanceResult(object):
         will fail.
         """
 
-        distortion_array_p = np.stack([self._res_perf_predict, self._blur_perf_predict, self._noise_perf_predict],
+        distortion_array_p = np.stack([self.res_predict, self.blur_predict, self.noise_predict],
                                       axis=0)
         predict_hashes = [hash(tuple(distortion_array_p[:, i])) for i in range(len(distortion_array_p[0, :]))]
         predict_hashes = np.asarray(predict_hashes)
@@ -523,7 +524,7 @@ def get_sub_dir_and_log_filename(output_dir, analysis_type):
 
 if __name__ == '__main__':
 
-    config_filename = 'pl_oct_composite_config.yml'
+    config_filename = 'pl_oct_composite_config_reverse.yml'
     analyze_1d = False
     analyze_2d = False
     analyze_3d = True
