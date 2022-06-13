@@ -529,21 +529,39 @@ def residual_color_plot(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', '
                         flatten_axes=(0, 1, 2), directory=None):
 
     residual = f0 - f1
-    fig, axes = plt.subplots(len(flatten_axes))
+    fig, axes = plt.subplots(nrows=1, ncols=len(flatten_axes))
+    residual_arrays = []
+    xy_axes = []
+
+    xy_labels = []
 
     for i, flatten_axis in enumerate(flatten_axes):
         r2d, axis0, axis1 = flatten(residual, x_vals, y_vals, z_vals, flatten_axis=flatten_axis)
+        assert np.shape(r2d) == (len(axis0), len(axis1))
         xlabel, ylabel = keep_2_of_3(a=distortion_ids, discard_idx=flatten_axis)
+        # xlabel = AXIS_LABELS[xlabel]
+        # ylabel = AXIS_LABELS[ylabel]
 
-        x_min, x_max = min(axis0), max(axis0)
-        y_min, y_max = min(axis1), max(axis1)
-        extent = [x_min, x_max, y_min, y_max]
-        save_name = f'residual_{xlabel}_{ylabel}'
+        residual_arrays.append(r2d)
+        xy_axes.append((axis0, axis1))
+        xy_labels.append((xlabel, ylabel))
 
-        extent = None
-        _heat_plot(r2d, xlabel, ylabel, ax=axes[i], extent=extent)
+    vmin = np.min([np.min(r2d) for r2d in residual_arrays])
+    vmax = np.max([np.max(r2d) for r2d in residual_arrays])
 
-    fig.colorbar(axes)
+    for i, r2d in enumerate(residual_arrays):
+        ax = axes[i]
+        x_axis, y_axis = xy_axes[i]
+        xlabel, ylabel = xy_labels[i]
+        img = ax.imshow(r2d, vmin=vmin, vmax=vmax, aspect='equal')
+        ax.set_xlabel(ylabel)
+        ax.set_ylabel(xlabel)
+
+    plt.tight_layout()
+    fig.subplots_adjust(right=0.8)
+    cbar_ax = fig.add_axes([0.85, 0.38, 0.05, 0.3])
+    fig.colorbar(img, cax=cbar_ax)
+
     fig.show()
 
 
@@ -558,9 +576,18 @@ def _heat_plot(arr, xlabel, ylabel, ax=None, vmin=None, vmax=None, extent=None):
     if not ax:
         fig, ax = plt.subplots()
 
-    ax.imshow(arr, extent=extent)
+    ax.imshow(arr, extent=extent, vmin=vmin, vmax=vmax)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
 
 
+if __name__ == '__main__':
 
+    _res_vals = np.linspace(0.1, 1, num=10)
+    _blur_vals = np.linspace(0.1, 5, num=20)
+    _noise_vals = np.arange(40) * 2
+
+    _f0 = np.random.rand(len(_res_vals), len(_blur_vals), len(_noise_vals))
+    _f1 = np.random.rand(len(_res_vals), len(_blur_vals), len(_noise_vals))
+
+    residual_color_plot(_f0, _f1, _res_vals, _blur_vals, _noise_vals)

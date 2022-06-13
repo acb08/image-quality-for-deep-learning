@@ -562,4 +562,4 @@ if __name__ == '__main__':
             for _fit_key in fit_keys:
                 fit_sub_dir, __ = get_sub_dir_and_log_filename(sub_dir_3d, _fit_key)
                 analyze_perf_3d(_composite_performance, log_file=output_file, directory=fit_sub_dir, fit_key=_fit_key,
-                                standard_plot=False, residual_plot=False, make_residual_color_plot=True)
+                                standard_plot=True, residual_plot=True, make_residual_color_plot=False)
