@@ -7,7 +7,8 @@ from src.d04_analysis._shared_methods import _get_processed_instance_props_path,
 from src.d04_analysis.analysis_functions import conditional_mean_accuracy, extract_embedded_vectors, \
     get_class_accuracies, build_3d_field, get_distortion_perf_2d, get_distortion_perf_1d
 from src.d04_analysis.fit import fit, eval_fit, fit_predict
-from src.d04_analysis.plot import plot_1d_linear_fit, plot_2d, plot_2d_linear_fit, plot_isosurf, compare_2d_views
+from src.d04_analysis.plot import plot_1d_linear_fit, plot_2d, plot_2d_linear_fit, plot_isosurf, compare_2d_views, \
+    residual_color_plot
 from src.d04_analysis.binomial_simulation import get_ideal_correlation
 import numpy as np
 from pathlib import Path
@@ -284,16 +285,31 @@ def analyze_perf_3d(model_performance,
                     log_file=None,
                     add_bias=True,
                     directory=None,
-                    isosurf_plot=False,
-                    fit_key='linear'):
+                    fit_key='linear',
+                    standard_plot=True,
+                    residual_plot=True,
+                    make_residual_color_plot=True,
+                    isosurf_plot=False):
     x_id, y_id, z_id = distortion_ids
     x_values, y_values, z_values, perf_3d, perf_3d_eval, fit_3d = get_distortion_perf_3d(
         model_performance, x_id=x_id, y_id=y_id, z_id=z_id, add_bias=add_bias, log_file=log_file, fit_key=fit_key)
 
     check_histograms(perf_3d, fit_3d, directory=directory)
 
-    compare_2d_views(perf_3d, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
-                     data_labels=('measured', 'fit'), az_el_combinations='all', directory=directory)
+    if standard_plot:
+        compare_2d_views(perf_3d, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
+                         data_labels=('measured', 'fit'), az_el_combinations='all', directory=directory,
+                         residual_plot=False)
+
+    if residual_plot:
+        compare_2d_views(perf_3d_eval, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
+                         data_labels=('measured', 'fit'), az_el_combinations='all', directory=directory,
+                         residual_plot=residual_plot)
+
+    if make_residual_color_plot:
+        residual_color_plot(perf_3d, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
+                            directory=directory)
+
     if isosurf_plot:
         save_name = f'{str(model_performance)}_isosurf.png'
         plot_isosurf(x_values, y_values, z_values, perf_3d,

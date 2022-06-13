@@ -68,7 +68,7 @@ AXIS_LABELS = {
 }
 
 SCATTER_PLOT_MARKERS = ['.', 'v', '2', 'P', 's', 'd', 'X', 'h']
-COLORS = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
+COLORS = ['b', 'g', 'c', 'm', 'y', 'r', 'k']
 
 
 def plot_1d_linear_fit(x_data, y_data, fit_coefficients, distortion_id,
@@ -504,7 +504,7 @@ def plot_1d_performance(x, performance_dict, distortion_id,
 
 def compare_2d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),
                      flatten_axes=(0, 1, 2), data_labels=('f0', 'f1'), result_id='3d_projection',
-                     az_el_combinations='default', directory=None):
+                     az_el_combinations='default', directory=None, residual_plot=False):
 
     for flatten_axis in flatten_axes:
         f0_2d, axis0, axis1 = flatten(f0, x_vals, y_vals, z_vals, flatten_axis=flatten_axis)
@@ -516,5 +516,51 @@ def compare_2d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blu
             data_labels[1]: f1_2d
         }
 
+        if residual_plot:
+            residual = f0_2d - f1_2d
+            views_2d['residual'] = residual
+            result_id = f'{result_id}_rdl'
+
         plot_2d(axis0, axis1, views_2d, x_id=xlabel, y_id=ylabel, result_identifier=result_id,
                 az_el_combinations=az_el_combinations, directory=directory)
+
+
+def residual_color_plot(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),
+                        flatten_axes=(0, 1, 2), directory=None):
+
+    residual = f0 - f1
+    fig, axes = plt.subplots(len(flatten_axes))
+
+    for i, flatten_axis in enumerate(flatten_axes):
+        r2d, axis0, axis1 = flatten(residual, x_vals, y_vals, z_vals, flatten_axis=flatten_axis)
+        xlabel, ylabel = keep_2_of_3(a=distortion_ids, discard_idx=flatten_axis)
+
+        x_min, x_max = min(axis0), max(axis0)
+        y_min, y_max = min(axis1), max(axis1)
+        extent = [x_min, x_max, y_min, y_max]
+        save_name = f'residual_{xlabel}_{ylabel}'
+
+        extent = None
+        _heat_plot(r2d, xlabel, ylabel, ax=axes[i], extent=extent)
+
+    fig.colorbar(axes)
+    fig.show()
+
+
+def _heat_plot(arr, xlabel, ylabel, ax=None, vmin=None, vmax=None, extent=None):
+
+    # plt.figure()
+    # plt.imshow(arr, vmin=vmin, vmax=vmax, extent=extent)
+    # plt.xlabel(xlabel)
+    # plt.ylabel(ylabel)
+    # plt.colorbar()
+
+    if not ax:
+        fig, ax = plt.subplots()
+
+    ax.imshow(arr, extent=extent)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+
+
+
