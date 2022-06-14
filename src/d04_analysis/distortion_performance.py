@@ -267,6 +267,12 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
     __, ideal_correlation, __, __ = get_ideal_correlation(p_simulate,
                                                           total_trials=total_sim_trials)
 
+    mean_perf = np.mean(perf_3d)
+    mean_perf_prediction = np.mean(performance_prediction_3d)
+    mean_perf_eval = np.mean(perf_3d_eval)
+
+    print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} performance means (performance / perf_fit_prediction'
+          f'/perf_eval): {mean_perf} / {mean_perf_prediction} / {mean_perf_eval}', file=log_file)
     print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} fit: \n', fit_coefficients, file=log_file)
     print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} direct fit correlation: ', fit_direct_correlation,
           file=log_file)

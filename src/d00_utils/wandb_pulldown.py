@@ -13,7 +13,7 @@ if __name__ == '__main__':
     # dataset = read_json_artifact(artifact_dir, artifact_filename)
     #
 
-    artifact_id = 'austinbergstrom/sat6_v2/0011-tst-endpoint_noise:v0'
+    artifact_id = '0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:latest'
 
     with wandb.init(project=PROJECT_ID, job_type='load_artifact') as run:
         artifact_dir, dataset = load_wandb_data_artifact(run, artifact_id, STANDARD_DATASET_FILENAME)
