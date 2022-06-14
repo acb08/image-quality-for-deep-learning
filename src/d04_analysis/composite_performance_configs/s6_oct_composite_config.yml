@@ -1,0 +1,24 @@
+---
+
+identifier: oct-models-mega-1-mega-2
+
+performance_prediction_result_ids:
+  - austinbergstrom/sat6_v2/0034-rlt-0019-resnet18_sat6-oct_111_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0
+  - austinbergstrom/sat6_v2/0033-rlt-0016-resnet18_sat6-oct_110_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0
+  - austinbergstrom/sat6_v2/0032-rlt-0016-resnet18_sat6-oct_101_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0
+  - austinbergstrom/sat6_v2/0031-rlt-0012-resnet18_sat6-oct_100_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0
+  - austinbergstrom/sat6_v2/0030-rlt-0016-resnet18_sat6-oct_011_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0
+  - austinbergstrom/sat6_v2/0029-rlt-0012-resnet18_sat6-oct_010_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0
+  - austinbergstrom/sat6_v2/0028-rlt-0012-resnet18_sat6-oct_001_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0
+  - austinbergstrom/sat6_v2/0026-rlt-0012-resnet18_sat6-oct_000_best_loss-0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:v0
+
+performance_eval_result_ids:
+  - austinbergstrom/sat6_v2/0042-rlt-0019-resnet18_sat6-oct_111_best_loss-0009-tst-full_range_mega_set_2_noise:v0
+  - austinbergstrom/sat6_v2/0041-rlt-0016-resnet18_sat6-oct_110_best_loss-0009-tst-full_range_mega_set_2_noise:v0
+  - austinbergstrom/sat6_v2/0040-rlt-0016-resnet18_sat6-oct_101_best_loss-0009-tst-full_range_mega_set_2_noise:v0
+  - austinbergstrom/sat6_v2/0039-rlt-0012-resnet18_sat6-oct_100_best_loss-0009-tst-full_range_mega_set_2_noise:v0
+  - austinbergstrom/sat6_v2/0038-rlt-0016-resnet18_sat6-oct_011_best_loss-0009-tst-full_range_mega_set_2_noise:v0
+  - austinbergstrom/sat6_v2/0037-rlt-0012-resnet18_sat6-oct_010_best_loss-0009-tst-full_range_mega_set_2_noise:v0
+  - austinbergstrom/sat6_v2/0036-rlt-0012-resnet18_sat6-oct_001_best_loss-0009-tst-full_range_mega_set_2_noise:v0
+  - austinbergstrom/sat6_v2/0035-rlt-0012-resnet18_sat6-oct_000_best_loss-0009-tst-full_range_mega_set_2_noise:v0
+
