@@ -6,7 +6,7 @@ from src.d04_analysis._shared_methods import _get_processed_instance_props_path,
     _archive_processed_props, _get_3d_distortion_perf_props
 from src.d04_analysis.analysis_functions import conditional_mean_accuracy, extract_embedded_vectors, \
     get_class_accuracies, build_3d_field, get_distortion_perf_2d, get_distortion_perf_1d
-from src.d04_analysis.fit import fit, eval_fit, fit_predict
+from src.d04_analysis.fit import fit, evaluate_fit, apply_fit
 from src.d04_analysis.plot import plot_1d_linear_fit, plot_2d, plot_2d_linear_fit, plot_isosurf, compare_2d_views, \
     residual_color_plot
 from src.d04_analysis.binomial_simulation import get_ideal_correlation
@@ -234,8 +234,8 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
 
     fit_coefficients = fit(distortion_array, perf_array, distortion_ids=(x_id, y_id, z_id), fit_key=fit_key,
                            add_bias=add_bias)
-    fit_direct_correlation = eval_fit(fit_coefficients, distortion_array, perf_array, distortion_ids=(x_id, y_id, z_id),
-                                      fit_key=fit_key, add_bias=add_bias)
+    fit_direct_correlation = evaluate_fit(fit_coefficients, distortion_array, perf_array, distortion_ids=(x_id, y_id, z_id),
+                                          fit_key=fit_key, add_bias=add_bias)
 
     if hasattr(model_performance, 'eval_results'):
         __, __, __, perf_3d_eval, distortion_array_eval, perf_array_eval, __ = (
@@ -246,8 +246,8 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
         distortion_array_eval = distortion_array
         # perf_array_eval = perf_array
 
-    fit_prediction = fit_predict(fit_coefficients, distortion_array_eval, distortion_ids=(x_id, y_id, z_id),
-                                 fit_key=fit_key, add_bias=add_bias)
+    fit_prediction = apply_fit(fit_coefficients, distortion_array_eval, distortion_ids=(x_id, y_id, z_id),
+                               fit_key=fit_key, add_bias=add_bias)
 
     performance_prediction_3d = build_3d_field(distortion_array[:, 0],
                                                distortion_array[:, 1],
@@ -255,8 +255,8 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
                                                fit_prediction,
                                                data_dump=False)
 
-    eval_fit_correlation = eval_fit(fit_coefficients, distortion_array_eval, perf_3d_eval,
-                                    distortion_ids=(x_id, y_id, z_id), fit_key=fit_key, add_bias=add_bias)
+    eval_fit_correlation = evaluate_fit(fit_coefficients, distortion_array_eval, perf_3d_eval,
+                                        distortion_ids=(x_id, y_id, z_id), fit_key=fit_key, add_bias=add_bias)
     _eval_fit_correlation = np.corrcoef(np.ravel(performance_prediction_3d), np.ravel(perf_3d_eval))[0, 1]
     assert eval_fit_correlation == _eval_fit_correlation
 
@@ -296,6 +296,7 @@ def analyze_perf_3d(model_performance,
                     residual_plot=True,
                     make_residual_color_plot=True,
                     isosurf_plot=False):
+
     x_id, y_id, z_id = distortion_ids
     x_values, y_values, z_values, perf_3d, perf_3d_eval, fit_3d = get_distortion_perf_3d(
         model_performance, x_id=x_id, y_id=y_id, z_id=z_id, add_bias=add_bias, log_file=log_file, fit_key=fit_key)

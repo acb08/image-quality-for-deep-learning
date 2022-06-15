@@ -1,17 +1,11 @@
+"""
+Functions for fits to be used when the problem can be transformed into a linear regression solved by singular value
+decomposition.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
-
-
-class DistortionTransform(object):
-
-    def __init__(self):
-        pass
-
-    def __call__(self, x):  # do the transform
-        pass
-
-    def __str__(self):
-        pass  # return a description of the transform
+import src.d04_analysis.fit_nonseparable as fit_nonseparable
 
 
 def fit_hyperplane(x, y, add_bias=True):
@@ -115,25 +109,32 @@ def nonlinear_transform_1(distortion_vector, distortion_ids=('res', 'blur', 'noi
 
 def fit(x, y, distortion_ids=('res', 'blur', 'noise'), add_bias=True, fit_key='linear'):
 
-    transform = _transforms[fit_key]
-    x = transform(x, distortion_ids=distortion_ids)
-
-    w = fit_hyperplane(x, y, add_bias=add_bias)
-    return w
-
-
-def fit_predict(w, x, distortion_ids=('res', 'blur', 'noise'), fit_key='linear', add_bias=True):
-
-    transform = _transforms[fit_key]
-    x = transform(x, distortion_ids=distortion_ids)
-    if add_bias:
-        x = append_bias_col(x)
-    y_predict = np.matmul(x, w)
-    return y_predict
+    try:
+        transform = _transforms[fit_key]
+    except KeyError:
+        return fit_nonseparable.fit(x, y, distortion_ids=distortion_ids, fit_key=fit_key)
+    else:
+        x = transform(x, distortion_ids=distortion_ids)
+        w = fit_hyperplane(x, y, add_bias=add_bias)
+        return w
 
 
-def eval_fit(w, x, y, distortion_ids=('res', 'blur', 'noise'), fit_key='linear', add_bias=True):
-    y_predict = fit_predict(w, x, distortion_ids=distortion_ids, fit_key=fit_key, add_bias=add_bias)
+def apply_fit(w, x, distortion_ids=('res', 'blur', 'noise'), fit_key='linear', add_bias=True):
+
+    try:
+        transform = _transforms[fit_key]
+    except KeyError:
+        return fit_nonseparable.apply_fit(w, x, fit_key)
+    else:
+        x = transform(x, distortion_ids=distortion_ids)
+        if add_bias:
+            x = append_bias_col(x)
+        y_predict = np.matmul(x, w)
+        return y_predict
+
+
+def evaluate_fit(w, x, y, distortion_ids=('res', 'blur', 'noise'), fit_key='linear', add_bias=True):
+    y_predict = apply_fit(w, x, distortion_ids=distortion_ids, fit_key=fit_key, add_bias=add_bias)
     correlation = np.corrcoef(np.ravel(y_predict), np.ravel(y))[0, 1]
     return correlation
 
@@ -143,6 +144,7 @@ _transforms = {
     'nonlinear_0': nonlinear_transform_0,
     'nonlinear_1': nonlinear_transform_1,
 }
+
 
 # if __name__ == '__main__':
 #
