@@ -13,10 +13,10 @@ def make_data(params, x, sigma=0.1):
 
 def giqe5_deriv(params, distortion_vector):
 
-    c0, c1, c2, c3, c4, c5, c6 = params
+    c0, c1, c2, c3, c4, c5 = params
     res, blur, noise = distortion_vector[:, 0], distortion_vector[:, 1], distortion_vector[:, 2]
-    y = c0 + c1 * np.log10(res) + c2 * (1 - np.exp(c3 * noise)) * np.log10(blur) + c4 * np.log10(noise + c5) \
-        + c6 * noise
+    y = c0 + c1 * np.log10(res) + c2 * (1 - np.exp(c3 * noise)) * np.log10(blur) + c4 * np.log10(blur) \
+        + c5 * noise
 
     return y
 
@@ -57,7 +57,7 @@ def apply_fit(w, x, fit_key):
 
 
 _leastsq_inputs = {
-    'giqe5_deriv': (_giqe5_deriv_residuals, (0.5, 0.3, 0.3, -1, 0.3, 10, -0.14)),
+    'giqe5_deriv': (_giqe5_deriv_residuals, (0.5, 0.3, 0.3, -1, 0.3, -0.14)),
     'power_law': (_power_law_residuals, (0.5, 0.5, 1, -0.1, 1, -0.05, 1))
 }
 

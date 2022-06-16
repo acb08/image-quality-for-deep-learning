@@ -524,7 +524,7 @@ def get_sub_dir_and_log_filename(output_dir, analysis_type):
 
 if __name__ == '__main__':
 
-    config_filename = 's6_oct_composite_config.yml'
+    config_filename = 'pl_oct_composite_config.yml'
     analyze_1d = False
     analyze_2d = False
     analyze_3d = True
