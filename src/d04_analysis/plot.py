@@ -11,7 +11,7 @@ from skimage.measure import marching_cubes
 
 from src.d04_analysis.fit import linear_predict
 from src.d04_analysis.analysis_functions import conditional_extract_2d, create_identifier, get_distortion_perf_2d, \
-    get_distortion_perf_1d, measure_log_perf_correlation, flatten, keep_2_of_3
+    get_distortion_perf_1d, measure_log_perf_correlation, flatten, keep_2_of_3, sort_parallel
 
 # from src.d04_analysis.distortion_performance import plot_perf_2d_multi_result, plot_perf_1d_multi_result
 
@@ -579,6 +579,19 @@ def _heat_plot(arr, xlabel, ylabel, ax=None, vmin=None, vmax=None, extent=None):
     ax.imshow(arr, extent=extent, vmin=vmin, vmax=vmax)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
+
+
+def sorted_linear_scatter(prediction, result, directory=None):
+
+    prediction, result = sort_parallel(prediction, result)
+
+    plt.figure()
+    plt.scatter(prediction, result, marker=".", s=0.5)
+    plt.xlabel('predicted accuracy')
+    plt.ylabel('accuracy')
+    if directory:
+        plt.savefig(Path(directory, 'predict_result_scatter.png'))
+    plt.show()
 
 
 if __name__ == '__main__':

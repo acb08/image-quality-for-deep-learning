@@ -8,7 +8,7 @@ from src.d04_analysis.analysis_functions import conditional_mean_accuracy, extra
     get_class_accuracies, build_3d_field, get_distortion_perf_2d, get_distortion_perf_1d
 from src.d04_analysis.fit import fit, evaluate_fit, apply_fit
 from src.d04_analysis.plot import plot_1d_linear_fit, plot_2d, plot_2d_linear_fit, plot_isosurf, compare_2d_views, \
-    residual_color_plot
+    residual_color_plot, sorted_linear_scatter
 from src.d04_analysis.binomial_simulation import get_ideal_correlation
 import numpy as np
 from pathlib import Path
@@ -302,6 +302,7 @@ def analyze_perf_3d(model_performance,
         model_performance, x_id=x_id, y_id=y_id, z_id=z_id, add_bias=add_bias, log_file=log_file, fit_key=fit_key)
 
     check_histograms(perf_3d, fit_3d, directory=directory)
+    sorted_linear_scatter(fit_3d, perf_3d_eval, directory=directory)
 
     if standard_plot:
         compare_2d_views(perf_3d, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,

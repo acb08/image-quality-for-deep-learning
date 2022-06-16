@@ -468,3 +468,14 @@ def keep_2_of_3(a=None, b=None, c=None, discard_idx=0):
     return keepers
 
 
+def sort_parallel(prediction, result):
+
+    prediction = np.ravel(prediction)
+    result = np.ravel(result)
+    order = prediction.argsort()
+
+    prediction = prediction[order]
+    result = result[order]
+
+    return prediction, result
+
