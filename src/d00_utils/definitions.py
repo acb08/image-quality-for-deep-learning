@@ -47,7 +47,10 @@ REL_PATHS = {
     'perf_correlations': r'perf_correlations',
     'pairwise': 'pairwise',
     '_extracted_artifact_props': r'analysis/_extracted_artifact_props',
-    'composite_performance': r'analysis/composite_performance'
+    'composite_performance': r'analysis/composite_performance',
+    'edges': 'edges',
+    'rer_study': 'rer_study',
+    'edge_chips': 'edge_chips'
 }
 
 _project_config_filename = 'project_config.yml'
