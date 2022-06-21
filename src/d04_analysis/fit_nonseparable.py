@@ -6,7 +6,7 @@ from scipy.optimize import leastsq
 from matplotlib import pyplot as plt
 
 
-def make_data(params, x, sigma=0.1):
+def make_sample_data(params, x, sigma=0.1):
     y = giqe5_deriv(params, x)
     return y, y + np.random.randn(len(y)) * sigma
 
@@ -40,6 +40,40 @@ def _power_law_residuals(params, y, distortion_vector):
     return err
 
 
+def rer_0(params, distortion_vector):
+    """
+    If native blur is constant, c0 and c1 are redundant, but this function is designed to be extensible to
+    true 2d distortion vectors in which native blur may vary
+    """
+    c0, c1, c2, c3 = params
+    native_blur, blur = distortion_vector[:, 0], distortion_vector[:, 1]
+    y = c0 - c1 * native_blur + c2 * np.exp(c3 * blur)
+
+    return y
+
+
+def _rer_0_residuals(params, y, distortion_vector):
+    err = np.ravel(y) - rer_0(params, distortion_vector)
+    return err
+
+
+def rer_1(params, distortion_vector):
+    """
+    If native blur is constant, c0 and c1 are redundant, but this function is designed to be extensible to
+    true 2d distortion vectors in which native blur may vary
+    """
+    c0, c1 = params
+    native_blur, blur = distortion_vector[:, 0], distortion_vector[:, 1]
+    y = c0 * np.exp(c1 * native_blur) * np.exp(c1 * blur)
+
+    return y
+
+
+def _rer_1_residuals(params, y, distortion_vector):
+    err = np.ravel(y) - rer_1(params, distortion_vector)
+    return err
+
+
 def fit(x, y, distortion_ids=('res', 'blur', 'noise'), fit_key='giqe5_deriv'):
 
     if distortion_ids != ('res', 'blur', 'noise'):
@@ -58,12 +92,18 @@ def apply_fit(w, x, fit_key):
 
 _leastsq_inputs = {
     'giqe5_deriv': (_giqe5_deriv_residuals, (0.5, 0.3, 0.3, -1, 0.3, -0.14)),
-    'power_law': (_power_law_residuals, (0.5, 0.5, 1, -0.1, 1, -0.05, 1))
+    'power_law': (_power_law_residuals, (0.5, 0.5, 1, -0.1, 1, -0.05, 1)),
+
+    'rer_0': (_rer_0_residuals, (0.9, 0.25, 1, -1)),
+    'rer_1': (_rer_1_residuals, (0.9, -1))
 }
 
 _fit_functions = {
     'giqe5_deriv': giqe5_deriv,
-    'power_law': power_law
+    'power_law': power_law,
+
+    'rer_0': rer_0,
+    'rer_1': rer_1
 }
 
 
@@ -78,7 +118,7 @@ if __name__ == '__main__':
 
     _x0 = np.stack([_r, _sigma_b, _lambda_p], axis=1)
     print(np.shape(_x0))
-    _truth, _data = make_data(_params, _x0)
+    _truth, _data = make_sample_data(_params, _x0)
 
     _p_fit = fit(_x0, _data)
     # _p0 = np.array([8, -2, -3, -1, 1, -3])

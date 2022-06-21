@@ -268,7 +268,7 @@ def normed_circ_ap_mtf(f, f_cut=None):
 
 if __name__ == '__main__':
 
-    _directory_key = '0010'
+    _directory_key = '0008'
     _kernel_size = 31
     _directory, _dataset = load_dataset(_directory_key, _kernel_size)
 

@@ -6,16 +6,20 @@ from src.d00_utils.definitions import ROOT_DIR, REL_PATHS, STANDARD_DATASET_FILE
 from src.d05_rer.measure import get_freq_axis, normed_circ_ap_mtf, load_dataset
 from src.d05_rer.rer_defs import parent_names
 import json
+from scipy.optimize import leastsq
+import src.d04_analysis.fit as fit
 
 
-class VectorProps(object):
+class BlurredEdgeProperties(object):
 
-    def __init__(self, dataset, mtf_lsf):
+    def __init__(self, dataset, mtf_lsf, parse_keys=('std', 'rer')):
         self.dataset = dataset
         self.mtf_lsf = mtf_lsf
         self.distorted_chip_data = self.dataset['blurred_chips']
-        self.vector_data = self.vectorize_props()
-        self.parse_keys = {'std', 'mtf', 'rer'}
+        self.raw_vector_data = self.vectorize_props()
+        self.native_blur_vector, self.native_blur_values = self._screen_extract_blur_params()
+        self.parse_keys = parse_keys
+        self.vector_data = self.parse_vector_data()
 
     def vectorize_props(self):
 
@@ -37,24 +41,49 @@ class VectorProps(object):
 
         return vector_data
 
+    def _screen_extract_blur_params(self):
+
+        kernel_sizes = np.unique(self.raw_vector_data['kernel_size'])
+        if len(kernel_sizes) != 1:
+            raise ValueError('VectorProbs objects must be constructed from edges blurred by a single kernel size')
+        native_blur_vector = np.asarray(self.raw_vector_data['native_blur'])
+        native_blur_values = np.unique(native_blur_vector)
+        return native_blur_vector, native_blur_values
+
     def parse_vector_data(self):
 
-        parsed_vector_data = {}
+        vector_data = {}
 
-        native_blur_vector = np.asarray(self.vector_data['native_blur'])
-        native_blur_values = np.unique(native_blur_vector)
-        kernel_sizes = np.unique(self.vector_data['kernel_size'])
-        assert len(kernel_sizes) == 1
+        for i, key in enumerate(self.parse_keys):
+            for __, blur_value in enumerate(self.native_blur_values):
 
-        for i, native_blur_value in enumerate(native_blur_values):
-
-            for key, val in self.vector_data.items():
+                target_indices = np.where(self.native_blur_vector == blur_value)
+                target_vector = np.asarray(self.raw_vector_data[key])
+                target_vector = target_vector[target_indices]
 
                 if i == 0:
-                    vector = np.asarray(val)
-                    parsed_vector_data[key] = val
+                    vector_data[blur_value] = {key: target_vector}
                 else:
-                    pass
+                    vector_data[blur_value][key] = target_vector
+
+        return vector_data
+
+    def fixed_native_blur_vector_pair(self, native_blur_value, key_0='std', key_1='rer'):
+        return self.vector_data[native_blur_value][key_0], self.vector_data[native_blur_value][key_1]
+
+    def get_distortion_performance_arrays(self, native_blur, start_idx=0):
+
+        blur, rer = self.fixed_native_blur_vector_pair(native_blur, key_0='std', key_1='rer')
+        native_blur_vector = native_blur * np.ones_like(blur)
+
+        distortion_array = np.zeros((len(native_blur_vector), 2))
+        distortion_array[:, 0] = native_blur_vector
+        distortion_array[:, 1] = blur
+
+        distortion_array = distortion_array[start_idx:, :]
+        rer = rer[start_idx:]
+
+        return distortion_array, rer
 
 
 def load_measured_mtf_lsf(directory):
@@ -63,32 +92,53 @@ def load_measured_mtf_lsf(directory):
     return data
 
 
-# def scale_freq_axis(f, resample_factor):
-#     return resample_factor * f
-
-#
-# def get_nyquist(f_oversampled, oversample_factor):
-#
-#     num_freqs_oversampled = len(f_oversampled)
-#     idx_nyquist = int(num_freqs_oversampled / oversample_factor)
-#     f_nyquist = f_oversampled[idx_nyquist]
-#
-#     return idx_nyquist, f_nyquist
-
-#
-# def truncate(f, mtf, f_cut=0.5):
-#
-#     f_keep = f[np.where(f <= f_cut)]
-#     mtf_keep = mtf[np.where(f <= f_cut)]
-#
-#     return f_keep, mtf_keep
+def get_edge_blur_properties(dataset, mtf_lsf_data):
+    return BlurredEdgeProperties(dataset, mtf_lsf_data)
 
 
-def esf_extract(dataset, mtf_lsf_data):
+def rer_multi_plot(edge_properties, start_idx=0, directory=None):
 
-    vector_props = VectorProps(dataset, mtf_lsf_data)
+    plt.figure()
+    for blur_val in edge_properties.native_blur_values:
+        std, rer = edge_properties.fixed_native_blur_vector_pair(blur_val, key_0='std', key_1='rer')
+        plt.plot(std[start_idx:], rer[start_idx:], label=f'native blur: {blur_val} (pixels)')
+    plt.xlabel(r'$\sigma_{blur}$ secondary (pixels)')
+    plt.ylabel('RER')
+    plt.legend()
+    plt.show()
 
-    return vector_props
+
+def rer_fit_multi_plot(edge_properties, start_idx=0, fit_key='rer_0', directory=None):
+
+    for blur_val in edge_properties.native_blur_values:
+
+        std, rer = edge_properties.fixed_native_blur_vector_pair(blur_val, key_0='std', key_1='rer')
+        std = std[start_idx:]
+        rer = rer[start_idx:]
+        rer_fit = fit_predict_blur_rer(edge_properties, blur_val, fit_key, start_idx=start_idx)
+        plt.figure()
+        plt.scatter(std, rer, label=f'native blur: {blur_val} (pixels)')
+        plt.plot(std, rer_fit, label=f'fit {fit_key}')
+        plt.xlabel(r'$\sigma_{blur}$ secondary (pixels)')
+        plt.ylabel('RER')
+        plt.legend()
+        if directory:
+            sub_dir = Path(directory, fit_key)
+            blur_val_str = str(blur_val).replace('.', '-')
+            save_name = f'rer_fit_{blur_val_str}.png'
+            plt.savefig(Path(sub_dir, save_name))
+        else:
+            plt.show()
+
+
+def fit_predict_blur_rer(edge_properties, native_blur, fit_key, start_idx=0):
+
+    distortion_array, rer_vector = edge_properties.get_distortion_performance_arrays(native_blur,
+                                                                                     start_idx=start_idx)
+    fit_coefficients = fit.fit(distortion_array, rer_vector, fit_key=fit_key)
+    fit_prediction = fit.apply_fit(fit_coefficients, distortion_array, fit_key=fit_key, add_bias=None)
+
+    return fit_prediction
 
 
 if __name__ == '__main__':
@@ -98,5 +148,12 @@ if __name__ == '__main__':
     _directory, _dataset = load_dataset(_directory_key, _kernel_size)
     _mtf_lsf_data = load_measured_mtf_lsf(_directory)
 
-    _vector_props = esf_extract(_dataset, _mtf_lsf_data)
+    _edge_props = get_edge_blur_properties(_dataset, _mtf_lsf_data)
 
+    # rer_multi_plot(_edge_props)
+    # rer_multi_plot(_edge_props, start_idx=1)
+    # rer_fit_multi_plot(_edge_props, fit_key='rer_0')
+    # rer_fit_multi_plot(_edge_props, start_idx=1, fit_key='rer_0')
+
+    # rer_fit_multi_plot(_edge_props, fit_key='rer_1')
+    rer_fit_multi_plot(_edge_props, start_idx=1, fit_key='rer_1')
