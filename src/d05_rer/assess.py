@@ -1,12 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy.stats as stats
 from pathlib import Path
-from src.d00_utils.definitions import ROOT_DIR, REL_PATHS, STANDARD_DATASET_FILENAME
-from src.d05_rer.measure import get_freq_axis, normed_circ_ap_mtf, load_dataset
-from src.d05_rer.rer_defs import parent_names
+from src.d05_rer.measure import load_dataset
 import json
-from scipy.optimize import leastsq
 import src.d04_analysis.fit as fit
 
 
@@ -105,13 +101,17 @@ def rer_multi_plot(edge_properties, start_idx=0, directory=None):
     plt.xlabel(r'$\sigma_{blur}$ secondary (pixels)')
     plt.ylabel('RER')
     plt.legend()
-    plt.show()
+    if directory:
+        save_name = f'rer_multi_plot_st-idx-{start_idx}.png'
+        plt.savefig(Path(directory, save_name))
+    else:
+        plt.show()
 
 
 def rer_fit_multi_plot(edge_properties, start_idx=0, fit_key='rer_0', directory=None):
 
     if directory:
-        sub_dir = Path(directory, fit_key)
+        sub_dir = Path(directory, f'{fit_key}-st-idx-{start_idx}')
         if not sub_dir.is_dir():
             Path.mkdir(sub_dir)
         log_file = open(Path(sub_dir, 'fit_log.txt'), 'w')
@@ -133,16 +133,18 @@ def rer_fit_multi_plot(edge_properties, start_idx=0, fit_key='rer_0', directory=
         plt.legend()
         if directory:
             blur_val_str = str(blur_val).replace('.', '-')
-            if start_idx != 0:
-                blur_val_str = blur_val_str + f'st-idx-{start_idx}'
             save_name = f'rer_fit_{blur_val_str}.png'
             plt.savefig(Path(sub_dir, save_name))
+            plt.close()
         else:
             plt.show()
 
         print(f'native blur {blur_val} {fit_key} fit coefficients: ', file=log_file)
         print(f'{fit_coefficients}: ', file=log_file)
         print(f'correlation: {correlation} \n', file=log_file)
+
+    if log_file:
+        log_file.close()
 
 
 def fit_predict_blur_rer(edge_properties, native_blur, fit_key, start_idx=0):
@@ -158,17 +160,17 @@ def fit_predict_blur_rer(edge_properties, native_blur, fit_key, start_idx=0):
 
 if __name__ == '__main__':
 
-    _directory_key = '0010'
+    _directory_key = '0011'
     _kernel_size = 31
     _directory, _dataset = load_dataset(_directory_key, _kernel_size)
     _mtf_lsf_data = load_measured_mtf_lsf(_directory)
 
     _edge_props = get_edge_blur_properties(_dataset, _mtf_lsf_data)
 
-    # rer_multi_plot(_edge_props)
-    # rer_multi_plot(_edge_props, start_idx=1)
-    # rer_fit_multi_plot(_edge_props, fit_key='rer_0')
-    # rer_fit_multi_plot(_edge_props, start_idx=1, fit_key='rer_0')
+    rer_multi_plot(_edge_props, directory=_directory)
 
-    # rer_fit_multi_plot(_edge_props, fit_key='rer_1')
-    rer_fit_multi_plot(_edge_props, start_idx=1, fit_key='rer_2', directory=_directory)
+    _start_idx = 1
+
+    rer_fit_multi_plot(_edge_props, start_idx=_start_idx, fit_key='rer_0', directory=_directory)
+    rer_fit_multi_plot(_edge_props, start_idx=_start_idx, fit_key='rer_1', directory=_directory)
+    rer_fit_multi_plot(_edge_props, start_idx=_start_idx, fit_key='rer_2', directory=_directory)
