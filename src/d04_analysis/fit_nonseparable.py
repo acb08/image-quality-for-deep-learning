@@ -74,6 +74,23 @@ def _rer_1_residuals(params, y, distortion_vector):
     return err
 
 
+def rer_2(params, distortion_vector):
+    """
+    This function is NOT extensible to a true 2d fit that incorporates native and secondary blur. Instead, c1 depends
+    the extent of native blur in each fit.
+    """
+    c0, c1, c2 = params
+    native_blur, blur = distortion_vector[:, 0], distortion_vector[:, 1]
+    y = c0 / (c1 + c2 * blur)
+
+    return y
+
+
+def _rer_2_residuals(params, y, distortion_vector):
+    err = np.ravel(y) - rer_2(params, distortion_vector)
+    return err
+
+
 def fit(x, y, distortion_ids=('res', 'blur', 'noise'), fit_key='giqe5_deriv'):
 
     if distortion_ids != ('res', 'blur', 'noise'):
@@ -95,7 +112,8 @@ _leastsq_inputs = {
     'power_law': (_power_law_residuals, (0.5, 0.5, 1, -0.1, 1, -0.05, 1)),
 
     'rer_0': (_rer_0_residuals, (0.9, 0.25, 1, -1)),
-    'rer_1': (_rer_1_residuals, (0.9, -1))
+    'rer_1': (_rer_1_residuals, (0.9, -1)),
+    'rer_2': (_rer_2_residuals, (1, 1, 0.5))
 }
 
 _fit_functions = {
@@ -103,7 +121,8 @@ _fit_functions = {
     'power_law': power_law,
 
     'rer_0': rer_0,
-    'rer_1': rer_1
+    'rer_1': rer_1,
+    'rer_2': rer_2
 }
 
 

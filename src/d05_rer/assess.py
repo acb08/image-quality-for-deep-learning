@@ -110,12 +110,21 @@ def rer_multi_plot(edge_properties, start_idx=0, directory=None):
 
 def rer_fit_multi_plot(edge_properties, start_idx=0, fit_key='rer_0', directory=None):
 
+    if directory:
+        sub_dir = Path(directory, fit_key)
+        if not sub_dir.is_dir():
+            Path.mkdir(sub_dir)
+        log_file = open(Path(sub_dir, 'fit_log.txt'), 'w')
+    else:
+        log_file = None
+
     for blur_val in edge_properties.native_blur_values:
 
         std, rer = edge_properties.fixed_native_blur_vector_pair(blur_val, key_0='std', key_1='rer')
         std = std[start_idx:]
         rer = rer[start_idx:]
-        rer_fit = fit_predict_blur_rer(edge_properties, blur_val, fit_key, start_idx=start_idx)
+        fit_coefficients, rer_fit, correlation = fit_predict_blur_rer(edge_properties, blur_val, fit_key,
+                                                                      start_idx=start_idx)
         plt.figure()
         plt.scatter(std, rer, label=f'native blur: {blur_val} (pixels)')
         plt.plot(std, rer_fit, label=f'fit {fit_key}')
@@ -123,12 +132,17 @@ def rer_fit_multi_plot(edge_properties, start_idx=0, fit_key='rer_0', directory=
         plt.ylabel('RER')
         plt.legend()
         if directory:
-            sub_dir = Path(directory, fit_key)
             blur_val_str = str(blur_val).replace('.', '-')
+            if start_idx != 0:
+                blur_val_str = blur_val_str + f'st-idx-{start_idx}'
             save_name = f'rer_fit_{blur_val_str}.png'
             plt.savefig(Path(sub_dir, save_name))
         else:
             plt.show()
+
+        print(f'native blur {blur_val} {fit_key} fit coefficients: ', file=log_file)
+        print(f'{fit_coefficients}: ', file=log_file)
+        print(f'correlation: {correlation} \n', file=log_file)
 
 
 def fit_predict_blur_rer(edge_properties, native_blur, fit_key, start_idx=0):
@@ -137,8 +151,9 @@ def fit_predict_blur_rer(edge_properties, native_blur, fit_key, start_idx=0):
                                                                                      start_idx=start_idx)
     fit_coefficients = fit.fit(distortion_array, rer_vector, fit_key=fit_key)
     fit_prediction = fit.apply_fit(fit_coefficients, distortion_array, fit_key=fit_key, add_bias=None)
+    correlation = fit.evaluate_fit(fit_coefficients, distortion_array, rer_vector, fit_key=fit_key)
 
-    return fit_prediction
+    return fit_coefficients, fit_prediction, correlation
 
 
 if __name__ == '__main__':
@@ -156,4 +171,4 @@ if __name__ == '__main__':
     # rer_fit_multi_plot(_edge_props, start_idx=1, fit_key='rer_0')
 
     # rer_fit_multi_plot(_edge_props, fit_key='rer_1')
-    rer_fit_multi_plot(_edge_props, start_idx=1, fit_key='rer_1')
+    rer_fit_multi_plot(_edge_props, start_idx=1, fit_key='rer_2', directory=_directory)
