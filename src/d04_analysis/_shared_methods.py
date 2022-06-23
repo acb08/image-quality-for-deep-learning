@@ -84,7 +84,6 @@ def _get_3d_distortion_perf_props(_self, distortion_ids, predict_eval_flag='pred
         else:
             raise Exception('invalid predict_eval_flag')
 
-
     return res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array, None
 
 
