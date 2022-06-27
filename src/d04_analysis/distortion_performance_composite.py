@@ -90,14 +90,23 @@ class CompositePerformanceResult(object):
         if self.top_1_vec is not None:
             self.instance_hashes['eval'] = get_instance_hash(self.top_1_vec, self.noise)
 
+        # structure below allows access of the form model_performance.distortions[predict_eval_flag][distortion_id]
+        _predict_distortions = {
+            'res': self.res_predict,
+            'blur': self.blur_predict,
+            'noise': self.noise_predict
+        }
+        _eval_distortions = {
+            'res': self.res,
+            'blur': self.blur,
+            'noise': self.noise
+        }
         self.distortions = {
             'res': self.res,
             'blur': self.blur,
             'noise': self.noise,
-
-            '_res_perf_predict': self.res_predict,
-            '_blur_perf_predict': self.blur_predict,
-            '_noise_perf_predict': self.noise_predict,
+            'predict': _predict_distortions,
+            'eval': _eval_distortions
         }
 
         self.model_id = surrogate_model_id
@@ -400,7 +409,7 @@ class CompositePerformanceResult(object):
 
 
 def get_composite_performance_result(performance_prediction_result_ids=None, performance_eval_result_ids=None,
-                                     identifier=None, config=None, suffix=None):
+                                     identifier=None, config=None, suffix=None, distortion_limits=False):
     if config:
         performance_prediction_result_ids = config['performance_prediction_result_ids']
         performance_eval_result_ids = config['performance_eval_result_ids']
@@ -514,8 +523,11 @@ def log_uid(directory, uid):
         json.dump(uid_log, file)
 
 
-def get_sub_dir_and_log_filename(output_dir, analysis_type):
-    sub_directory = Path(output_dir, analysis_type)
+def get_sub_dir_and_log_filename(output_dir, analysis_type, distortion_clip=False):
+    if not distortion_clip:
+        sub_directory = Path(output_dir, analysis_type)
+    else:
+        sub_directory = Path(output_dir, f'{analysis_type}_dist_clip')
     if not sub_directory.is_dir():
         sub_directory.mkdir()
     filename = f'composite_result_log_{analysis_type}.txt'
@@ -524,8 +536,8 @@ def get_sub_dir_and_log_filename(output_dir, analysis_type):
 
 if __name__ == '__main__':
 
-    config_filename = 'pl_oct_composite_config.yml'
-    analyze_1d = False
+    config_filename = 'dn161_fr_mega1_mega2_composite.yml'
+    analyze_1d = True
     analyze_2d = False
     analyze_3d = True
 
@@ -545,6 +557,15 @@ if __name__ == '__main__':
 
     _composite_performance, _output_dir = get_composite_performance_result(config=run_config)
 
+    _res_limits = (0.35, 1)
+    _blur_limits = (1, 5)
+    _noise_limits = (0, 40)
+
+    if _res_limits or _blur_limits or _noise_limits:
+        _distortion_clip = True
+    else:
+        _distortion_clip = False
+
     if analyze_1d:
         sub_dir, log_filename = get_sub_dir_and_log_filename(_output_dir, '1d')
         with open(Path(sub_dir, log_filename), 'w') as output_file:
@@ -554,12 +575,19 @@ if __name__ == '__main__':
     if analyze_2d:
         sub_dir, log_filename = get_sub_dir_and_log_filename(_output_dir, '2d')
         with open((Path(sub_dir, log_filename)), 'w') as output_file:
-            analyze_perf_2d(_composite_performance, log_file=output_file, directory=sub_dir)
+            analyze_perf_2d(_composite_performance, log_file=output_file, directory=sub_dir,
+                            distortion_ids=('res', 'blur', 'noise'))
 
     if analyze_3d:
-        sub_dir_3d, log_filename = get_sub_dir_and_log_filename(_output_dir, '3d')
+        sub_dir_3d, log_filename = get_sub_dir_and_log_filename(_output_dir, '3d', distortion_clip=_distortion_clip)
         with open((Path(sub_dir_3d, log_filename)), 'w') as output_file:
             for _fit_key in fit_keys:
                 fit_sub_dir, __ = get_sub_dir_and_log_filename(sub_dir_3d, _fit_key)
                 analyze_perf_3d(_composite_performance, log_file=output_file, directory=fit_sub_dir, fit_key=_fit_key,
-                                standard_plot=True, residual_plot=True, make_residual_color_plot=False)
+                                standard_plots=True, residual_plot=True, make_residual_color_plot=False,
+                                distortion_ids=('res', 'blur', 'noise'),
+                                x_limits=_res_limits,
+                                y_limits=_blur_limits,
+                                z_limits=_noise_limits
+                                )
+

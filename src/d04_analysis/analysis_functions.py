@@ -294,7 +294,16 @@ def create_identifier(perf_results, dim_tag=None, dataset_identifier=None):
     return identifier
 
 
-def build_3d_field(x, y, z, f, data_dump=False):
+def _prune(x, x_limits):
+    x = x[np.where(x >= x_limits[0])]
+    x = x[np.where(x <= x_limits[1])]
+    return x
+
+
+def build_3d_field(x, y, z, f, data_dump=False,
+                   x_limits=None,
+                   y_limits=None,
+                   z_limits=None):
     """
     x: array of length N containing nx unique values
     y: array of length N containing ny unique values
@@ -329,9 +338,19 @@ def build_3d_field(x, y, z, f, data_dump=False):
     """
 
     full_extract = {}  # diagnostic
+
     x_values = np.unique(x)
+    if x_limits:
+        x_values = _prune(x_values, x_limits)
+
     y_values = np.unique(y)
+    if y_limits:
+        y_values = _prune(y_values, y_limits)
+
     z_values = np.unique(z)
+    if z_limits:
+        z_values = _prune(z_values, z_limits)
+
     f_means = np.zeros((len(x_values), len(y_values), len(z_values)))  # note: to re-create a similar array with
     # np.meshgrid, we need to specify indexing='ij' indexing rather than the default 'xy' cartesian indexing
 

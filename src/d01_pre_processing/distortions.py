@@ -1,6 +1,6 @@
 import numpy as np
 from torchvision import transforms
-from src.d00_utils.definitions import DISTORTION_RANGE, NATIVE_RESOLUTION
+from src.d00_utils.definitions import DISTORTION_RANGE, NATIVE_RESOLUTION, DISTORTION_RANGE_90
 from src.d00_utils.classes import VariableImageResize
 
 RNG = np.random.default_rng()
@@ -183,6 +183,15 @@ def b_fr_s6(img):
 
     kernel_size = 11
     sigma_range = np.linspace(0.1, 1.5, num=21, endpoint=True)
+    std = np.random.choice(sigma_range)
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
+
+
+def b_fr90_s6(img):
+
+    kernel_size, sigma_min, sigma_max = DISTORTION_RANGE_90['sat6']['blur']
+    sigma_range = np.linspace(sigma_min, sigma_max, num=15, endpoint=True)
     std = np.random.choice(sigma_range)
 
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std

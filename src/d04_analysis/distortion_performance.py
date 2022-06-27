@@ -107,6 +107,10 @@ class ModelDistortionPerformanceResult(DistortedDataset):
         self.blur_predict = self.blur
         self.noise_predict = self.noise
 
+        # allows access of the form model_performance.distortions[predict_eval_flag][distortion_id]
+        self.distortions['predict'] = copy.deepcopy(self.distortions)
+        self.distortions['eval'] = copy.deepcopy(self.distortions)
+
     def __len__(self):
         return len(self.labels)
 
@@ -211,36 +215,67 @@ def analyze_perf_2d(model_performance,
 
 
 def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noise', add_bias=True, log_file=None,
-                           fit_key='linear'):
+                           fit_key='linear', x_limits=None, y_limits=None, z_limits=None):
 
     result_name = str(model_performance)
 
-    try:
-        x_values, y_values, z_values, perf_3d, distortion_array, perf_array, __ = (
-            model_performance.get_3d_distortion_perf_props(distortion_ids=(x_id, y_id, z_id),
-                                                           predict_eval_flag='predict'))
-    except ValueError:  # raised by get_3d_distortion_perf_props if distortion_ids != ('res', 'blur', 'noise')
+    if not x_limits and not y_limits and not z_limits:
+
+        try:
+            x_values, y_values, z_values, perf_3d, distortion_array, perf_array, __ = (
+                model_performance.get_3d_distortion_perf_props(distortion_ids=(x_id, y_id, z_id),
+                                                               predict_eval_flag='predict'))
+        except ValueError:  # raised by get_3d_distortion_perf_props if distortion_ids != ('res', 'blur', 'noise')
+            accuracy_vector = model_performance.top_1_vec_predict
+            x = model_performance.distortions['predict'][x_id]
+            y = model_performance.distortions['predict'][y_id]
+            z = model_performance.distortions['predict'][z_id]
+
+            x_values, y_values, z_values, perf_3d, distortion_array, perf_array, __ = build_3d_field(x, y, z,
+                                                                                                     accuracy_vector,
+                                                                                                     data_dump=True)
+
+    else:
         accuracy_vector = model_performance.top_1_vec_predict
-        x = model_performance.distortions[x_id]
-        y = model_performance.distortions[y_id]
-        z = model_performance.distortions[z_id]
+        x = model_performance.distortions['predict'][x_id]
+        y = model_performance.distortions['predict'][y_id]
+        z = model_performance.distortions['predict'][z_id]
 
         x_values, y_values, z_values, perf_3d, distortion_array, perf_array, __ = build_3d_field(x, y, z,
                                                                                                  accuracy_vector,
-                                                                                                 data_dump=True)
+                                                                                                 data_dump=True,
+                                                                                                 x_limits=x_limits,
+                                                                                                 y_limits=y_limits,
+                                                                                                 z_limits=z_limits)
 
     # add a try/except section so that composite performance results can fit on performance predict results and
     # evaluate on eval results
 
     fit_coefficients = fit(distortion_array, perf_array, distortion_ids=(x_id, y_id, z_id), fit_key=fit_key,
                            add_bias=add_bias)
-    fit_direct_correlation = evaluate_fit(fit_coefficients, distortion_array, perf_array, distortion_ids=(x_id, y_id, z_id),
+    fit_direct_correlation = evaluate_fit(fit_coefficients, distortion_array, perf_array,
+                                          distortion_ids=(x_id, y_id, z_id),
                                           fit_key=fit_key, add_bias=add_bias)
 
     if hasattr(model_performance, 'eval_results'):
-        __, __, __, perf_3d_eval, distortion_array_eval, perf_array_eval, __ = (
-            model_performance.get_3d_distortion_perf_props(distortion_ids=(x_id, y_id, z_id),
-                                                           predict_eval_flag='eval'))
+        if not x_limits and not y_limits and not z_limits:
+            __, __, __, perf_3d_eval, distortion_array_eval, __, __ = (
+                model_performance.get_3d_distortion_perf_props(distortion_ids=(x_id, y_id, z_id),
+                                                               predict_eval_flag='eval'))
+
+        else:
+            accuracy_vector_eval = model_performance.top_1_vec
+            x_eval = model_performance.distortions['eval'][x_id]
+            y_eval = model_performance.distortions['eval'][y_id]
+            z_eval = model_performance.distortions['eval'][z_id]
+
+            __, __, __, perf_3d_eval, distortion_array_eval, __, __ = build_3d_field(x_eval, y_eval, z_eval,
+                                                                                     accuracy_vector_eval,
+                                                                                     data_dump=True,
+                                                                                     x_limits=x_limits,
+                                                                                     y_limits=y_limits,
+                                                                                     z_limits=z_limits)
+
     else:
         perf_3d_eval = perf_3d
         distortion_array_eval = distortion_array
@@ -292,27 +327,40 @@ def analyze_perf_3d(model_performance,
                     add_bias=True,
                     directory=None,
                     fit_key='linear',
-                    standard_plot=True,
+                    standard_plots=True,
                     residual_plot=True,
                     make_residual_color_plot=True,
-                    isosurf_plot=False):
+                    isosurf_plot=False,
+                    x_limits=None, y_limits=None, z_limits=None):
 
     x_id, y_id, z_id = distortion_ids
     x_values, y_values, z_values, perf_3d, perf_3d_eval, fit_3d = get_distortion_perf_3d(
-        model_performance, x_id=x_id, y_id=y_id, z_id=z_id, add_bias=add_bias, log_file=log_file, fit_key=fit_key)
+        model_performance, x_id=x_id, y_id=y_id, z_id=z_id, add_bias=add_bias, log_file=log_file, fit_key=fit_key,
+        x_limits=x_limits, y_limits=y_limits, z_limits=z_limits)
 
     check_histograms(perf_3d, fit_3d, directory=directory)
     sorted_linear_scatter(fit_3d, perf_3d_eval, directory=directory)
 
-    if standard_plot:
+    if standard_plots:
         compare_2d_views(perf_3d, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
-                         data_labels=('measured', 'fit'), az_el_combinations='all', directory=directory,
-                         residual_plot=False)
+                         data_labels=('measured (predict)', 'fit'), az_el_combinations='all', directory=directory,
+                         residual_plot=False, result_id='predict_fit_3d_proj')
+
+        if not np.array_equal(perf_3d, perf_3d_eval):
+            compare_2d_views(perf_3d_eval, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
+                             data_labels=('measured (eval)', 'fit'), az_el_combinations='all', directory=directory,
+                             residual_plot=False, result_id='eval_fit_3d_proj')
 
     if residual_plot:
-        compare_2d_views(perf_3d_eval, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
-                         data_labels=('measured', 'fit'), az_el_combinations='all', directory=directory,
-                         residual_plot=residual_plot)
+
+        compare_2d_views(perf_3d, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
+                         data_labels=('measured (predict)', 'fit'), az_el_combinations='all', directory=directory,
+                         residual_plot=residual_plot, result_id='predict_fit_3d_proj')
+
+        if not np.array_equal(perf_3d, perf_3d_eval):
+            compare_2d_views(perf_3d_eval, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
+                             data_labels=('measured (eval)', 'fit'), az_el_combinations='all', directory=directory,
+                             residual_plot=residual_plot, result_id='eval_fit_3d_proj')
 
     if make_residual_color_plot:
         residual_color_plot(perf_3d, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,

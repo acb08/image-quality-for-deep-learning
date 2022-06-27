@@ -72,6 +72,19 @@ DISTORTION_RANGE = {
     }
 }
 
+DISTORTION_RANGE_90 = {
+    'sat6': {
+        'res': (9, 28),  # where used, include check to ensure high end matches NATIVE_RESOLUTION
+        'blur': (11, 0.5, 1.35),  # (kernel size, sigma_min, sigma_max)
+        'noise': (0, 50)
+    },
+    'places365': {
+        'res': (0.1, 1),  # not units specified differently btw sat6 and places
+        'blur': (31, 0.5, 4.5),  # (kernel size, sigma_min, sigma_max)
+        'noise': (0, 50)
+    }
+}
+
 DISTORTION_TYPES = ['pan', 'res', 'blur', 'noise']
 
 # ARTIFACT_TYPE_TAGS used to avoid name wandb name collisions

@@ -160,8 +160,8 @@ def fit_predict_blur_rer(edge_properties, native_blur, fit_key, start_idx=0):
 
 if __name__ == '__main__':
 
-    _directory_key = '0010'
-    _kernel_size = 11
+    _directory_key = '0012'
+    _kernel_size = 31
     _directory, _dataset = load_dataset(_directory_key, _kernel_size)
     _mtf_lsf_data = load_measured_mtf_lsf(_directory)
 
@@ -171,6 +171,7 @@ if __name__ == '__main__':
 
     _start_idx = 4
 
-    rer_fit_multi_plot(_edge_props, start_idx=_start_idx, fit_key='rer_0', directory=_directory)
-    rer_fit_multi_plot(_edge_props, start_idx=_start_idx, fit_key='rer_1', directory=_directory)
-    rer_fit_multi_plot(_edge_props, start_idx=_start_idx, fit_key='rer_2', directory=_directory)
+    # rer_fit_multi_plot(_edge_props, start_idx=_start_idx, fit_key='rer_0', directory=_directory)
+    # rer_fit_multi_plot(_edge_props, start_idx=_start_idx, fit_key='rer_1', directory=_directory)
+    # rer_fit_multi_plot(_edge_props, start_idx=_start_idx, fit_key='rer_2', directory=_directory)
+    rer_fit_multi_plot(_edge_props, start_idx=_start_idx, fit_key='rer_3', directory=_directory)

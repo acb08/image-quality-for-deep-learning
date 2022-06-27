@@ -20,7 +20,21 @@ def _get_processed_instance_props_path(_self, predict_eval_flag=None):
     return props_path
 
 
-def _check_extract_processed_props(_self, predict_eval_flag=None):
+# def _check_limits_(values, limits):
+#
+#     if np.max(values) > np.max(limits):
+#         return False
+#     elif np.min(values) < np.min(limits):
+#         return False
+#     else:
+#         return True
+
+
+def _check_extract_processed_props(_self, predict_eval_flag=None,
+                                   # res_limits=None,
+                                   # blur_limits=None,
+                                   # noise_limits=None
+                                   ):
 
     processed_props_path = _self.get_processed_instance_props_path(predict_eval_flag=predict_eval_flag)
     if not Path.is_file(processed_props_path):
@@ -32,8 +46,20 @@ def _check_extract_processed_props(_self, predict_eval_flag=None):
         return False
 
     res_values = processed_props['res_values']
+    # if res_limits:
+    #     if not _check_limits_(res_values, res_limits):
+    #         return False
+
     blur_values = processed_props['blur_values']
+    # if blur_limits:
+    #     if not _check_limits_(blur_values, blur_limits):
+    #         return False
+
     noise_values = processed_props['noise_values']
+    # if noise_limits:
+    #     if not _check_limits_(noise_values, noise_limits):
+    #         return False
+
     perf_3d = processed_props['perf_3d']
     distortion_array = processed_props['distortion_array']
     perf_array = processed_props['perf_array']

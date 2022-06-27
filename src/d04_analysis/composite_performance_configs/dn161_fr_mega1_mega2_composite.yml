@@ -1,0 +1,13 @@
+---
+
+identifier: composite-result-test
+parent_dir: default
+overwrite_extracted_props: True
+
+performance_prediction_result_ids:
+  - 0024-rlt-0020-densenet161-full_range_best_loss-0006-tst-r_fr_pl-b_fr_pl-n_fr_pl_noise:v0
+
+performance_eval_result_ids:
+  - 0022-rlt-0020-densenet161-full_range_best_loss-0008-tst-full_range_mega_set_2_noise:v0
+
+
