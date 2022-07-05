@@ -471,6 +471,7 @@ tag_to_image_distortion = {
 
     'b_fr_s6': b_fr_s6,  # sat6
     'b_fr_pl': b_fr_pl,  # places
+    'b_fr90_s6': b_fr90_s6,
     'b_fr90_pl': b_fr90_pl,
     'b_ep_s6': b_ep_s6,
     'b_ep_pl': b_ep_pl,
