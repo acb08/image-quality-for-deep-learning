@@ -81,7 +81,7 @@ DISTORTION_RANGE_90 = {
     'places365': {
         'res': (0.2, 1),  # not units specified differently btw sat6 and places
         'blur': (31, 0.5, 4.5),  # (kernel size, sigma_min, sigma_max)
-        'noise': (0, 40)
+        'noise': (0, 44)
     }
 }
 # the only change in the sat6 "90%" distortion range is in blur to mitigate the effects of changing blur std when
