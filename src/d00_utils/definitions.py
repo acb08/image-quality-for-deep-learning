@@ -79,7 +79,7 @@ DISTORTION_RANGE_90 = {
         'noise': (0, 50)
     },
     'places365': {
-        'res': (0.1, 1),  # not units specified differently btw sat6 and places
+        'res': (0.2, 1),  # not units specified differently btw sat6 and places
         'blur': (31, 0.5, 4.5),  # (kernel size, sigma_min, sigma_max)
         'noise': (0, 50)
     }
