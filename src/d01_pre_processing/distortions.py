@@ -74,6 +74,26 @@ def n_fr(img):
     return img_out, 'lambda_poisson', lambda_poisson
 
 
+def n_fr90_pl(img):
+    """
+    Full range noise distortion for both sat6 and places365.
+
+    Adds zero-centered, channel-replicated Poisson noise up to 50 DN.
+
+    :param img: image array, values on [0, 255]
+    :return: image + zero centered Poisson noise, where the resulting image is clamped to fall on [0, 255]
+
+    """
+    sigma_min, sigma_max = DISTORTION_RANGE_90['places365']['noise']
+    step = 2
+    sigma_vals = step * np.arange(int(sigma_max / step) + 1)
+    sigma_poisson = np.random.choice(sigma_vals)
+    lambda_poisson = int(sigma_poisson ** 2)  # convert from np.int64 to regular int for json serialization
+    img_out = _add_zero_centered_channel_replicated_poisson_noise(img, lambda_poisson)
+
+    return img_out, 'lambda_poisson', lambda_poisson
+
+
 # def n_ep(img):
 #     """
 #     End point noise distortion for both sat6 and places365.
@@ -231,6 +251,15 @@ def b_fr_pl(img):
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
 
 
+def b_fr90_pl(img):
+
+    kernel_size, sigma_min, sigma_max = DISTORTION_RANGE_90['places365']['blur']
+    sigma_range = np.linspace(sigma_min, sigma_max, num=15, endpoint=True)
+    std = np.random.choice(sigma_range)
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
+
+
 def b_ep_pl(img):
 
     kernel_size, min_blur, max_blur = DISTORTION_RANGE['places365']['blur']
@@ -365,6 +394,22 @@ def r_fr_pl():
     return transform
 
 
+def r_fr90_pl():
+    """
+    Initializes and returns a VariableImageResize instance designed to re-size Places365 images across the "90%"
+    distortion band's resolution range. Intended for use in dataset distortion (as opposed to in
+    a dataloader)
+    """
+
+    max_size = 256
+    min_resolution, max_resolution = DISTORTION_RANGE_90['places365']['res']
+    res_fractions = np.linspace(min_resolution, max_resolution, num=16)
+    sizes = [int(res_frac * max_size) for res_frac in res_fractions]
+    transform = VariableImageResize(sizes)
+
+    return transform
+
+
 def r_ep_pl():
     """
     Initializes and returns a VariableImageResize instance designed to re-size Places365 images
@@ -432,6 +477,7 @@ tag_to_image_distortion = {
 
     'n_fr_s6': n_fr,  # sat6 (same transform for places and sat6)
     'n_fr_pl': n_fr,  # places (same transform for places and sat6)
+    'n_fr90_pl': n_fr90_pl,
     'n_ep_s6': n_ep_s6,  # sat6 (same transform for places and sat6)
     'n_ep_pl': n_ep_pl,  # places (same transform for places and sat6)
     'n_mp_s6': n_mp_s6,

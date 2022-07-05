@@ -536,7 +536,7 @@ def get_sub_dir_and_log_filename(output_dir, analysis_type, distortion_clip=Fals
 
 if __name__ == '__main__':
 
-    config_filename = 'dn161_fr_mega1_mega2_composite.yml'
+    config_filename = 's6_oct_composite_config.yml'
     analyze_1d = True
     analyze_2d = False
     analyze_3d = True
@@ -557,9 +557,9 @@ if __name__ == '__main__':
 
     _composite_performance, _output_dir = get_composite_performance_result(config=run_config)
 
-    _res_limits = (0.35, 1)
-    _blur_limits = (1, 5)
-    _noise_limits = (0, 40)
+    _res_limits = None
+    _blur_limits = None
+    _noise_limits = None
 
     if _res_limits or _blur_limits or _noise_limits:
         _distortion_clip = True
