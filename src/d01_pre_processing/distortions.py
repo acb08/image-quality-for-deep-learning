@@ -463,6 +463,7 @@ tag_to_image_distortion = {
 
     'r_fr_s6': r_fr_s6,  # sat6
     'r_fr_pl': r_fr_pl,  # places
+    'r_fr90_pl': r_fr90_pl,
     'r_ep_s6': r_ep_s6,  # sat6
     'r_ep_pl': r_ep_pl,  # places
     'r_mp_s6': r_mp_s6,
@@ -470,6 +471,7 @@ tag_to_image_distortion = {
 
     'b_fr_s6': b_fr_s6,  # sat6
     'b_fr_pl': b_fr_pl,  # places
+    'b_fr90_pl': b_fr90_pl,
     'b_ep_s6': b_ep_s6,
     'b_ep_pl': b_ep_pl,
     'b_mp_s6': b_mp_s6,
