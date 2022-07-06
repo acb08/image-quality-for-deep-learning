@@ -140,6 +140,23 @@ def _rer_3_residuals(params, y, distortion_vector):
     return err
 
 
+def rer_4(params, distortion_vector):
+    """
+    This function is NOT extensible to a true 2d fit that incorporates native and secondary blur. Instead, c0 is an
+    approximation of the native blur in each chip.
+    """
+    c0 = params
+    native_blur, blur = distortion_vector[:, 0], distortion_vector[:, 1]
+    y = 1 / (np.sqrt(2 * np.pi * (c0 + blur ** 2)))
+
+    return y
+
+
+def _rer_4_residuals(params, y, distortion_vector):
+    err = np.ravel(y) - rer_4(params, distortion_vector)
+    return err
+
+
 def fit(x, y, distortion_ids=('res', 'blur', 'noise'), fit_key='giqe5_deriv'):
 
     if distortion_ids != ('res', 'blur', 'noise'):
@@ -175,7 +192,8 @@ _leastsq_inputs = {
     'rer_0': (_rer_0_residuals, (0.9, 0.25, 1, -1)),
     'rer_1': (_rer_1_residuals, (0.9, -1)),
     'rer_2': (_rer_2_residuals, (1, 1)),
-    'rer_3': (_rer_3_residuals, (1, ))
+    'rer_3': (_rer_3_residuals, (1, )),
+    'rer_4': (_rer_4_residuals, (1, ))
 }
 
 _fit_functions = {
@@ -187,7 +205,8 @@ _fit_functions = {
     'rer_0': rer_0,
     'rer_1': rer_1,
     'rer_2': rer_2,
-    'rer_3': rer_3
+    'rer_3': rer_3,
+    'rer_4': rer_4
 }
 
 
