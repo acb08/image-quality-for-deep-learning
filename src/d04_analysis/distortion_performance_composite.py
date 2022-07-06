@@ -536,12 +536,12 @@ def get_sub_dir_and_log_filename(output_dir, analysis_type, distortion_clip=Fals
 
 if __name__ == '__main__':
 
-    config_filename = 's6_oct_composite_config.yml'
+    config_filename = 'pl_dn161_fr_mega1_mega2_composite.yml'
     analyze_1d = True
     analyze_2d = False
     analyze_3d = True
 
-    fit_keys = ['linear', 'nonlinear_0', 'nonlinear_1', 'giqe5_deriv', 'power_law', 'giqe5_deriv_2']
+    fit_keys = ['linear', 'nonlinear_0', 'nonlinear_1', 'giqe5_deriv', 'power_law', 'giqe5_deriv_2', 'giqe5_deriv_4']
 
     if not config_filename:
         config_filename = 'composite_distortion_analysis_config.yml'

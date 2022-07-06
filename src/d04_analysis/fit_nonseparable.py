@@ -58,6 +58,22 @@ def _giqe5_deriv_residuals_3(params, y, distortion_vector):
     return err
 
 
+def giqe5_deriv_4(params, distortion_vector):
+
+    c0, c1, c2, c3, c4, c5, c6 = params
+    res, blur, noise = distortion_vector[:, 0], distortion_vector[:, 1], distortion_vector[:, 2]
+    rer = 1 / np.sqrt(2 * np.pi * (c4 * res + blur ** 2))  # scale the native blur by res since down-sampling sharpens
+    y = c0 + c1 * np.log10(res) + c2 * (1 - np.exp(c3 * noise)) * np.log10(rer) + c5 * np.log10(rer) \
+        + c6 * noise
+
+    return y
+
+
+def _giqe5_deriv_residuals_4(params, y, distortion_vector):
+    err = np.ravel(y) - giqe5_deriv_4(params, distortion_vector)
+    return err
+
+
 def power_law(params, distortion_vector):
 
     c0, c1, c2, c3, c4, c5, c6 = params
@@ -184,6 +200,7 @@ _c6 = 0.5
 _c7 = -0.01
 
 _leastsq_inputs = {
+    'giqe5_deriv_4': (_giqe5_deriv_residuals_4, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
     # 'giqe5_deriv_3': (_giqe5_deriv_residuals_2, (_c0, _c1, _c2, _c3, _c4, _c5, _c6, _c7)),
     'giqe5_deriv_2': (_giqe5_deriv_residuals_2, (_c0, _c1, _c2, _c3, _c4, _c5, _c6, _c7)),
     'giqe5_deriv': (_giqe5_deriv_residuals, (0.5, 0.3, 0.3, -1, 0.3, -0.14)),
@@ -197,6 +214,7 @@ _leastsq_inputs = {
 }
 
 _fit_functions = {
+    'giqe5_deriv_4': giqe5_deriv_4,
     # 'giqe5_deriv_3': giqe5_deriv_3,
     'giqe5_deriv_2': giqe5_deriv_2,
     'giqe5_deriv': giqe5_deriv,
