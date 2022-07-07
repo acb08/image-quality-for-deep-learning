@@ -1,0 +1,13 @@
+---
+
+identifier: dn161-fr-fr90-mega1-mega2
+parent_dir: default
+overwrite_extracted_props: True
+
+performance_prediction_result_ids:
+  - 0102-rlt-0020-densenet161-full_range_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0
+
+performance_eval_result_ids:
+  - 0103-rlt-0020-densenet161-full_range_best_loss-0012-tst-full_range_90_mega_set_2_noise:v0
+
+
