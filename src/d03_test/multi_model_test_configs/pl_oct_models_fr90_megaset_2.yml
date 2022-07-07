@@ -1,13 +1,13 @@
 ---
 
-description: test of octant models on fr90 megaset 1
+description: test of octant models on fr90 megaset 2
 descriptive_tags: ['oct-models', 'full-range-90-test', 'fr90-megaset-2']
 
 test_dataset_id: 0012-tst-full_range_90_mega_set_2_noise # full range 90 megaset #2
 test_dataset_artifact_alias: latest
 
 model_artifact_ids:
-  - 0023-resnet18-oct_010_best_loss
+#  - 0023-resnet18-oct_010_best_loss # commenting out b/c test completed first run attempt, failed on next model
   - 0023-resnet18-oct_011_best_loss
   - 0023-resnet18-oct_100_best_loss
   - 0023-resnet18-oct_101_best_loss
