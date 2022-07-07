@@ -1,6 +1,7 @@
 """
 Functions intended to be called by methods of multiple classes that do not have inheritance or composition
-relationships.
+relationships. I suspect a SW developer would disapprove, but it seemed to be the best way to manage commonality
+between very similar bu crucially different classes.
 """
 from pathlib import Path
 # from src.d04_analysis.distortion_performance import ModelDistortionPerformanceResult

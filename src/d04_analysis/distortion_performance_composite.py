@@ -536,7 +536,8 @@ def get_sub_dir_and_log_filename(output_dir, analysis_type, distortion_clip=Fals
 
 if __name__ == '__main__':
 
-    config_filename = 'pl_dn161_fr_mega1_mega2_composite.yml'
+    # config_filename = 'pl_dn161_fr_mega1_mega2_composite.yml'
+    config_filename = 's6_oct_composite_config.yml'
     analyze_1d = True
     analyze_2d = False
     analyze_3d = True

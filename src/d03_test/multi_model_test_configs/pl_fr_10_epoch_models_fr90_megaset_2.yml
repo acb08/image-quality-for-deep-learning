@@ -1,0 +1,22 @@
+---
+
+description: test of best loss full range places models trained over 10 epochs
+descriptive_tags: ['full-range-trained', 'full-range-90-test', '10-epoch-best-loss', 'fr90-megaset-2']
+
+test_dataset_id: 0012-tst-full_range_90_mega_set_2_noise # full range 90 megaset #2
+test_dataset_artifact_alias: latest
+
+model_artifact_ids:
+  - 0020-densenet161-full_range_best_loss
+  - 0020-resnet50-full_range_best_loss
+  - 0020-resnet18-full_range_best_loss
+model_artifact_alias: latest
+
+batch_size: 32
+num_workers: 4
+pin_memory: True
+crop_flag: False
+dataset_split_key: test  # used to get to correct level of dataset dict (to mirror 'train'/'val' splits)
+#last_distortion_type_flag: noise  # normally should be 'noise'
+loss_func: CrossEntropyLoss
+status_interval: 10000  # images
