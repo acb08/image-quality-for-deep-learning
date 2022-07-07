@@ -1,7 +1,7 @@
 import torchvision.models as models
 import torch
 from pathlib import Path
-from src.d00_utils.definitions import ROOT_DIR, ORIGINAL_PRETRAINED_MODELS, PROJECT_ID, REL_PATHS
+from src.d00_utils.definitions import ROOT_DIR, ORIGINAL_PRETRAINED_MODELS, WANDB_PID, REL_PATHS
 from src.d00_utils.functions import get_model_path, save_model, get_config  # ,read_json_artifact, load_wandb_model
 from src.d00_utils.classes import Sat6ResNet, Sat6ResNet50, Sat6DenseNet161
 import argparse
@@ -100,7 +100,7 @@ def load_log_original_model(config):
     # log_metadata(artifact_type, new_model_id, model_metadata)  # removing redundant project metadata
     model_path, helper_path = save_model(model, model_metadata)
 
-    with wandb.init(project=PROJECT_ID, job_type='log_model') as run:
+    with wandb.init(project=WANDB_PID, job_type='log_model') as run:
 
         model_artifact = wandb.Artifact(
             new_model_id,

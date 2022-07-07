@@ -56,7 +56,7 @@ REL_PATHS = {
 _project_config_filename = 'project_config.yml'
 with open(Path(ROOT_DIR, REL_PATHS['project_config'], _project_config_filename), 'r') as file:
     _config = safe_load(file)  #
-PROJECT_ID = _config['PROJECT_ID']
+WANDB_PID = _config['PROJECT_ID']
 NATIVE_RESOLUTION = _config['NATIVE_RESOLUTION']  # kept in config file so can be used in multi-project functions
 
 DISTORTION_RANGE = {
@@ -108,7 +108,8 @@ DATATYPE_MAP = {
     'np.int64': np.int64,
 }
 
-if PROJECT_ID[:4] == 'sat6':
+if WANDB_PID[:4] == 'sat6':
+    PROJECT_ID = 'sat6'
     # note: val slice in original datasets used for test dataset in this
     # project. Train datasets to have their own val slice carved out.
     ORIGINAL_DATASETS = {
@@ -149,7 +150,9 @@ if PROJECT_ID[:4] == 'sat6':
 
     NUM_CLASSES = 6
 
-elif PROJECT_ID[:6] == 'places':
+elif WANDB_PID[:6] == 'places':
+
+    PROJECT_ID = 'sat6'
 
     ORIGINAL_DATASETS = {
         'val_256': {
@@ -199,4 +202,4 @@ elif PROJECT_ID[:6] == 'places':
     NUM_CLASSES = 365
 
 else:
-    raise Exception('Invalid project ID')
+    raise Exception('Invalid WANDB_PID')

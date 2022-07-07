@@ -4,7 +4,7 @@ Band-aide script to restore a WANDB artifact accidentally deleted from wandb ser
 import wandb
 import argparse
 from src.d00_utils.functions import get_config, load_wandb_data_artifact, id_from_tags
-from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, PROJECT_ID, ROOT_DIR
+from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, WANDB_PID, ROOT_DIR
 from pathlib import Path
 
 
@@ -28,7 +28,7 @@ def relog_dataset(config, restore_name, restore_artifact_path, restore_artifact_
     iterations = config['iterations']
     description = config['description']
 
-    with wandb.init(project=PROJECT_ID, job_type='distort_dataset', tags=distortion_tags, notes=description,
+    with wandb.init(project=WANDB_PID, job_type='distort_dataset', tags=distortion_tags, notes=description,
                     config=config) as run:
 
         # include to re-build wandb artifact graph

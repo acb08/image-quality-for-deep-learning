@@ -1,5 +1,5 @@
 import copy
-from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, STANDARD_TEST_RESULT_FILENAME, PROJECT_ID, REL_PATHS, \
+from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, STANDARD_TEST_RESULT_FILENAME, WANDB_PID, REL_PATHS, \
     ROOT_DIR
 from src.d00_utils.functions import load_wandb_data_artifact, get_config, construct_artifact_id
 from src.d04_analysis._shared_methods import _get_processed_instance_props_path, _check_extract_processed_props, \
@@ -420,7 +420,7 @@ def get_model_distortion_performance_result(result_id=None, identifier=None, con
         result_id = config['result_id']
         identifier = config['identifier']
 
-    with wandb.init(project=PROJECT_ID, job_type='analyze_test_result') as run:
+    with wandb.init(project=WANDB_PID, job_type='analyze_test_result') as run:
         model_distortion_performance, output_dir = _fetch_model_distortion_performance_result(run, result_id,
                                                                                               identifier,
                                                                                               distortion_ids,
@@ -442,7 +442,7 @@ def get_multiple_model_distortion_performance_results(result_id_pairs, distortio
         result_id_pairs = copy.deepcopy(result_id_pairs)
         result_id_pairs = [(result_id, i) for i, result_id in enumerate(result_id_pairs)]
 
-    with wandb.init(project=PROJECT_ID, job_type='analyze_test_result') as run:
+    with wandb.init(project=WANDB_PID, job_type='analyze_test_result') as run:
 
         for (artifact_id, identifier) in result_id_pairs:
 

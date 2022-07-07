@@ -2,7 +2,7 @@
 import json
 from src.d00_utils.functions import load_wandb_data_artifact, id_from_tags, get_config, \
     log_config
-from src.d00_utils.definitions import REL_PATHS, DATATYPE_MAP, STANDARD_DATASET_FILENAME, PROJECT_ID, ROOT_DIR, \
+from src.d00_utils.definitions import REL_PATHS, DATATYPE_MAP, STANDARD_DATASET_FILENAME, WANDB_PID, ROOT_DIR, \
     NATIVE_RESOLUTION
 from src.d01_pre_processing.build_sat6_np_dataset import mat_to_numpy
 from src.d01_pre_processing.build_places_np_dataset import transfer_to_numpy
@@ -108,7 +108,7 @@ def distort_log_numpy(config):
     iterations = config['iterations']
     description = config['description']
 
-    with wandb.init(project=PROJECT_ID, job_type='distort_dataset', tags=distortion_tags, notes=description,
+    with wandb.init(project=WANDB_PID, job_type='distort_dataset', tags=distortion_tags, notes=description,
                     config=config) as run:
 
         parent_artifact_name = f'{parent_dataset_id}:{parent_artifact_alias}'
@@ -132,14 +132,14 @@ def distort_log_numpy(config):
         }
         run_metadata.update(run_metadata_additions)
 
-        if PROJECT_ID[:4] == 'sat6':
+        if WANDB_PID[:4] == 'sat6':
             sat6 = True
             places = False
             data_abs_path = Path(ROOT_DIR, parent_dataset['dataset_rel_dir'], parent_dataset['dataset_filename'])
             data = scipy.io.loadmat(data_abs_path)
             data_x, data_y = data['test_x'], data['test_y']
 
-        elif PROJECT_ID[:6] == 'places':
+        elif WANDB_PID[:6] == 'places':
             sat6 = False
             places = True
             image_shape = config['image_shape']

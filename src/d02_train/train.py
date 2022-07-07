@@ -7,7 +7,7 @@ from pathlib import Path
 import random
 import argparse
 import copy
-from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, ROOT_DIR, PROJECT_ID, REL_PATHS
+from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, ROOT_DIR, WANDB_PID, REL_PATHS
 from src.d00_utils.definitions import STANDARD_CHECKPOINT_FILENAME, STANDARD_BEST_LOSS_FILENAME
 from src.d00_utils.functions import load_wandb_data_artifact, load_data_vectors, load_wandb_model_artifact
 from src.d00_utils.functions import id_from_tags, save_model, get_config, construct_artifact_id
@@ -280,7 +280,7 @@ def load_tune_model(config):
     run_tags = copy.deepcopy(config['descriptive_tags'])
     run_tags.extend(config['distortion_tags'])
 
-    with wandb.init(project=PROJECT_ID, job_type='train_model', config=config, tags=run_tags) as run:
+    with wandb.init(project=WANDB_PID, job_type='train_model', config=config, tags=run_tags) as run:
 
         config = wandb.config  # allows wandb parameter sweeps
 

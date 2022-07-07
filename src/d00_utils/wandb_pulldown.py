@@ -1,5 +1,5 @@
 import wandb
-from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, STANDARD_TEST_RESULT_FILENAME, PROJECT_ID
+from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, STANDARD_TEST_RESULT_FILENAME, WANDB_PID
 from src.d00_utils.functions import read_json_artifact, load_wandb_data_artifact
 from pathlib import Path
 
@@ -15,6 +15,6 @@ if __name__ == '__main__':
 
     artifact_id = '0008-tst-r_fr_s6-b_fr_s6-n_fr_s6_noise:latest'
 
-    with wandb.init(project=PROJECT_ID, job_type='load_artifact') as run:
+    with wandb.init(project=WANDB_PID, job_type='load_artifact') as run:
         artifact_dir, dataset = load_wandb_data_artifact(run, artifact_id, STANDARD_DATASET_FILENAME)
 

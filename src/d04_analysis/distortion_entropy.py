@@ -1,6 +1,6 @@
 import wandb
 from src.d00_utils.definitions import STANDARD_EFFECTIVE_ENTROPY_PROPERTIES_FILENAME, \
-    STANDARD_ENTROPY_PROPERTIES_FILENAME, STANDARD_DATASET_FILENAME, PROJECT_ID, ROOT_DIR, REL_PATHS
+    STANDARD_ENTROPY_PROPERTIES_FILENAME, STANDARD_DATASET_FILENAME, WANDB_PID, ROOT_DIR, REL_PATHS
 from src.d04_analysis.distortion_performance import DistortedDataset
 from src.d00_utils.functions import load_wandb_data_artifact, get_config, dict_val_lists_to_arrays
 from src.d04_analysis.measure_entropy_properties import get_entropy_artifact_name, get_effective_entropy_equiv
@@ -73,7 +73,7 @@ def get_distortion_entropy_properties(dataset_id=None, identifier=None, convert_
         identifier = config['identifier']
         convert_to_std = config['convert_to_std']
 
-    with wandb.init(project=PROJECT_ID, job_type='analyze_distortion_entropy_properties') as run:
+    with wandb.init(project=WANDB_PID, job_type='analyze_distortion_entropy_properties') as run:
         output_dir = Path(ROOT_DIR, REL_PATHS['analysis'], REL_PATHS['entropy'], dataset_id)
         if not output_dir.is_dir():
             Path.mkdir(output_dir, parents=True)

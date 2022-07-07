@@ -2,7 +2,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageOps
 import PIL
-from src.d00_utils.definitions import ROOT_DIR, PROJECT_ID, STANDARD_DATASET_FILENAME
+from src.d00_utils.definitions import ROOT_DIR, WANDB_PID, STANDARD_DATASET_FILENAME
 from src.d00_utils.definitions import REL_PATHS, DATATYPE_MAP
 from src.d00_utils.functions import load_wandb_data_artifact, id_from_tags
 import wandb
@@ -202,7 +202,7 @@ def build_log_numpy(config):
 
     parent_artifact_name = f'{parent_dataset_id}:latest'
 
-    with wandb.init(project=PROJECT_ID, job_type='transfer_dataset', tags=tags, notes=description,
+    with wandb.init(project=WANDB_PID, job_type='transfer_dataset', tags=tags, notes=description,
                     config=config) as run:
 
         parent_artifact, parent_dataset = load_wandb_data_artifact(run, parent_artifact_name, artifact_filename)

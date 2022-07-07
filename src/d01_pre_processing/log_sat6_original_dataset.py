@@ -1,7 +1,7 @@
 import wandb
 import json
 from pathlib import Path
-from src.d00_utils.definitions import ROOT_DIR, ORIGINAL_DATASETS, PROJECT_ID, STANDARD_DATASET_FILENAME
+from src.d00_utils.definitions import ROOT_DIR, ORIGINAL_DATASETS, WANDB_PID, STANDARD_DATASET_FILENAME
 """
 Logs undistorted datasets as a W&B artifact and puts metadata into .json format 
 """
@@ -60,7 +60,7 @@ def main(dataset_id, description=None):
         'ROOT_DIR_at_run': str(ROOT_DIR),
     }
 
-    with wandb.init(project=PROJECT_ID, job_type='load_dataset') as run:
+    with wandb.init(project=WANDB_PID, job_type='load_dataset') as run:
 
         image_metadata = load_sat6_original()
         image_metadata.update(run_metadata)

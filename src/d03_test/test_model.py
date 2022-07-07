@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import wandb
-from src.d00_utils.definitions import PROJECT_ID, STANDARD_DATASET_FILENAME, ROOT_DIR, STANDARD_TEST_RESULT_FILENAME, \
+from src.d00_utils.definitions import WANDB_PID, STANDARD_DATASET_FILENAME, ROOT_DIR, STANDARD_TEST_RESULT_FILENAME, \
     REL_PATHS
 from src.d00_utils.functions import load_wandb_model_artifact, load_wandb_data_artifact, id_from_tags, get_config, \
     log_config, construct_artifact_id
@@ -72,7 +72,7 @@ def execute_test(model,
 
 def test_model(config):
 
-    with wandb.init(project=PROJECT_ID, job_type='test_model', notes=config['description'], config=config) as run:
+    with wandb.init(project=WANDB_PID, job_type='test_model', notes=config['description'], config=config) as run:
 
         # config = wandb.config
 

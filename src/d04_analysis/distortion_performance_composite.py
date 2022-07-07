@@ -6,7 +6,7 @@ from src.d04_analysis._shared_methods import _get_processed_instance_props_path,
     _archive_processed_props, _get_3d_distortion_perf_props, get_instance_hash
 from src.d04_analysis.fit import fit
 from src.d00_utils.definitions import STANDARD_UID_FILENAME, KEY_LENGTH, ROOT_DIR, \
-    REL_PATHS
+    REL_PATHS, PROJECT_ID
 from src.d00_utils.functions import get_config, log_config, increment_suffix
 from src.d04_analysis.analysis_functions import conditional_mean_accuracy
 from pathlib import Path

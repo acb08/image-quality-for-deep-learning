@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import json
 from src.d00_utils.functions import load_wandb_data_artifact, get_config
-from src.d00_utils.definitions import REL_PATHS, PROJECT_ID, ROOT_DIR, STANDARD_ENTROPY_PROPERTIES_FILENAME, \
+from src.d00_utils.definitions import REL_PATHS, WANDB_PID, ROOT_DIR, STANDARD_ENTROPY_PROPERTIES_FILENAME, \
     STANDARD_DATASET_FILENAME, DISTORTION_TYPES, STANDARD_EFFECTIVE_ENTROPY_PROPERTIES_FILENAME
 from src.d00_utils.functions import load_data_vectors
 from src.d04_analysis.entropy_functions import tag_to_entropy_function
@@ -148,7 +148,7 @@ def measure_dataset_entropy_properties(config):
 
     measured_dataset_directories = []
 
-    with wandb.init(project=PROJECT_ID, job_type='measure_entropy_properties', notes=description,
+    with wandb.init(project=WANDB_PID, job_type='measure_entropy_properties', notes=description,
                     config=config) as run:
 
         for i in range(num_analysis_stages):
