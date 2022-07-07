@@ -7,10 +7,10 @@ test_dataset_id: 0012-tst-full_range_90_mega_set_1_noise # full range 90 megaset
 test_dataset_artifact_alias: latest
 
 model_artifact_ids:
-  - 0023-resnet18-oct_010_best_loss
-  - 0023-resnet18-oct_011_best_loss
-  - 0023-resnet18-oct_100_best_loss
-  - 0023-resnet18-oct_101_best_loss
+#  - 0023-resnet18-oct_010_best_loss
+#  - 0023-resnet18-oct_011_best_loss
+#  - 0023-resnet18-oct_100_best_loss
+#  - 0023-resnet18-oct_101_best_loss # commenting out b/c test completed first run attempt, failed on next model
   - 0023-resnet18-oct_110_best_loss
   - 0023-resnet18-oct_111_best_loss
   - 0031-resnet18-oct_000_best_loss
