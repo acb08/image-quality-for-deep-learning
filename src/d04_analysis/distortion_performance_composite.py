@@ -222,7 +222,7 @@ class CompositePerformanceResult(object):
         self.blur_predict = blur_p
         self.noise_predict = noise_p
 
-    def _assign_distortion_pt_hashes(self):
+    def _assign_distortion_pt_hashes(self, octant_only=False):
 
         """
         Generates arrays containing the hash value of each unique distortion distortion point (res, blur, noise)
@@ -406,6 +406,10 @@ class CompositePerformanceResult(object):
     def run_performance_prediction(self):
         if self.perf_prediction_fit is None:
             self.fit()
+
+
+def identify_octant(distortion_point):
+    pass
 
 
 def get_composite_performance_result(performance_prediction_result_ids=None, performance_eval_result_ids=None,
