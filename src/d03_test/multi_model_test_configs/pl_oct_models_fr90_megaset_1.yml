@@ -1,15 +1,21 @@
 ---
 
-description: test of best loss full range places models trained over 10 epochs
-descriptive_tags: ['full-range-trained', 'full-range-90-test', '10-epoch-best-loss', 'fr90-megaset-1']
+description: test of octant models on fr90 megaset 1
+descriptive_tags: ['oct-models', 'full-range-90-test', 'fr90-megaset-1']
 
 test_dataset_id: 0012-tst-full_range_90_mega_set_1_noise # full range 90 megaset #1
 test_dataset_artifact_alias: latest
 
 model_artifact_ids:
-#  - 0020-densenet161-full_range_best_loss  # commenting out b/c test completed first run attempt, failed on next model
-  - 0020-resnet50-full_range_best_loss
-  - 0020-resnet18-full_range_best_loss
+  - 0023-resnet18-oct_010_best_loss
+  - 0023-resnet18-oct_011_best_loss
+  - 0023-resnet18-oct_100_best_loss
+  - 0023-resnet18-oct_101_best_loss
+  - 0023-resnet18-oct_110_best_loss
+  - 0023-resnet18-oct_111_best_loss
+  - 0031-resnet18-oct_000_best_loss
+  - 0031-resnet18-oct_001_best_loss
+
 model_artifact_alias: latest
 
 batch_size: 32
