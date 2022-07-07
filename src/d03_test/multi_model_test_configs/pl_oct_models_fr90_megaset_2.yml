@@ -1,7 +1,7 @@
 ---
 
 description: test of octant models on fr90 megaset 1
-descriptive_tags: ['oct-models', 'full-range-90-test', 'fr90-megaset-1']
+descriptive_tags: ['oct-models', 'full-range-90-test', 'fr90-megaset-2']
 
 test_dataset_id: 0012-tst-full_range_90_mega_set_2_noise # full range 90 megaset #2
 test_dataset_artifact_alias: latest
