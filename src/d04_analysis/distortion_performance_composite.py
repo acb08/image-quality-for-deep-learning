@@ -604,8 +604,8 @@ if __name__ == '__main__':
     analyze_2d = False
     analyze_3d = True
 
-    # fit_keys = ['linear', 'nonlinear_0', 'nonlinear_1', 'giqe5_deriv', 'power_law', 'giqe5_deriv_2', 'giqe5_deriv_4']
-    fit_keys = ['giqe5_deriv_4']
+    fit_keys = ['linear', 'nonlinear_0', 'nonlinear_1', 'giqe5_deriv', 'power_law', 'giqe5_deriv_2', 'giqe5_deriv_4']
+    # fit_keys = ['giqe5_deriv_4']
 
     if not config_filename:
         config_filename = 'composite_distortion_analysis_config.yml'

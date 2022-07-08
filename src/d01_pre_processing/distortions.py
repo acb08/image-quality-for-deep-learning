@@ -198,6 +198,24 @@ def n_mp_pl(img):
     return img_out, 'lambda_poisson', lambda_poisson
 
 
+def n_mp90_pl(img):
+    """
+    Midpoint 90 noise distortion for places365.
+
+    Adds 22 DN zero-centered, channel-replicated Poisson noise.
+
+    :param img: image array, values on [0, 255]
+    :return: image + zero centered Poisson noise, where the resulting image is clamped to fall on [0, 255]
+
+    """
+    sigma_poisson_min, sigma_poisson_max = DISTORTION_RANGE_90['places365']['noise']
+    sigma_poisson = (sigma_poisson_min + sigma_poisson_max) / 2
+    lambda_poisson = int(sigma_poisson ** 2)  # convert from np.int64 to regular int for json serialization
+    img_out = _add_zero_centered_channel_replicated_poisson_noise(img, lambda_poisson)
+
+    return img_out, 'lambda_poisson', lambda_poisson
+
+
 def b_scan(img):
 
     kernel_size = 23
@@ -296,6 +314,14 @@ def b_ep90_pl(img):
 def b_mp_pl(img):
 
     kernel_size, min_blur, max_blur = DISTORTION_RANGE['places365']['blur']
+    std = (min_blur + max_blur) / 2
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
+
+
+def b_mp90_pl(img):
+
+    kernel_size, min_blur, max_blur = DISTORTION_RANGE_90['places365']['blur']
     std = (min_blur + max_blur) / 2
 
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
@@ -487,6 +513,22 @@ def r_mp_pl():
     return transform
 
 
+def r_mp90_pl():
+
+    min_res, max_res = DISTORTION_RANGE_90['places365']['res']
+
+    if NATIVE_RESOLUTION != 256:
+        raise Exception('mismatch between max size and native resolution in project config')
+
+    min_size = NATIVE_RESOLUTION * min_res
+    max_size = NATIVE_RESOLUTION * max_res
+    size = int((min_size + max_size) / 2)
+    sizes = [size]
+    transform = VariableImageResize(sizes, interpolation_mode='bilinear', antialias=False)
+
+    return transform
+
+
 tag_to_image_distortion = {
 
     # _scan transforms intended for finding the point along each distortion axis at which performance of a
@@ -509,8 +551,10 @@ tag_to_image_distortion = {
     'r_fr90_pl': r_fr90_pl,
     'r_ep_s6': r_ep_s6,  # sat6
     'r_ep_pl': r_ep_pl,  # places
+    'r_ep90_pl': r_ep90_pl,
     'r_mp_s6': r_mp_s6,
     'r_mp_pl': r_mp_pl,
+    'r_mp90_pl': r_mp90_pl,
 
     'b_fr_s6': b_fr_s6,  # sat6
     'b_fr_pl': b_fr_pl,  # places
@@ -518,14 +562,18 @@ tag_to_image_distortion = {
     'b_fr90_pl': b_fr90_pl,
     'b_ep_s6': b_ep_s6,
     'b_ep_pl': b_ep_pl,
+    'b_ep90_pl': b_ep90_pl,
     'b_mp_s6': b_mp_s6,
     'b_mp_pl': b_mp_pl,
+    'b_mp90_pl': b_mp90_pl,
 
     'n_fr_s6': n_fr,  # sat6 (same transform for places and sat6)
     'n_fr_pl': n_fr,  # places (same transform for places and sat6)
     'n_fr90_pl': n_fr90_pl,
     'n_ep_s6': n_ep_s6,  # sat6 (same transform for places and sat6)
     'n_ep_pl': n_ep_pl,  # places (same transform for places and sat6)
+    'n_ep90_pl': n_ep90_pl,
     'n_mp_s6': n_mp_s6,
-    'n_mp_pl': n_mp_pl
+    'n_mp_pl': n_mp_pl,
+    'n_mp90_pl': n_mp90_pl
 }
