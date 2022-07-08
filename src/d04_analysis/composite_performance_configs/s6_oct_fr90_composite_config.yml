@@ -1,0 +1,26 @@
+---
+
+identifier: oct-models-fr90-mega-1-mega-2
+parent_dir: default
+overwrite_extracted_props: True
+assign_by_octant_only: True
+
+performance_prediction_result_ids:
+  - 0079-rlt-0012-resnet18_sat6-oct_000_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0
+  - 0083-rlt-0012-resnet18_sat6-oct_001_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0
+  - 0088-rlt-0012-resnet18_sat6-oct_010_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0
+  - 0092-rlt-0016-resnet18_sat6-oct_011_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0
+  - 0097-rlt-0012-resnet18_sat6-oct_100_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0
+  - 0101-rlt-0016-resnet18_sat6-oct_101_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0
+  - 0105-rlt-0016-resnet18_sat6-oct_110_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0
+  - 0108-rlt-0019-resnet18_sat6-oct_111_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0
+
+performance_eval_result_ids:
+  - 0081-rlt-0012-resnet18_sat6-oct_000_best_loss-0013-tst-full_range_90_mega_set_2_noise:v0
+  - 0086-rlt-0012-resnet18_sat6-oct_001_best_loss-0013-tst-full_range_90_mega_set_2_noise:v0
+  - 0091-rlt-0012-resnet18_sat6-oct_010_best_loss-0013-tst-full_range_90_mega_set_2_noise:v0
+  - 0096-rlt-0016-resnet18_sat6-oct_011_best_loss-0013-tst-full_range_90_mega_set_2_noise:v0
+  - 0099-rlt-0012-resnet18_sat6-oct_100_best_loss-0013-tst-full_range_90_mega_set_2_noise:v0
+  - 0102-rlt-0016-resnet18_sat6-oct_101_best_loss-0013-tst-full_range_90_mega_set_2_noise:v0
+  - 0104-rlt-0016-resnet18_sat6-oct_110_best_loss-0013-tst-full_range_90_mega_set_2_noise:v0
+  - 0107-rlt-0019-resnet18_sat6-oct_111_best_loss-0013-tst-full_range_90_mega_set_2_noise:v0
