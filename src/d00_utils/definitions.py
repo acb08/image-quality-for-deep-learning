@@ -152,7 +152,7 @@ if WANDB_PID[:4] == 'sat6':
 
 elif WANDB_PID[:6] == 'places':
 
-    PROJECT_ID = 'sat6'
+    PROJECT_ID = 'places365'
 
     ORIGINAL_DATASETS = {
         'val_256': {

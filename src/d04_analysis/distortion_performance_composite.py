@@ -6,7 +6,7 @@ from src.d04_analysis._shared_methods import _get_processed_instance_props_path,
     _archive_processed_props, _get_3d_distortion_perf_props, get_instance_hash
 from src.d04_analysis.fit import fit
 from src.d00_utils.definitions import STANDARD_UID_FILENAME, KEY_LENGTH, ROOT_DIR, \
-    REL_PATHS, PROJECT_ID
+    REL_PATHS, PROJECT_ID, DISTORTION_RANGE
 from src.d00_utils.functions import get_config, log_config, increment_suffix
 from src.d04_analysis.analysis_functions import conditional_mean_accuracy
 from pathlib import Path
@@ -22,10 +22,11 @@ class CompositePerformanceResult(object):
     each distortion point in the second dataset
     """
 
-    def __init__(self, performance_prediction_result_ids, performance_eval_result_ids=None, identifier=None,
+    def __init__(self, performance_prediction_result_ids, assign_by_octant_only=False, performance_eval_result_ids=None, identifier=None,
                  distortion_ids=('res', 'blur', 'noise'), surrogate_model_id='composite'):
 
         self.performance_prediction_result_ids = performance_prediction_result_ids
+        self.assign_by_octant_only = assign_by_octant_only
         self.eval_result_ids = performance_eval_result_ids
         self.distortion_ids = distortion_ids
 
@@ -43,8 +44,14 @@ class CompositePerformanceResult(object):
         self.uid = get_composite_result_uid(self.performance_prediction_result_ids,
                                             self.eval_result_ids)
         self.identifier = identifier
+
         if not self.identifier:
             self.identifier = self.result_id
+
+        if self.assign_by_octant_only:
+            self.result_id = f'{self.result_id}-om'
+            if self.result_id != self.identifier:
+                self.identifier = f'{self.identifier}-om'
 
         self.performance_prediction_dataset_id, self.dataset_id = self._screen_dataset_ids()
 
@@ -160,6 +167,9 @@ class CompositePerformanceResult(object):
             for eval_result_id in self.eval_result_ids:
                 composite_result_id = f'{composite_result_id}-{eval_result_id[:4]}'
 
+        if self.assign_by_octant_only:
+            composite_result_id = f'{composite_result_id}-om'
+
         return composite_result_id
 
     def _get_composite_model_id(self):
@@ -222,7 +232,7 @@ class CompositePerformanceResult(object):
         self.blur_predict = blur_p
         self.noise_predict = noise_p
 
-    def _assign_distortion_pt_hashes(self, octant_only=False):
+    def _assign_distortion_pt_hashes(self,):
 
         """
         Generates arrays containing the hash value of each unique distortion distortion point (res, blur, noise)
@@ -235,10 +245,16 @@ class CompositePerformanceResult(object):
 
         distortion_array_p = np.stack([self.res_predict, self.blur_predict, self.noise_predict],
                                       axis=0)
+
+        if self.assign_by_octant_only:
+            distortion_array_p = assign_octant_labels(distortion_array_p)
+
         predict_hashes = [hash(tuple(distortion_array_p[:, i])) for i in range(len(distortion_array_p[0, :]))]
         predict_hashes = np.asarray(predict_hashes)
         if self.eval_results:
             distortion_array_e = np.stack([self.res, self.blur, self.noise], axis=0)
+            if self.assign_by_octant_only:
+                distortion_array_e = assign_octant_labels(distortion_array_e)
             eval_hashes = [hash(tuple(distortion_array_e[:, i])) for i in range(len(distortion_array_e[0, :]))]
             eval_hashes = np.asarray(eval_hashes)
             assert set(predict_hashes) == set(eval_hashes)
@@ -408,21 +424,61 @@ class CompositePerformanceResult(object):
             self.fit()
 
 
-def identify_octant(distortion_point):
-    pass
+def assign_octant_labels(distortion_array):
+    """
+    Requires a 3 x N distortion array where distortion_array[0, :] = res, distortion_array[1, :] = blur, and
+    distortion_array[2, :] = noise.
+    """
+    distortion_range = DISTORTION_RANGE[PROJECT_ID]
+
+    res = distortion_array[0, :]
+    blur = distortion_array[1, :]
+    noise = distortion_array[2, :]
+
+    res_assignment = -1 * np.ones_like(res)
+    blur_assignment = -1 * np.ones_like(blur)
+    noise_assignment = -1 * np.ones_like(noise)
+
+    r0, r1 = distortion_range['res']
+    r0 = r0 / max(distortion_range['res'])  # necessary because sat6 res values specified in pixels in DISTORTION_RANGE
+    r1 = r1 / max(distortion_range['res'])  # has no effect for places365 since max(distortion_range['places365'] = 1
+    res_boundary = (r0 + r1) / 2
+    res_assignment[np.where(res > res_boundary)] = 0  # note that res label 0 corresponds to higher res values,
+    res_assignment[np.where(res <= res_boundary)] = 1  # in contrast to blur and noise where large values assigned 1
+    assert -1 not in res_assignment
+
+    __, b0, b1 = distortion_range['blur']
+    blur_boundary = (b0 + b1) / 2
+    blur_assignment[np.where(blur < blur_boundary)] = 0
+    blur_assignment[np.where(blur >= blur_boundary)] = 1
+    assert -1 not in blur_assignment
+
+    n0, n1 = distortion_range['noise']
+    noise_boundary = (n0 + n1) / 2
+    noise_assignment[np.where(noise < noise_boundary)] = 0
+    noise_assignment[np.where(noise >= noise_boundary)] = 1
+    assert -1 not in noise_assignment
+
+    assignment_array = np.stack([res_assignment, blur_assignment, noise_assignment], axis=0)
+
+    return assignment_array
 
 
 def get_composite_performance_result(performance_prediction_result_ids=None, performance_eval_result_ids=None,
-                                     identifier=None, config=None, suffix=None, distortion_limits=False):
+                                     identifier=None, config=None, suffix=None, assign_by_octant_only=True):
     if config:
         performance_prediction_result_ids = config['performance_prediction_result_ids']
         performance_eval_result_ids = config['performance_eval_result_ids']
         identifier = config['identifier']
+        try:
+            assign_by_octant_only = config['assign_by_octant_only']
+        except KeyError:
+            pass
         # overwrite_extracted_props = config['overwrite_extracted_props']
 
     composite_performance_result = CompositePerformanceResult(
-        performance_prediction_result_ids, performance_eval_result_ids=performance_eval_result_ids,
-        identifier=identifier)
+        performance_prediction_result_ids, assign_by_octant_only=assign_by_octant_only,
+        performance_eval_result_ids=performance_eval_result_ids, identifier=identifier)
 
     composite_result_id = str(composite_performance_result)
     uid = composite_performance_result.uid
@@ -541,12 +597,15 @@ def get_sub_dir_and_log_filename(output_dir, analysis_type, distortion_clip=Fals
 if __name__ == '__main__':
 
     # config_filename = 'pl_dn161_fr_mega1_mega2_composite.yml'
-    config_filename = 's6_oct_composite_config.yml'
+    # config_filename = 's6_oct_composite_config.yml'
+    config_filename = 'pl_oct_composite_fr90_mega1_mega2.yml'
+
     analyze_1d = True
     analyze_2d = False
     analyze_3d = True
 
-    fit_keys = ['linear', 'nonlinear_0', 'nonlinear_1', 'giqe5_deriv', 'power_law', 'giqe5_deriv_2', 'giqe5_deriv_4']
+    # fit_keys = ['linear', 'nonlinear_0', 'nonlinear_1', 'giqe5_deriv', 'power_law', 'giqe5_deriv_2', 'giqe5_deriv_4']
+    fit_keys = ['giqe5_deriv_4']
 
     if not config_filename:
         config_filename = 'composite_distortion_analysis_config.yml'
@@ -587,7 +646,7 @@ if __name__ == '__main__':
         sub_dir_3d, log_filename = get_sub_dir_and_log_filename(_output_dir, '3d', distortion_clip=_distortion_clip)
         with open((Path(sub_dir_3d, log_filename)), 'w') as output_file:
             for _fit_key in fit_keys:
-                fit_sub_dir, __ = get_sub_dir_and_log_filename(sub_dir_3d, _fit_key)
+                fit_sub_dir, ___ = get_sub_dir_and_log_filename(sub_dir_3d, _fit_key)
                 analyze_perf_3d(_composite_performance, log_file=output_file, directory=fit_sub_dir, fit_key=_fit_key,
                                 standard_plots=True, residual_plot=True, make_residual_color_plot=False,
                                 distortion_ids=('res', 'blur', 'noise'),
@@ -595,4 +654,3 @@ if __name__ == '__main__':
                                 y_limits=_blur_limits,
                                 z_limits=_noise_limits
                                 )
-
