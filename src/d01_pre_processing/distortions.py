@@ -128,6 +128,23 @@ def n_ep_pl(img):
     return img_out, 'lambda_poisson', lambda_poisson
 
 
+def n_ep90_pl(img):
+    """
+    End point 90 noise distortion places365.
+
+    Adds 44 DN zero-centered, channel-replicated Poisson noise.
+
+    :param img: image array, values on [0, 255]
+    :return: image + zero centered Poisson noise, where the resulting image is clamped to fall on [0, 255]
+
+    """
+    sigma_poisson_min, sigma_poisson_max = DISTORTION_RANGE_90['places365']['noise']
+    lambda_poisson = int(sigma_poisson_max ** 2)  # convert from np.int64 to regular int for json serialization
+    img_out = _add_zero_centered_channel_replicated_poisson_noise(img, lambda_poisson)
+
+    return img_out, 'lambda_poisson', lambda_poisson
+
+
 def n_ep_s6(img):
     """
     End point noise distortion for sat6.
@@ -263,6 +280,14 @@ def b_fr90_pl(img):
 def b_ep_pl(img):
 
     kernel_size, min_blur, max_blur = DISTORTION_RANGE['places365']['blur']
+    std = max_blur
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
+
+
+def b_ep90_pl(img):
+
+    kernel_size, min_blur, max_blur = DISTORTION_RANGE_90['places365']['blur']
     std = max_blur
 
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
@@ -418,6 +443,24 @@ def r_ep_pl():
     """
 
     min_res, max_res = DISTORTION_RANGE['places365']['res']
+
+    if NATIVE_RESOLUTION != 256:
+        raise Exception('mismatch between max size and native resolution in project config')
+
+    sizes = [int(min_res * NATIVE_RESOLUTION)]
+    transform = VariableImageResize(sizes, interpolation_mode='bilinear', antialias=False)
+
+    return transform
+
+
+def r_ep90_pl():
+    """
+    Initializes and returns a VariableImageResize instance designed to re-size Places365 images
+    to 20% of original images size. Intended for use in dataset distortion (as opposed to in
+    a dataloader)
+    """
+
+    min_res, max_res = DISTORTION_RANGE_90['places365']['res']
 
     if NATIVE_RESOLUTION != 256:
         raise Exception('mismatch between max size and native resolution in project config')
