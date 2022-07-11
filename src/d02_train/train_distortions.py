@@ -1,6 +1,6 @@
 from src.d00_utils.classes import VariableResolution, VariablePoissonNoiseChannelReplicated
 import numpy as np
-from src.d00_utils.definitions import DISTORTION_RANGE, NATIVE_RESOLUTION
+from src.d00_utils.definitions import DISTORTION_RANGE, NATIVE_RESOLUTION, DISTORTION_RANGE_90
 from torchvision import transforms
 
 
@@ -172,9 +172,9 @@ def nt_fr_s6():
 
     Intended to be used in dataloader via Transforms.compose().
     """
-    lambda_poisson_range = DISTORTION_RANGE['sat6']['noise']
+    sigma_poisson_range = DISTORTION_RANGE['sat6']['noise']  #
     clamp = True
-    return VariablePoissonNoiseChannelReplicated(lambda_poisson_range, clamp)
+    return VariablePoissonNoiseChannelReplicated(sigma_poisson_range, clamp)
 
 
 def nt_0_s6():
@@ -185,12 +185,12 @@ def nt_0_s6():
 
     Intended to be used in dataloader via Transforms.compose().
     """
-    lambda_poisson_min_fr, lambda_poisson_max_fr = DISTORTION_RANGE['sat6']['noise']
-    lambda_poisson_min = lambda_poisson_min_fr
-    lambda_poisson_max = int((lambda_poisson_min_fr + lambda_poisson_max_fr) / 2)
-    lambda_poisson_range = (lambda_poisson_min, lambda_poisson_max)
+    sigma_poisson_min_fr, sigma_poisson_max_fr = DISTORTION_RANGE['sat6']['noise']
+    sigma_poisson_min = sigma_poisson_min_fr
+    sigma_poisson_max = int((sigma_poisson_min_fr + sigma_poisson_max_fr) / 2)
+    sigma_poisson_range = (sigma_poisson_min, sigma_poisson_max)
     clamp = True
-    return VariablePoissonNoiseChannelReplicated(lambda_poisson_range, clamp)
+    return VariablePoissonNoiseChannelReplicated(sigma_poisson_range, clamp)
 
 
 def nt_1_s6():
@@ -201,12 +201,12 @@ def nt_1_s6():
 
     Intended to be used in dataloader via Transforms.compose().
     """
-    lambda_poisson_min_fr, lambda_poisson_max_fr = DISTORTION_RANGE['sat6']['noise']
-    lambda_poisson_min = int((lambda_poisson_min_fr + lambda_poisson_max_fr) / 2)
-    lambda_poisson_max = lambda_poisson_max_fr
-    lambda_poisson_range = (lambda_poisson_min, lambda_poisson_max)
+    sigma_poisson_min_fr, sigma_poisson_max_fr = DISTORTION_RANGE['sat6']['noise']
+    sigma_poisson_min = int((sigma_poisson_min_fr + sigma_poisson_max_fr) / 2)
+    sigma_poisson_max = sigma_poisson_max_fr
+    sigma_poisson_range = (sigma_poisson_min, sigma_poisson_max)
     clamp = True
-    return VariablePoissonNoiseChannelReplicated(lambda_poisson_range, clamp)
+    return VariablePoissonNoiseChannelReplicated(sigma_poisson_range, clamp)
 
 
 def nt_ep_s6():
@@ -214,11 +214,11 @@ def nt_ep_s6():
     Noise transform at endpoint of sat6 distortion space
     """
 
-    __, lambda_poisson_max_fr = DISTORTION_RANGE['sat6']['noise']
+    __, sigma_poisson_max_fr = DISTORTION_RANGE['sat6']['noise']
     clamp = True
-    lambda_poisson_range = (lambda_poisson_max_fr, lambda_poisson_max_fr)
+    sigma_poisson_range = (sigma_poisson_max_fr, sigma_poisson_max_fr)
 
-    return VariablePoissonNoiseChannelReplicated(lambda_poisson_range, clamp)
+    return VariablePoissonNoiseChannelReplicated(sigma_poisson_range, clamp)
 
 
 def nt_mp_s6():
@@ -226,12 +226,12 @@ def nt_mp_s6():
     Noise transform at midpoint of sat6 distortion space
     """
 
-    lambda_poisson_min_fr, lambda_poisson_max_fr = DISTORTION_RANGE['sat6']['noise']
-    lambda_poisson_midpoint = int((lambda_poisson_min_fr + lambda_poisson_max_fr) / 2)
+    sigma_poisson_min_fr, sigma_poisson_max_fr = DISTORTION_RANGE['sat6']['noise']
+    sigma_poisson_midpoint = int((sigma_poisson_min_fr + sigma_poisson_max_fr) / 2)
     clamp = True
-    lambda_poisson_range = (lambda_poisson_midpoint, lambda_poisson_midpoint)
+    sigma_poisson_range = (sigma_poisson_midpoint, sigma_poisson_midpoint)
 
-    return VariablePoissonNoiseChannelReplicated(lambda_poisson_range, clamp)
+    return VariablePoissonNoiseChannelReplicated(sigma_poisson_range, clamp)
 
 # places365 transforms
 
@@ -319,12 +319,44 @@ def rt_ep_pl():
                              antialias=False)
 
 
+def rt_ep90_pl():
+    """
+    Resolution transform for hte endpoint of the sat6 distortion space
+    """
+
+    min_res_fr = DISTORTION_RANGE_90['places365']['res'][0]
+    size = int(min_res_fr * NATIVE_RESOLUTION)
+
+    if NATIVE_RESOLUTION != 256:
+        raise Exception('mismatch between max size and native resolution in project config')
+
+    return transforms.Resize(size, interpolation=transforms.InterpolationMode.BILINEAR,
+                             antialias=False)
+
+
 def rt_mp_pl():
     """
     Resolution transform for the midpoint of the places distortion space
     """
     min_res_fr = DISTORTION_RANGE['places365']['res'][0]
     max_res_fr = DISTORTION_RANGE['places365']['res'][1]
+
+    res = (min_res_fr + max_res_fr) / 2  # midpoint of resolution range
+    size = int(res * NATIVE_RESOLUTION)
+
+    if NATIVE_RESOLUTION != 256:
+        raise Exception('mismatch between max size and native resolution in project config')
+
+    return transforms.Resize(size, interpolation=transforms.InterpolationMode.BILINEAR,
+                             antialias=False)
+
+
+def rt_mp90_pl():
+    """
+    Resolution transform for the midpoint of the places distortion space
+    """
+    min_res_fr = DISTORTION_RANGE_90['places365']['res'][0]
+    max_res_fr = DISTORTION_RANGE_90['places365']['res'][1]
 
     res = (min_res_fr + max_res_fr) / 2  # midpoint of resolution range
     size = int(res * NATIVE_RESOLUTION)
@@ -389,6 +421,15 @@ def bt_ep_pl():
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std_max_fr)
 
 
+def bt_ep90_pl():
+    """
+    Blur transform for the endpoint of the places365 distortion space
+    """
+    kernel_size = DISTORTION_RANGE_90['places365']['blur'][0]
+    std_max_fr = DISTORTION_RANGE_90['places365']['blur'][2]
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std_max_fr)
+
+
 def bt_mp_pl():
     """
     Blur transform for the midpoint of the places365 distortion space
@@ -400,6 +441,17 @@ def bt_mp_pl():
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)
 
 
+def bt_mp90_pl():
+    """
+    Blur transform for the midpoint of the places365 distortion space
+    """
+    kernel_size = DISTORTION_RANGE_90['places365']['blur'][0]
+    std_min_fr = DISTORTION_RANGE_90['places365']['blur'][1]
+    std_max_fr = DISTORTION_RANGE_90['places365']['blur'][2]
+    std = (std_min_fr + std_max_fr) / 2
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)
+
+
 def nt_fr_pl():
     """
     returns a custom transform that adds zero-centered, channel-replicated Poisson noise from the sat6 nose range scaled
@@ -407,9 +459,9 @@ def nt_fr_pl():
 
     Intended to be used in dataloader via Transforms.compose().
     """
-    lambda_poisson_range = DISTORTION_RANGE['places365']['noise']
+    sigma_poisson_range = DISTORTION_RANGE['places365']['noise']
     clamp = True
-    return VariablePoissonNoiseChannelReplicated(lambda_poisson_range, clamp)
+    return VariablePoissonNoiseChannelReplicated(sigma_poisson_range, clamp)
 
 
 def nt_0_pl():
@@ -420,12 +472,12 @@ def nt_0_pl():
 
     Intended to be used in dataloader via Transforms.compose().
     """
-    lambda_poisson_min_fr, lambda_poisson_max_fr = DISTORTION_RANGE['places365']['noise']
-    lambda_poisson_min = lambda_poisson_min_fr
-    lambda_poisson_max = int((lambda_poisson_min_fr + lambda_poisson_max_fr) / 2)
-    lambda_poisson_range = (lambda_poisson_min, lambda_poisson_max)
+    sigma_poisson_min_fr, sigma_poisson_max_fr = DISTORTION_RANGE['places365']['noise']
+    sigma_poisson_min = sigma_poisson_min_fr
+    sigma_poisson_max = int((sigma_poisson_min_fr + sigma_poisson_max_fr) / 2)
+    sigma_poisson_range = (sigma_poisson_min, sigma_poisson_max)
     clamp = True
-    return VariablePoissonNoiseChannelReplicated(lambda_poisson_range, clamp)
+    return VariablePoissonNoiseChannelReplicated(sigma_poisson_range, clamp)
 
 
 def nt_1_pl():
@@ -436,35 +488,58 @@ def nt_1_pl():
 
     Intended to be used in dataloader via Transforms.compose().
     """
-    lambda_poisson_min_fr, lambda_poisson_max_fr = DISTORTION_RANGE['places365']['noise']
-    lambda_poisson_min = int((lambda_poisson_min_fr + lambda_poisson_max_fr) / 2)
-    lambda_poisson_max = lambda_poisson_max_fr
-    lambda_poisson_range = (lambda_poisson_min, lambda_poisson_max)
+    sigma_poisson_min_fr, sigma_poisson_max_fr = DISTORTION_RANGE['places365']['noise']
+    sigma_poisson_min = int((sigma_poisson_min_fr + sigma_poisson_max_fr) / 2)
+    sigma_poisson_max = sigma_poisson_max_fr
+    sigma_poisson_range = (sigma_poisson_min, sigma_poisson_max)
     clamp = True
-    return VariablePoissonNoiseChannelReplicated(lambda_poisson_range, clamp)
+    return VariablePoissonNoiseChannelReplicated(sigma_poisson_range, clamp)
 
 
 def nt_ep_pl():
     """
     Noise transform at endpoint of sat6 distortion space
     """
-    __, lambda_poisson_max_fr = DISTORTION_RANGE['places365']['noise']
+    __, sigma_poisson_max_fr = DISTORTION_RANGE['places365']['noise']
     clamp = True
-    lambda_poisson_range = (lambda_poisson_max_fr, lambda_poisson_max_fr)
+    sigma_poisson_range = (sigma_poisson_max_fr, sigma_poisson_max_fr)
 
-    return VariablePoissonNoiseChannelReplicated(lambda_poisson_range, clamp)
+    return VariablePoissonNoiseChannelReplicated(sigma_poisson_range, clamp)
+
+
+def nt_ep90_pl():
+    """
+    Noise transform at endpoint of sat6 distortion space
+    """
+    __, sigma_poisson_max_fr = DISTORTION_RANGE_90['places365']['noise']
+    clamp = True
+    sigma_poisson_range = (sigma_poisson_max_fr, sigma_poisson_max_fr)
+
+    return VariablePoissonNoiseChannelReplicated(sigma_poisson_range, clamp)
 
 
 def nt_mp_pl():
     """
     Noise transform at midpoint of places365 distortion space
     """
-    lambda_poisson_min_fr, lambda_poisson_max_fr = DISTORTION_RANGE['places365']['noise']
-    lambda_poisson_midpoint = int((lambda_poisson_min_fr + lambda_poisson_max_fr) / 2)
+    sigma_poisson_min_fr, sigma_poisson_max_fr = DISTORTION_RANGE['places365']['noise']
+    sigma_poisson_midpoint = int((sigma_poisson_min_fr + sigma_poisson_max_fr) / 2)
     clamp = True
-    lambda_poisson_range = (lambda_poisson_midpoint, lambda_poisson_midpoint)
+    sigma_poisson_range = (sigma_poisson_midpoint, sigma_poisson_midpoint)
 
-    return VariablePoissonNoiseChannelReplicated(lambda_poisson_range, clamp)
+    return VariablePoissonNoiseChannelReplicated(sigma_poisson_range, clamp)
+
+
+def nt_mp90_pl():
+    """
+    Noise transform at midpoint of places365 distortion space
+    """
+    sigma_poisson_min_fr, sigma_poisson_max_fr = DISTORTION_RANGE_90['places365']['noise']
+    sigma_poisson_midpoint = int((sigma_poisson_min_fr + sigma_poisson_max_fr) / 2)
+    clamp = True
+    sigma_poisson_range = (sigma_poisson_midpoint, sigma_poisson_midpoint)
+
+    return VariablePoissonNoiseChannelReplicated(sigma_poisson_range, clamp)
 
 
 tag_to_transform = {
@@ -492,17 +567,23 @@ tag_to_transform = {
     'rt_0_pl': rt_0_pl,
     'rt_1_pl': rt_1_pl,
     'rt_ep_pl': rt_ep_pl,
+    'rt_ep90_pl': rt_ep90_pl,
     'rt_mp_pl': rt_mp_pl,
+    'rt_mp90_pl': rt_mp90_pl,
 
     'bt_fr_pl': bt_fr_pl,
     'bt_0_pl': bt_0_pl,
     'bt_1_pl': bt_1_pl,
     'bt_ep_pl': bt_ep_pl,
+    'bt_ep90_pl': bt_ep90_pl,
     'bt_mp_pl': bt_mp_pl,
+    'bt_mp90_pl': bt_mp90_pl,
 
     'nt_fr_pl': nt_fr_pl,
     'nt_0_pl': nt_0_pl,
     'nt_1_pl': nt_1_pl,
     'nt_ep_pl': nt_ep_pl,
-    'nt_mp_pl': nt_mp_pl
+    'nt_ep90_pl': nt_ep90_pl,
+    'nt_mp_pl': nt_mp_pl,
+    'nt_mp90_pl': nt_mp90_pl
 }
