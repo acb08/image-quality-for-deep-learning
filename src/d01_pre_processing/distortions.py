@@ -268,6 +268,14 @@ def b_mp_s6(img):
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
 
 
+def b_mp90_s6(img):
+
+    kernel_size, min_blur, max_blur = DISTORTION_RANGE_90['sat6']['blur']
+    std = (min_blur + max_blur) / 2
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
+
+
 def b_scan_v3(img):
 
     kernel_size = 31
@@ -564,6 +572,7 @@ tag_to_image_distortion = {
     'b_ep_pl': b_ep_pl,
     'b_ep90_pl': b_ep90_pl,
     'b_mp_s6': b_mp_s6,
+    'b_mp90_s6': b_mp90_s6,
     'b_mp_pl': b_mp_pl,
     'b_mp90_pl': b_mp90_pl,
 
