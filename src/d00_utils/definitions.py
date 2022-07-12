@@ -39,6 +39,7 @@ REL_PATHS = {
     'analysis': r'analysis',
     'distortion_scan': 'distortion_scans',
     'entropy': r'entropy',
+    'rgb': r'rgb',
     'pan': r'0-pan',
     'res': r'1-res',
     'blur': r'2-blur',
@@ -50,7 +51,9 @@ REL_PATHS = {
     'composite_performance': r'analysis/composite_performance',
     'edges': 'edges',
     'rer_study': 'rer_study',
-    'edge_chips': 'edge_chips'
+    'edge_chips': 'edge_chips',
+    'demo_images': r'demo_images'
+
 }
 
 _project_config_filename = 'project_config.yml'

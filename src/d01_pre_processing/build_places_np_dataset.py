@@ -291,9 +291,9 @@ if __name__ == "__main__":
     wandb.login()
 
     _description = 'test updated error handling'  # 'convert places train challenge dataset to numpy'
-    _num_images = 'all'
-    _images_per_file = 2048
-    _parent_dataset_id = 'train_256_challenge'
+    _num_images = 1024
+    _images_per_file = 1024
+    _parent_dataset_id = 'val_256'
 
     _pick_other_val_frac = False
     _other_val_frac = None
@@ -311,7 +311,7 @@ if __name__ == "__main__":
 
     _config = {
         'parent_dataset_id': _parent_dataset_id,
-        'artifact_type': 'train_dataset',
+        'artifact_type': 'test_dataset',
         'num_images': _num_images,
         'images_per_file': _images_per_file,
         'val_frac': _val_frac,
@@ -319,7 +319,7 @@ if __name__ == "__main__":
         'datatype_key': 'np.uint8',
         'artifact_filename': STANDARD_DATASET_FILENAME,
         'description': _description,
-        'tags': ['np'],
+        'tags': ['np', 'demo'],
         'val_shuffle': False
     }
 

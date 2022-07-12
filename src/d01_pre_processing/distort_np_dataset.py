@@ -145,6 +145,10 @@ def distort_log_numpy(config):
             image_shape = config['image_shape']
             parent_names_labels = parent_dataset['names_labels']
             starting_img_parent_rel_dir = parent_dataset['dataset_rel_dir']
+            if 'save_rgb_vector' in config.keys():
+                save_rgb_vector = config['save_rgb_vector']
+            else:
+                save_rgb_vector = False
         else:
             raise Exception('Invalid project ID')
 
@@ -168,6 +172,22 @@ def distort_log_numpy(config):
                                                filename_stem='test',
                                                parent_dataset_id=parent_artifact_name)
             elif places:
+
+                if save_rgb_vector:  # used only to save demo files locally
+
+                    transfer_to_numpy(parent_names_labels,
+                                      starting_img_parent_rel_dir,
+                                      num_images,
+                                      images_per_file,
+                                      image_shape,
+                                      datatype_key,
+                                      'rgb',
+                                      new_dataset_abs_dir,
+                                      convert_to_pan=False,
+                                      file_count_offset=file_count_offset,
+                                      filename_stem='test',
+                                      parent_dataset_id=parent_dataset_id)
+
                 new_data_subset = transfer_to_numpy(parent_names_labels,
                                                     starting_img_parent_rel_dir,
                                                     num_images,
