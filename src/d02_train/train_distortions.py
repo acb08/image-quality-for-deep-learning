@@ -165,6 +165,17 @@ def bt_mp_s6():
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)
 
 
+def bt_mp90_s6():
+    """
+    Blur transform for the midpoint of the sat6 distortion space
+    """
+    kernel_size = DISTORTION_RANGE_90['sat6']['blur'][0]
+    std_min_fr = DISTORTION_RANGE_90['sat6']['blur'][1]
+    std_max_fr = DISTORTION_RANGE_90['sat6']['blur'][2]
+    std = (std_min_fr + std_max_fr) / 2
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)
+
+
 def nt_fr_s6():
     """
     returns a custom transform that adds zero-centered, channel-replicated Poisson noise from the sat6 noise range
@@ -555,6 +566,7 @@ tag_to_transform = {
     'bt_1_s6': bt_1_s6,
     'bt_ep_s6': bt_ep_s6,
     'bt_mp_s6': bt_mp_s6,
+    'bt_mp90_s6': bt_mp90_s6,
 
     'nt_fr_s6': nt_fr_s6,
     'nt_0_s6': nt_0_s6,
