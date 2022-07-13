@@ -58,7 +58,7 @@ def get_npz_files(directory):
     return npz_filenames
 
 
-def combine(images, strip_shape, background):
+def combine_horizontal(images, strip_shape, background):
 
     image_strip = background * np.ones(strip_shape, dtype=np.uint8)
     horizontal_offset = 0
@@ -70,13 +70,33 @@ def combine(images, strip_shape, background):
     return image_strip
 
 
-def make_image_strips(source_directories, output_directory, extension='png', background=255):
+def _get_filenames(directory, extension, exclude=None):
+
+    directory = Path(directory)
+
+    image_filenames = list(directory.iterdir())
+    image_filenames = [str(filename.parts[-1]) for filename in image_filenames]
+    image_filenames = [filename for filename in image_filenames if filename[-len(extension):] == extension]
+
+    if exclude:
+        if type(exclude) not in (tuple, list):
+            exclude = [exclude]
+        for item in exclude:
+            if item in image_filenames:
+                image_filenames.remove(item)
+
+    return image_filenames
+
+
+def make_image_strips_multi_dir(source_directories, output_directory, extension='png', background=255):
+
+    """
+    Concatenates different versions of an image into a horizontal strip when
+    """
 
     base_directory = Path(source_directories[0])
 
-    image_filenames = list(base_directory.iterdir())
-    image_filenames = [str(filename.parts[-1]) for filename in image_filenames]
-    image_filenames = [filename for filename in image_filenames if filename[-len(extension):] == extension]
+    image_filenames = _get_filenames(base_directory, extension)
 
     strip_shape = None
     height, width, channels = 0, 0, 3
@@ -95,18 +115,20 @@ def make_image_strips(source_directories, output_directory, extension='png', bac
         if i == 0:
             strip_shape = (height, width, channels)
 
-        image_strip = combine(images, strip_shape, background)
+        image_strip = combine_horizontal(images, strip_shape, background)
         output_path = Path(output_directory, image_filename)
         image_strip = Image.fromarray(image_strip)
         image_strip.save(output_path)
 
 
-def stack_image_strips(directory, image_filenames=None, extension='png', output_dir=None, output_filename=None):
+def combine_vertical(images, shape):
+    pass
+
+
+def make_vertical_stack(directory, image_filenames=None, extension='png', output_dir=None, output_filename='stack.png'):
 
     if not image_filenames:
-        image_filenames = list(directory.iterdir())
-        image_filenames = [str(filename.parts[-1]) for filename in image_filenames]
-        image_filenames = [filename for filename in image_filenames if filename[-len(extension):] == extension]
+        image_filenames = _get_filenames(directory, extension, exclude=output_filename)
 
     images = []
     for i, filename in enumerate(image_filenames):
@@ -129,11 +151,43 @@ def stack_image_strips(directory, image_filenames=None, extension='png', output_
 
     if not output_dir:
         output_dir = directory
-    if not output_filename:
-        output_filename = 'stack.png'
 
     stack = Image.fromarray(stack)
     stack.save(Path(output_dir, output_filename))
+
+
+def make_horizontal_strip(directory, image_filenames=None, extension='png', output_dir=None,
+                          output_filename='strip.png', background=255):
+
+    if not image_filenames:
+        image_filenames = _get_filenames(directory, extension, exclude=output_filename)
+
+    images = []
+
+    height = None
+    width = None
+    c = None
+
+    for i, filename in enumerate(image_filenames):
+        image = Image.open(Path(directory, filename))
+        image = np.asarray(image, dtype=np.uint8)
+        images.append(image)
+        h, w, c = np.shape(image)
+        if i == 0:
+            height = h
+            width = w
+        else:
+            width += w
+            height = max(height, h)
+
+    strip_shape = (height, width, c)
+    strip = combine_horizontal(images, strip_shape, background)
+
+    if not output_dir:
+        output_dir = directory
+
+    strip = Image.fromarray(strip)
+    strip.save(Path(output_dir, output_filename))
 
 
 def main(input_directories, image_strip_directory=None):
@@ -147,7 +201,7 @@ def main(input_directories, image_strip_directory=None):
     if image_strip_directory:
         if not image_strip_directory.is_dir():
             image_strip_directory.mkdir(parents=True, exist_ok=True)
-        make_image_strips(output_directories, image_strip_directory)
+        make_image_strips_multi_dir(output_directories, image_strip_directory)
 
 
 if __name__ == '__main__':
@@ -185,4 +239,4 @@ if __name__ == '__main__':
 
     stack_dir = r'/home/acb6595/places/demo_images/full-space-keepers/stack-3'
     stack_dir = Path(stack_dir)
-    stack_image_strips(stack_dir)
+    make_vertical_stack(stack_dir)
