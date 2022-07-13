@@ -101,6 +101,41 @@ def make_image_strips(source_directories, output_directory, extension='png', bac
         image_strip.save(output_path)
 
 
+def stack_image_strips(directory, image_filenames=None, extension='png', output_dir=None, output_filename=None):
+
+    if not image_filenames:
+        image_filenames = list(directory.iterdir())
+        image_filenames = [str(filename.parts[-1]) for filename in image_filenames]
+        image_filenames = [filename for filename in image_filenames if filename[-len(extension):] == extension]
+
+    images = []
+    for i, filename in enumerate(image_filenames):
+        image = Image.open(Path(directory, filename))
+        image = np.asarray(image, dtype=np.uint8)
+        images.append(image)
+        if i == 0:
+            strip_shape = np.shape(image)
+        if i != 0:
+            if strip_shape != np.shape(image):
+                raise Exception('All image strips must be of identical shape to stack')
+
+    h, w, c = strip_shape
+    h_stack = h * len(images)
+    stack = np.zeros((h_stack, w, c), dtype=np.uint8)
+
+    for i, image in enumerate(images):
+        vertical_offset = i * h
+        stack[vertical_offset: vertical_offset + h, :, :] = image
+
+    if not output_dir:
+        output_dir = directory
+    if not output_filename:
+        output_filename = 'stack.png'
+
+    stack = Image.fromarray(stack)
+    stack.save(Path(output_dir, output_filename))
+
+
 def main(input_directories, image_strip_directory=None):
 
     output_directories = []
@@ -146,5 +181,8 @@ if __name__ == '__main__':
 
     _image_strip_output_dir = Path(definitions.ROOT_DIR, definitions.REL_PATHS['demo_images'], _output_directory_name)
 
-    main(_input_directories, image_strip_directory=_image_strip_output_dir)
+    # main(_input_directories, image_strip_directory=_image_strip_output_dir)
 
+    stack_dir = r'/home/acb6595/places/demo_images/full-space-keepers/stack-3'
+    stack_dir = Path(stack_dir)
+    stack_image_strips(stack_dir)
