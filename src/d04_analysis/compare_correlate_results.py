@@ -137,10 +137,10 @@ def get_performance_correlations(performance_results, performance_results_second
     return correlations, identifiers, ideal_correlations
 
 
-def get_correlation_result_dir(result_id_pairs, parent_dir='default', overwrite=True, suffix='v2', manual_name=None):
+def get_compare_dir(result_id_pairs, parent_dir='default', overwrite=True, suffix=None, manual_name=None):
 
     if parent_dir == 'default':
-        parent_dir = Path(ROOT_DIR, REL_PATHS['analysis'], REL_PATHS['perf_correlations'])
+        parent_dir = Path(ROOT_DIR, REL_PATHS['multi_result'])
 
     if not parent_dir.is_dir():
         Path.mkdir(parent_dir)
@@ -157,6 +157,8 @@ def get_correlation_result_dir(result_id_pairs, parent_dir='default', overwrite=
             else:
                 new_dir_name = f'{new_dir_name}-{result_num_string}'
 
+    if suffix:
+        new_dir_name = f'{new_dir_name}-{suffix}'
     new_dir = Path(parent_dir, new_dir_name)
 
     if not new_dir.is_dir():
@@ -165,19 +167,17 @@ def get_correlation_result_dir(result_id_pairs, parent_dir='default', overwrite=
     elif overwrite:
         return new_dir
     else:
-        new_dir = Path(new_dir, suffix)
-
-    if not new_dir.is_dir():
-        Path.mkdir(new_dir)
-        return new_dir
-
-    else:  # recursion #nbd #nextlinustorvalds
-        new_suffix = increment_suffix(suffix)
-        return get_correlation_result_dir(result_id_pairs, overwrite=overwrite, manual_name=manual_name,
-                                          suffix=new_suffix)
+        if not suffix:
+            suffix = 'v2'
+            return get_compare_dir(result_id_pairs, parent_dir=parent_dir, overwrite=overwrite, suffix=suffix,
+                                   manual_name=manual_name)
+        else:
+            suffix = increment_suffix(suffix)
+            return get_compare_dir(result_id_pairs, parent_dir=parent_dir, overwrite=overwrite, suffix=suffix,
+                                   manual_name=manual_name)
 
 
-def analyze_correlations(config):
+def compare_correlate(config):
 
     test_result_identifiers = config['test_result_identifiers']
     different_result_identifiers = config['different_test_result_identifiers']
@@ -185,13 +185,17 @@ def analyze_correlations(config):
     manual_name = config['manual_name']
     analyze_3d = config['analyze_3d']
     analyze_pairwise = config['analyze_pairwise']
+    plot_together_2d = config['plot_together_2d']
+    plot_together_1d = config['plot_together_1d']
 
     dir_name_result_identifiers = test_result_identifiers
     if different_result_identifiers:
         dir_name_result_identifiers.extend(different_result_identifiers)
 
-    output_dir = get_correlation_result_dir(dir_name_result_identifiers,
-                                            overwrite=overwrite, manual_name=manual_name)
+    output_dir = get_compare_dir(dir_name_result_identifiers,
+                                 overwrite=overwrite, manual_name=manual_name)
+
+    log_config(output_dir, config)
 
     performance_results = get_multiple_model_distortion_performance_results(test_result_identifiers)
     different_performance_results = None
@@ -204,13 +208,20 @@ def analyze_correlations(config):
         log_correlation_matrix_txt(correlations, ideal_correlations, identifiers, output_dir=output_dir)
         label_dict = identifiers['label_lists']
         make_log_dataframes(correlations, label_dict, output_dir=output_dir)
-        log_config(output_dir, config)
 
     if analyze_pairwise:
         all_performance_results = performance_results
         if different_result_identifiers:
             all_performance_results.extend(different_performance_results)
         analyze_pairwise_1d_2d(all_performance_results)
+
+    if plot_together_2d:
+        analyze_plot_results_together(performance_results, directory=output_dir, make_subdir=True, dim_tag='2d',
+                                      identifier='2d')
+
+    if plot_together_1d:
+        analyze_plot_results_together(performance_results, directory=output_dir, make_subdir=True, dim_tag='1d',
+                                      identifier='1d')
 
 
 def make_log_dataframes(correlations, label_dict, output_dir=None):
@@ -252,13 +263,14 @@ def analyze_pairwise_1d_2d(model_results, directory='default', make_subdirectori
 
 if __name__ == '__main__':
 
+    config_filename = 's6_fr_pt_fr90_mega1.yml'
+
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--config_name', default='cross_correlation_config.yml', help='config filename to be used')
-    parser.add_argument('--config_name', default='pl_fr_models_megasets_1_2.yml', help='config filename to be used')
+    parser.add_argument('--config_name', default=config_filename, help='config filename to be used')
     parser.add_argument('--config_dir',
-                        default=Path(Path(__file__).parents[0], 'cross_correlation_configs'),
+                        default=Path(Path(__file__).parents[0], 'compare_correlate_configs'),
                         help="configuration file directory")
     args_passed = parser.parse_args()
     run_config = get_config(args_passed)
 
-    analyze_correlations(run_config)
+    compare_correlate(run_config)

@@ -45,15 +45,15 @@ REL_PATHS = {
     'blur': r'2-blur',
     'noise': r'3-noise',
     'project_config': r'project_config',
-    'perf_correlations': r'perf_correlations',
+    'perf_correlations': r'analysis/multi_result/perf_correlations',
     'pairwise': 'pairwise',
     '_extracted_artifact_props': r'analysis/_extracted_artifact_props',
     'composite_performance': r'analysis/composite_performance',
     'edges': 'edges',
     'rer_study': 'rer_study',
     'edge_chips': 'edge_chips',
-    'demo_images': r'demo_images'
-
+    'demo_images': r'demo_images',
+    'multi_result': r'analysis/multi_result'
 }
 
 _project_config_filename = 'project_config.yml'

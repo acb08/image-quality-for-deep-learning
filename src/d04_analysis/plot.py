@@ -210,16 +210,17 @@ def plot_2d_linear_fit(distortion_array, accuracy_means, fit, x_id, y_id,
             result_identifier=result_identifier)
 
 
-def analyze_plot_results_together(model_results, directory=None, make_subdir=False, dim_tag='2d', legend_loc='best',
-                                  pairwise_analysis=False, log_file=None, create_log_file=False):
+def analyze_plot_results_together(model_results, identifier=None, directory=None, make_subdir=False, dim_tag='2d',
+                                  legend_loc='best', pairwise_analysis=False, log_file=None, create_log_file=False):
     """
     Plots performance of multiple models together. If pairwise_analysis is True and len(model_results) is 2, measures
     the correlation coefficients between mean performances as a function of distortion combinations.
     """
-    if dim_tag == '2d':
-        identifier = create_identifier(model_results)
-    else:
-        identifier = create_identifier(model_results, dim_tag=dim_tag)
+    if not identifier:
+        if dim_tag == '2d':
+            identifier = create_identifier(model_results)
+        else:
+            identifier = create_identifier(model_results, dim_tag=dim_tag)
 
     if directory and make_subdir:
         sub_dir = Path(directory, identifier)
