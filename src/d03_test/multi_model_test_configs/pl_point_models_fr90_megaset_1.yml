@@ -7,11 +7,12 @@ test_dataset_id: 0012-tst-full_range_90_mega_set_1_noise # full range 90 megaset
 test_dataset_artifact_alias: latest
 
 model_artifact_ids:
-  - 0034-resnet18-midpoint_best_loss
-  - 0033-resnet18-endpoint_best_loss
-  - densenet161_pretrained
-  - resnet50_pretrained
-  - resnet50_pretrained
+  # resnet50_pretrained was repeated, so replaced with resnet18 to re-use script unchanged
+#  - 0034-resnet18-midpoint_best_loss
+#  - 0033-resnet18-endpoint_best_loss
+#  - densenet161_pretrained
+#  - resnet50_pretrained
+  - resnet18_pretrained
 
 model_artifact_alias: latest
 
