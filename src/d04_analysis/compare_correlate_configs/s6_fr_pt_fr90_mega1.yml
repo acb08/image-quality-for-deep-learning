@@ -1,10 +1,11 @@
 ---
 
 test_result_identifiers:
-  - ['0095-rlt-0005-resnet18_sat6-pretrain_lower_lr_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0',
-     'pre-trained']
   - [ '0098-rlt-0008-resnet18_sat6-full_range_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0',
       'full-range' ]
+  - ['0095-rlt-0005-resnet18_sat6-pretrain_lower_lr_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0',
+     'pre-trained']
+
 
 
 # if a second set of test result identifiers is included here, inter-set results are cross correlated, whereas passing
