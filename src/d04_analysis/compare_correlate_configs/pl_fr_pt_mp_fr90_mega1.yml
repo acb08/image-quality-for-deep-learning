@@ -1,12 +1,12 @@
 ---
 
 test_result_identifiers:
-  - [ '0107-rlt-0020-resnet18-full_range_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0',
-      'full-range' ]
+  - ['0107-rlt-0020-resnet18-full_range_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0',
+     'full-range' ]
   - ['0189-rlt-resnet18_pretrained-0012-tst-full_range_90_mega_set_1_noise:v0',
      'pre-trained']
-
-
+  - ['0156-rlt-0035-resnet18-midpoint-90_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0',
+     'midpoint']
 
 # if a second set of test result identifiers is included here, inter-set results are cross correlated, whereas passing
 # only a single set of identifiers results in intra-set correlations being calculated.  In other words, passing a single
@@ -14,7 +14,7 @@ test_result_identifiers:
 different_test_result_identifiers: null
 
 overwrite: False
-manual_name: pt-fr-fr90-mega-1
+manual_name: pt-mp-fr-fr90-mega-1
 analyze_3d: False
 analyze_pairwise: False
 plot_together_2d: True

@@ -63,5 +63,8 @@
 #result_id: 0156-rlt-0035-resnet18-midpoint-90_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0
 #identifier: RN18-midpoint
 
-result_id: 0155-rlt-0035-resnet18-endpoint-90_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0
-identifier: RN18-endpoint
+#result_id: 0155-rlt-0035-resnet18-endpoint-90_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0
+#identifier: RN18-endpoint
+
+result_id: 0189-rlt-resnet18_pretrained-0012-tst-full_range_90_mega_set_1_noise:v0
+identifier: RN18-pretrained
