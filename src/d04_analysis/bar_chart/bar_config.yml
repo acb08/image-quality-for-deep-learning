@@ -1,0 +1,31 @@
+---
+
+data:
+  - ['0',
+    [1,
+    1,
+    1,
+    1]]
+
+  - ['1',
+    [0.8,
+    0.8,
+    0.8,
+    0.8]]
+  - ['2',
+    [0.6,
+    0.6,
+    0.6,
+    0.6]]
+group_labels: ['a', 'b', 'c', 'd']
+ylabel: 'mean accuracy'
+manual_name: 'bar_test'
+
+group_width: 0.7
+padding: 3
+bar_width_frac: 0.85
+edge_color: 'black'
+line_width: 1
+overwrite: False
+
+
