@@ -2,17 +2,12 @@
 
 data:
   - ['pre-trained', # model label
-     [0.03, # full-range dataset (0012-tst-full_range_90_mega_set_1_noise)
-      0,
-      0,  # need to run test
-      0]] # need to run test
-  - ['full-range', # model label
-     [0,
-      0,
-      0.31,
-      0]]
+     [0.03, # pre-trained model, full-range test (0012-tst-full_range_90_mega_set_1_noise)
+      0.42, # pre-trained model, undistorted test
+      0, # pre-trained model, midpoint test
+      0]] # pre-trained model, endpoint test
   - ['midpoint', # model label
-     [0,
+     [0, # midpoint model, undistorted test
       0,
       0,
       0]]
@@ -20,6 +15,11 @@ data:
      [0,
       0,
       0,
+      0]]
+  - ['full-range', # model label
+     [0,
+      0,
+      0.31,
       0]]
 group_labels: ['full-range', 'undistorted', 'midpoint', 'endpoint']  # dataset labels
 ylabel: 'mean accuracy'
