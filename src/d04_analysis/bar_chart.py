@@ -8,15 +8,16 @@ from src.d00_utils.functions import increment_suffix, log_config
 
 
 def grouped_bar_chart(data, group_labels, ylabel='mean accuracy', group_width=0.7, padding=3, bar_width_frac=0.85,
-                      edge_color='black', line_width=1, output_dir=None, manual_name=None, overwrite=False):
+                      edge_color='black', line_width=1, output_dir=None, x_scale=1,
+                      figsize=(8, 8 / 1.33), manual_name=None, overwrite=False):
 
-    x = np.arange(len(group_labels))
+    x = np.arange(len(group_labels)) * x_scale
     num_items = len(data)
     bar_space = group_width / num_items
     bar_width = bar_width_frac * bar_space
     bar_offset = -1 * group_width / 2
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=figsize)
 
     for i, (label, item_data) in enumerate(data):
         left_edge = bar_offset + (i + 0.5) * bar_space
@@ -85,7 +86,7 @@ def main(run_config):
 
 if __name__ == '__main__':
 
-    config_filename = 'sat6_pt_model_summary.yml'
+    config_filename = 'sat6_summary.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_filename, help='config filename to be used')
