@@ -1,6 +1,6 @@
 ---
 
-description: test of full-range resnet18 model on midpoint dataset
+description: test of full-range resnet18 model on midpoint-90 dataset
 
 descriptive_tags: ['rn18-full-range', 'midpoint-test']
 
