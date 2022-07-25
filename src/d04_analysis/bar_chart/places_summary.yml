@@ -4,8 +4,8 @@ data:
   - ['pre-trained', # model label
      [0.03, # pre-trained model, full-range test (0012-tst-full_range_90_mega_set_1_noise)
       0.42, # pre-trained model, undistorted test
-      0, # pre-trained model, midpoint test
-      0]] # pre-trained model, endpoint test
+      0.005, # pre-trained model, midpoint test
+      0.004]] # pre-trained model, endpoint test (0201-rlt-resnet18_pretrained-0015-tst-endpoint90_noise)
   - ['midpoint', # model label
      [0, # midpoint model, undistorted test
       0,
