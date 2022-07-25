@@ -1,10 +1,10 @@
 ---
 
 description: test of key resnet18 models on undistorted dataset
-descriptive_tags: ['rn18-key-models']
+descriptive_tags: ['rn18-key-models', 'undistorted']
 
-test_dataset_id: val_256 # undistorted test dataset
-test_dataset_artifact_alias: v1
+test_dataset_id: 0018-tst-undistorted_pan # undistorted test dataset
+test_dataset_artifact_alias: latest
 
 model_artifact_ids:
   - resnet18_pretrained

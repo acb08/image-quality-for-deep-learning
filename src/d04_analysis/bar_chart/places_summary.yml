@@ -3,21 +3,25 @@
 data:
   - ['pre-trained', # model label
      [0.03, # full-range dataset (0012-tst-full_range_90_mega_set_1_noise)
+      0,
       0,  # need to run test
       0]] # need to run test
   - ['full-range', # model label
      [0,
+      0,
       0.31,
       0]]
   - ['midpoint', # model label
      [0,
       0,
+      0,
       0]]
   - ['endpoint', # model label
      [0,
       0,
+      0,
       0]]
-group_labels: ['full-range', 'midpoint', 'endpoint']  # dataset labels (need to test against undistorted and include)
+group_labels: ['full-range', 'undistorted', 'midpoint', 'endpoint']  # dataset labels
 ylabel: 'mean accuracy'
 manual_name: 'places_summary'
 
