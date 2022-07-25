@@ -1,0 +1,35 @@
+---
+
+data:
+  - ['pre-trained', # model label
+     [0.30, # pre-trained model, full range test
+      0.99, # pre-trained model, undistorted test (0113-rlt-0005-resnet18_sat6-pretrain_lower_lr_best_loss-0015-tst-undistorted_pan)
+      0.33, # pre-trained model, midpoint test
+      0.14]] # pre-trained model, endpoint test
+#  - ['full-range', # model label
+#     [0, # full range model, full range test
+#      0.94, # full range model, undistorted test (0115-rlt-0011-resnet18_sat6-full_range_best_loss-0015-tst-undistorted_pan)
+#      0, # full range model, midpoint test
+#      0]] # full range model, endpoint test
+  - ['midpoint', # model label
+     [0.72,
+      0.90, # midpoint model, undistorted test (0111-rlt-0021-resnet18_sat6-midpoint_best_loss-0015-tst-undistorted_pan)
+      0.87,
+      0.31]]
+  - ['endpoint', # model label
+     [0.72, # endpoint model, full range test
+      0.72, # endpoint model, undistorted test (0112-rlt-0020-resnet18_sat6-endpoint_best_loss-0015-tst-undistorted_pan)
+      0.72, # endpoint model, midpoint test
+      0.69]] # endpoint model, endpoint test
+group_labels: ['full-range', 'undistorted', 'midpoint', 'endpoint']  # dataset labels (need to test against undistorted and include)
+ylabel: 'mean accuracy'
+manual_name: 'places_summary'
+
+group_width: 0.7
+padding: 3
+bar_width_frac: 0.85
+edge_color: 'black'
+line_width: 1
+overwrite: False
+
+
