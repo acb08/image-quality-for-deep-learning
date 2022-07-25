@@ -24,6 +24,7 @@ def grouped_bar_chart(data, group_labels, ylabel='mean accuracy', group_width=0.
         ax.bar_label(rect, padding=padding)
 
         ax.set_ylabel(ylabel)
+        ax.set_xlabel('test dataset')
         ax.set_xticks(x, group_labels)
         ax.legend()
 
@@ -84,7 +85,7 @@ def main(run_config):
 
 if __name__ == '__main__':
 
-    config_filename = 'bar_config.yml'
+    config_filename = 'sat6_pt_model_summary.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_filename, help='config filename to be used')
