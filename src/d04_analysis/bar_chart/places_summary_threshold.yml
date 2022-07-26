@@ -23,7 +23,7 @@ data:
       0.05 ] ] # ep90 model, ep90 test
 group_labels: ['full-range', 'undistorted', 'midpoint', 'endpoint']  # dataset labels
 ylabel: 'mean accuracy'
-manual_name: 'places_summary'
+manual_name: 'places_summary_threshold'
 
 group_width: 0.7
 padding: 3
@@ -31,6 +31,6 @@ bar_width_frac: 0.85
 edge_color: 'black'
 line_width: 1
 overwrite: False
-label_threshold: null
+label_threshold: 0.01
 
 

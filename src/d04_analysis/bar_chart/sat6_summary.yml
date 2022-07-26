@@ -35,5 +35,6 @@ bar_width_frac: 0.7
 edge_color: 'black'
 line_width: 1.2
 overwrite: False
+label_threshold: 0.01
 
 

@@ -11,7 +11,7 @@ from src.d00_utils.functions import increment_suffix, log_config
 
 def grouped_bar_chart(data, group_labels, ylabel='mean accuracy', group_width=0.7, padding=3, bar_width_frac=0.85,
                       edge_color='black', line_width=1, output_dir=None, x_scale=1,
-                      figsize=(8, 8 / 1.33), manual_name=None, overwrite=False):
+                      figsize=(8, 8 / 1.33), label_threshold=None, manual_name=None, overwrite=False):
 
     x = np.arange(len(group_labels)) * x_scale
     num_items = len(data)
@@ -27,7 +27,8 @@ def grouped_bar_chart(data, group_labels, ylabel='mean accuracy', group_width=0.
 
         labels = [str(item)[1:] for item in item_data]  # strip off leading zeros (i.e. '0.01' -> '.01')
         labels = [f'{item}0' if len(item) == 2 else item for item in labels]
-        labels = ['<.01' if float(item) < 0.01 else item for item in labels]
+        if label_threshold:
+            labels = [f'<{str(label_threshold)[1:]}' if float(item) < label_threshold else item for item in labels]
         ax.bar_label(rect, labels=labels, padding=padding)
 
         ax.set_ylabel(ylabel)
@@ -92,7 +93,7 @@ def main(run_config):
 
 if __name__ == '__main__':
 
-    config_filename = 'sat6_pt_model_summary.yml'
+    config_filename = 'places_summary_threshold.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_filename, help='config filename to be used')
