@@ -27,7 +27,7 @@ def grouped_bar_chart(data, group_labels, ylabel='mean accuracy', group_width=0.
 
         labels = [str(item)[1:] for item in item_data]  # strip off leading zeros (i.e. '0.01' -> '.01')
         labels = [f'{item}0' if len(item) == 2 else item for item in labels]
-        labels = ['<.01' if len(item) == 4 else item for item in labels]
+        labels = ['<.01' if float(item) < 0.01 else item for item in labels]
         ax.bar_label(rect, labels=labels, padding=padding)
 
         ax.set_ylabel(ylabel)
