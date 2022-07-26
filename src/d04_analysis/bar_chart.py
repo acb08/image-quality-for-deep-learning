@@ -22,7 +22,9 @@ def grouped_bar_chart(data, group_labels, ylabel='mean accuracy', group_width=0.
     for i, (label, item_data) in enumerate(data):
         left_edge = bar_offset + (i + 0.5) * bar_space
         rect = ax.bar(x + left_edge, item_data, bar_width, label=label, edgecolor=edge_color, linewidth=line_width)
-        ax.bar_label(rect, padding=padding)
+
+        labels = [str(item)[1:] for item in item_data]  # strip off leading zeros (i.e. '0.01' -> '.01')
+        ax.bar_label(rect, labels=labels, padding=padding)
 
         ax.set_ylabel(ylabel)
         ax.set_xlabel('test dataset')
@@ -86,7 +88,7 @@ def main(run_config):
 
 if __name__ == '__main__':
 
-    config_filename = 'sat6_summary.yml'
+    config_filename = 'places_summary.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_filename, help='config filename to be used')
