@@ -31,9 +31,9 @@ manual_name: 'sat6_summary'
 
 group_width: 0.7
 padding: 3
-bar_width_frac: 0.85
+bar_width_frac: 0.7
 edge_color: 'black'
-line_width: 1
+line_width: 1.2
 overwrite: False
 
 
