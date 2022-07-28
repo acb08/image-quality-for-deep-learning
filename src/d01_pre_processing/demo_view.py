@@ -300,38 +300,59 @@ if __name__ == '__main__':
     #     r'/home/acb6595/places/datasets/test/0002-tst-ep90_demo/3-noise',
     # ]
 
+    # _input_directories = [
+    #     r'/home/acb6595/sat6/datasets/test/0005-tst-mp90_demo/rgb',
+    #     r'/home/acb6595/sat6/datasets/test/0005-tst-mp90_demo/0-pan',
+    #     r'/home/acb6595/sat6/datasets/test/0005-tst-mp90_demo/1-res',
+    #     r'/home/acb6595/sat6/datasets/test/0005-tst-mp90_demo/2-blur',
+    #     r'/home/acb6595/sat6/datasets/test/0005-tst-mp90_demo/3-noise',
+    # ]
+
     _input_directories = [
-        r'/home/acb6595/sat6/datasets/test/0005-tst-mp90_demo/rgb',
-        r'/home/acb6595/sat6/datasets/test/0005-tst-mp90_demo/0-pan',
-        r'/home/acb6595/sat6/datasets/test/0005-tst-mp90_demo/1-res',
-        r'/home/acb6595/sat6/datasets/test/0005-tst-mp90_demo/2-blur',
-        r'/home/acb6595/sat6/datasets/test/0005-tst-mp90_demo/3-noise',
+        r'/home/acb6595/sat6/datasets/test/0007-tst-ep_demo/rgb',
+        r'/home/acb6595/sat6/datasets/test/0007-tst-ep_demo/0-pan',
+        r'/home/acb6595/sat6/datasets/test/0007-tst-ep_demo/1-res',
+        r'/home/acb6595/sat6/datasets/test/0007-tst-ep_demo/2-blur',
+        r'/home/acb6595/sat6/datasets/test/0007-tst-ep_demo/3-noise',
     ]
 
     # _output_directory_name = 'mp90_image_chain_rgb'
     # _output_directory_name = 'rgb_origin_mp90_ep90'
     # _output_directory_name = 'ep90_image_chain_rgb'
-    _output_directory_name = 'mp90_image_chain_rgb'
+    # _output_directory_name = 'mp90_image_chain_rgb'
+    _output_directory_name = 'ep_image_chain_rgb'
 
     _image_strip_output_dir = Path(definitions.ROOT_DIR, definitions.REL_PATHS['demo_images'], _output_directory_name)
 
     # main(_input_directories, image_strip_directory=_image_strip_output_dir)
 
-    # stack_dir = r'/home/acb6595/places/demo_images/full-space-keepers/stack-3'
-    # stack_dir = Path(stack_dir)
+    stack_dir = r'/home/acb6595/places/demo_images/full-space-keepers-rgb/stack'
+    stack_dir = Path(stack_dir)
     # make_vertical_stack(stack_dir)
 
     # mosaic_test_dir = r'/home/acb6595/sat6/demo_images/0005-tst-mp90_demo/rgb'
     # mosaic_test_output_dir = '/home/acb6595/sat6/demo_images/0005-tst-mp90_demo/mosaic_test'
     # make_mosaic(mosaic_test_dir, output_dir=mosaic_test_output_dir, side_len=8)
 
+    # mosaic_source_dirs = [
+    #     r'/home/acb6595/sat6/demo_images/0005-tst-mp90_demo/rgb',
+    #     r'/home/acb6595/sat6/demo_images/0005-tst-mp90_demo/0-pan',
+    #     r'/home/acb6595/sat6/demo_images/0005-tst-mp90_demo/1-res',
+    #     r'/home/acb6595/sat6/demo_images/0005-tst-mp90_demo/2-blur',
+    #     r'/home/acb6595/sat6/demo_images/0005-tst-mp90_demo/3-noise',
+    # ]
+    #
     mosaic_source_dirs = [
-        r'/home/acb6595/sat6/demo_images/0005-tst-mp90_demo/rgb',
-        r'/home/acb6595/sat6/demo_images/0005-tst-mp90_demo/0-pan',
-        r'/home/acb6595/sat6/demo_images/0005-tst-mp90_demo/1-res',
-        r'/home/acb6595/sat6/demo_images/0005-tst-mp90_demo/2-blur',
-        r'/home/acb6595/sat6/demo_images/0005-tst-mp90_demo/3-noise',
+        r'/home/acb6595/sat6/demo_images/0007-tst-ep_demo/rgb',
+        r'/home/acb6595/sat6/demo_images/0007-tst-ep_demo/0-pan',
+        r'/home/acb6595/sat6/demo_images/0007-tst-ep_demo/1-res',
+        r'/home/acb6595/sat6/demo_images/0007-tst-ep_demo/2-blur',
+        r'/home/acb6595/sat6/demo_images/0007-tst-ep_demo/3-noise',
     ]
 
-    mosaic_output_dir = make_mosaics_multi_dir(mosaic_source_dirs)
-    make_horizontal_strip(mosaic_output_dir)
+    # mosaic_output_dir = make_mosaics_multi_dir(mosaic_source_dirs)
+    # make_horizontal_strip(mosaic_output_dir)
+
+    manual_img_strip_dir = r'/home/acb6595/sat6/demo_images/origin-mp-ep-rgb'
+    make_horizontal_strip(manual_img_strip_dir)
+
