@@ -108,6 +108,11 @@ def distort_log_numpy(config):
     iterations = config['iterations']
     description = config['description']
 
+    if 'save_rgb_vector' in config.keys():
+        save_rgb_vector = config['save_rgb_vector']
+    else:
+        save_rgb_vector = False
+
     with wandb.init(project=WANDB_PID, job_type='distort_dataset', tags=distortion_tags, notes=description,
                     config=config) as run:
 
@@ -145,10 +150,6 @@ def distort_log_numpy(config):
             image_shape = config['image_shape']
             parent_names_labels = parent_dataset['names_labels']
             starting_img_parent_rel_dir = parent_dataset['dataset_rel_dir']
-            if 'save_rgb_vector' in config.keys():
-                save_rgb_vector = config['save_rgb_vector']
-            else:
-                save_rgb_vector = False
         else:
             raise Exception('Invalid project ID')
 
@@ -159,6 +160,22 @@ def distort_log_numpy(config):
             file_count_offset = len(pan_image_label_filenames)
 
             if sat6:
+
+                if save_rgb_vector:  # used only to save demo files locally
+
+                    mat_to_numpy(data_x,
+                                 data_y,
+                                 num_images,
+                                 images_per_file,
+                                 datatype_key,
+                                 # distortion_type_flags[0],
+                                 'rgb',
+                                 new_dataset_abs_dir,
+                                 # res_distortion_func,
+                                 file_count_offset=file_count_offset,
+                                 filename_stem='test',
+                                 parent_dataset_id=parent_artifact_name)
+
                 new_data_subset = mat_to_numpy(data_x,
                                                data_y,
                                                num_images,

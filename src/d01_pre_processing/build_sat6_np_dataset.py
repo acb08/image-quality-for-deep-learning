@@ -49,9 +49,16 @@ def mat_to_numpy(data_x,
     # res = native_res  # set the default resolution to the native resolution, update with res_function
     labels = np.argmax(data_y, axis=0)
     data_type = DATATYPE_MAP[datatype_key]
-    pan_images = np.asarray(np.mean(data_x, axis=2), dtype=data_type)
 
-    res, __, num_images_original = np.shape(pan_images)
+    if use_flag == 'rgb':
+        images = np.asarray(data_x[:, :, :3, :], dtype=data_type)  # keep all but the SWIR channel
+    else:
+        images = np.asarray(np.mean(data_x, axis=2), dtype=data_type)
+
+    # res, __, num_images_original = np.shape(images)  # replaced with lines below since shape depends on pan or rgb
+    array_shape = np.shape(images)
+    res = array_shape[0]
+    num_images_original = array_shape[-1]
 
     if use_flag != 'test_vectors':
         new_data_dir = Path(new_dataset_path, REL_PATHS[use_flag])
@@ -66,7 +73,7 @@ def mat_to_numpy(data_x,
     if num_images == 'all':
         num_images = num_images_original
     else:
-        pan_images = pan_images[:, :, :num_images]
+        images = images[:, :, :num_images]
         labels = labels[:num_images]
 
     if images_per_file == 'all':
@@ -83,14 +90,19 @@ def mat_to_numpy(data_x,
 
         start_idx, end_idx = i * images_per_file, (i + 1) * images_per_file
         label_vector = labels[start_idx:end_idx]
-        image_subset = pan_images[:, :, start_idx:end_idx]
+        image_subset = images[..., start_idx:end_idx]
         vector_length = np.shape(image_subset)[-1]  # covers remainder at end of array (last vector prob shorter)
 
         image_vector = np.empty((vector_length, res, res, 3), dtype=data_type)
 
-        for idx in range(vector_length):  # a better person would make reshaping work without a loop
-            new_image = image_subset[:, :, idx]
-            image_vector[idx] = np.stack(3 * [new_image], axis=2)
+        if use_flag != 'rgb':
+            for idx in range(vector_length):  # a better person would make reshaping work without a loop
+                new_image = image_subset[:, :, idx]
+                image_vector[idx] = np.stack(3 * [new_image], axis=2)
+        else:
+            for idx in range(vector_length):  # a better person would make reshaping work without a loop
+                new_image = image_subset[:, :, :, idx]
+                image_vector[idx] = new_image
 
         name_label_filename = f'{filename_stem}_{file_count_offset + i}.npz'
         np.savez_compressed(Path(new_data_dir, name_label_filename),

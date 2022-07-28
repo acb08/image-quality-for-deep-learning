@@ -54,7 +54,8 @@ REL_PATHS = {
     'edge_chips': 'edge_chips',
     'demo_images': r'demo_images',
     'multi_result': r'analysis/multi_result',
-    'bar_charts': r'analysis/bar_charts'
+    'bar_charts': r'analysis/bar_charts',
+    'mosaics': r'mosaics'
 }
 
 _project_config_filename = 'project_config.yml'

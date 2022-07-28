@@ -91,7 +91,8 @@ def _get_filenames(directory, extension, exclude=None):
 def make_image_strips_multi_dir(source_directories, output_directory, extension='png', background=255):
 
     """
-    Concatenates different versions of an image into a horizontal strip when
+    Concatenates different versions of an image into a horizontal strip, where corresponding image versions are
+    segregated by directory
     """
 
     base_directory = Path(source_directories[0])
@@ -121,20 +122,86 @@ def make_image_strips_multi_dir(source_directories, output_directory, extension=
         image_strip.save(output_path)
 
 
-def combine_vertical(images, shape):
-    pass
+def make_mosaics_multi_dir(source_directories, output_directory=None, extension='png', side_len=8, num_mosaics=1):
+
+    """
+    Makes mosaics using different versions of a set of images, where corresponding image versions are segregated by
+    directory
+    """
+
+    base_directory = Path(source_directories[0])
+    if not output_directory:
+        output_directory = Path(base_directory.parents[0], 'mosaics')
+    image_filenames = _get_filenames(base_directory, extension)
+
+    images_per_mosaic = side_len ** 2
+    total_images = num_mosaics * images_per_mosaic
+    if total_images > len(image_filenames):
+        raise ValueError('not enough images for the number size and number of mosaics specified')
+
+    if num_mosaics != 1:
+        raise NotImplementedError('only single mosaics implemented')
+
+    for i in range(num_mosaics):
+        mosaic_filenames = image_filenames[i * images_per_mosaic: (i + 1) * images_per_mosaic]
+        for j, directory in enumerate(source_directories):
+            source_id = str(Path(directory).parts[-1])
+            output_mosaic_filename = f'{j}_mosaic_{source_id}.png'
+            make_mosaic(directory, image_filenames=mosaic_filenames, output_filename=output_mosaic_filename,
+                        output_dir=output_directory)
+
+    return output_directory
 
 
-def make_vertical_stack(directory, image_filenames=None, extension='png', output_dir=None, output_filename='stack.png'):
+def make_mosaic(source_directory, image_filenames=None, output_dir=None, extension='png', side_len=8,
+                output_filename='mosaic.png'):
 
     if not image_filenames:
+        image_filenames = _get_filenames(source_directory, exclude=output_filename, extension=extension)
+
+    if not output_dir:
+        output_dir = source_directory
+
+    output_dir = Path(output_dir)
+    if not output_dir.is_dir():
+        Path.mkdir(output_dir, parents=True)
+
+    if len(image_filenames) != side_len ** 2:
+        print('Warning: number of image filenames should be equal to side_len ** 2')
+
+    strips = []
+
+    for i in range(side_len):
+        row_filenames = image_filenames[i * side_len: (i + 1) * side_len]
+        strip = make_horizontal_strip(source_directory, image_filenames=row_filenames, return_strip=True)
+        strips.append(strip)
+
+    make_vertical_stack(None, images=strips, output_dir=output_dir, output_filename=output_filename)
+
+
+def make_vertical_stack(directory, image_filenames=None, extension='png', output_dir=None, output_filename='stack.png',
+                        images=None):
+
+    if images is not None and image_filenames is not None:
+        raise Exception('Function received both images and image filenames. Please make up your mind :)')
+
+    if not image_filenames and not images:
         image_filenames = _get_filenames(directory, extension, exclude=output_filename)
 
-    images = []
+    if not images:
+        images = []
+        open_from_dir = True
+    else:  # hideous hack to let this function work with either images or a list of filenames
+        image_filenames = [f'dummy_filename{i}' for i in range(len(images))]
+        open_from_dir = False
+
     for i, filename in enumerate(image_filenames):
-        image = Image.open(Path(directory, filename))
-        image = np.asarray(image, dtype=np.uint8)
-        images.append(image)
+        if open_from_dir:
+            image = Image.open(Path(directory, filename))
+            image = np.asarray(image, dtype=np.uint8)
+            images.append(image)
+        else:
+            image = images[i]
         if i == 0:
             strip_shape = np.shape(image)
         if i != 0:
@@ -157,10 +224,11 @@ def make_vertical_stack(directory, image_filenames=None, extension='png', output
 
 
 def make_horizontal_strip(directory, image_filenames=None, extension='png', output_dir=None,
-                          output_filename='strip.png', background=255):
+                          output_filename='strip.png', background=255, return_strip=False):
 
     if not image_filenames:
         image_filenames = _get_filenames(directory, extension, exclude=output_filename)
+        image_filenames = sorted(image_filenames)
 
     images = []
 
@@ -183,11 +251,14 @@ def make_horizontal_strip(directory, image_filenames=None, extension='png', outp
     strip_shape = (height, width, c)
     strip = combine_horizontal(images, strip_shape, background)
 
-    if not output_dir:
-        output_dir = directory
+    if return_strip:
+        return strip
 
-    strip = Image.fromarray(strip)
-    strip.save(Path(output_dir, output_filename))
+    else:
+        if not output_dir:
+            output_dir = directory
+        strip = Image.fromarray(strip)
+        strip.save(Path(output_dir, output_filename))
 
 
 def main(input_directories, image_strip_directory=None):
@@ -221,22 +292,46 @@ if __name__ == '__main__':
     #     r'/home/acb6595/places/datasets/test/0003-tst-mp90_demo/3-noise',
     #     ]
 
+    # _input_directories = [
+    #     r'/home/acb6595/places/datasets/test/0003-tst-mp90_demo/rgb',
+    #     r'/home/acb6595/places/datasets/test/0002-tst-ep90_demo/0-pan',
+    #     r'/home/acb6595/places/datasets/test/0002-tst-ep90_demo/1-res',
+    #     r'/home/acb6595/places/datasets/test/0002-tst-ep90_demo/2-blur',
+    #     r'/home/acb6595/places/datasets/test/0002-tst-ep90_demo/3-noise',
+    # ]
+
     _input_directories = [
-        r'/home/acb6595/places/datasets/test/0003-tst-mp90_demo/rgb',
-        r'/home/acb6595/places/datasets/test/0002-tst-ep90_demo/0-pan',
-        r'/home/acb6595/places/datasets/test/0002-tst-ep90_demo/1-res',
-        r'/home/acb6595/places/datasets/test/0002-tst-ep90_demo/2-blur',
-        r'/home/acb6595/places/datasets/test/0002-tst-ep90_demo/3-noise',
+        r'/home/acb6595/sat6/datasets/test/0005-tst-mp90_demo/rgb',
+        r'/home/acb6595/sat6/datasets/test/0005-tst-mp90_demo/0-pan',
+        r'/home/acb6595/sat6/datasets/test/0005-tst-mp90_demo/1-res',
+        r'/home/acb6595/sat6/datasets/test/0005-tst-mp90_demo/2-blur',
+        r'/home/acb6595/sat6/datasets/test/0005-tst-mp90_demo/3-noise',
     ]
 
     # _output_directory_name = 'mp90_image_chain_rgb'
     # _output_directory_name = 'rgb_origin_mp90_ep90'
-    _output_directory_name = 'ep90_image_chain_rgb'
+    # _output_directory_name = 'ep90_image_chain_rgb'
+    _output_directory_name = 'mp90_image_chain_rgb'
 
     _image_strip_output_dir = Path(definitions.ROOT_DIR, definitions.REL_PATHS['demo_images'], _output_directory_name)
 
     # main(_input_directories, image_strip_directory=_image_strip_output_dir)
 
-    stack_dir = r'/home/acb6595/places/demo_images/full-space-keepers/stack-3'
-    stack_dir = Path(stack_dir)
-    make_vertical_stack(stack_dir)
+    # stack_dir = r'/home/acb6595/places/demo_images/full-space-keepers/stack-3'
+    # stack_dir = Path(stack_dir)
+    # make_vertical_stack(stack_dir)
+
+    # mosaic_test_dir = r'/home/acb6595/sat6/demo_images/0005-tst-mp90_demo/rgb'
+    # mosaic_test_output_dir = '/home/acb6595/sat6/demo_images/0005-tst-mp90_demo/mosaic_test'
+    # make_mosaic(mosaic_test_dir, output_dir=mosaic_test_output_dir, side_len=8)
+
+    mosaic_source_dirs = [
+        r'/home/acb6595/sat6/demo_images/0005-tst-mp90_demo/rgb',
+        r'/home/acb6595/sat6/demo_images/0005-tst-mp90_demo/0-pan',
+        r'/home/acb6595/sat6/demo_images/0005-tst-mp90_demo/1-res',
+        r'/home/acb6595/sat6/demo_images/0005-tst-mp90_demo/2-blur',
+        r'/home/acb6595/sat6/demo_images/0005-tst-mp90_demo/3-noise',
+    ]
+
+    mosaic_output_dir = make_mosaics_multi_dir(mosaic_source_dirs)
+    make_horizontal_strip(mosaic_output_dir)
