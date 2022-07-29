@@ -4,9 +4,11 @@ from src.d04_analysis.analysis_functions import build_3d_field
 from src.d04_analysis.distortion_performance import get_multiple_model_distortion_performance_results
 from src.d04_analysis.fit import fit_hyperplane, linear_predict
 from src.d04_analysis.plot import analyze_plot_results_together
+from src.d04_analysis.distortion_performance_composite import get_composite_performance_result
 from src.d04_analysis.binomial_simulation import get_ideal_correlation
 from src.d00_utils.functions import get_config, log_config, increment_suffix
 from src.d00_utils.definitions import ROOT_DIR, REL_PATHS
+from src.d00_utils.classes import PseudoArgs
 import argparse
 from pathlib import Path
 import numpy as np
@@ -181,12 +183,32 @@ def compare_correlate(config):
 
     test_result_identifiers = config['test_result_identifiers']
     different_result_identifiers = config['different_test_result_identifiers']
+
+    if 'composite_performance_result_config_id' in config.keys():
+        if config['composite_performance_result_config_id'] is not None:
+            composite_performance_result_config_id = config['composite_performance_result_config_id']
+            composite_result_config_dir = Path(ROOT_DIR, REL_PATHS['composite_performance_configs'])
+            pseudo_args = PseudoArgs(config_dir=composite_result_config_dir,
+                                     config_name=composite_performance_result_config_id)
+            composite_performance_result_config = get_config(pseudo_args)
+            composite_performance_result, __ = get_composite_performance_result(
+                config=composite_performance_result_config)
+        else:
+            composite_performance_result = None
+            composite_performance_result_config = None
+    else:
+        composite_performance_result = None
+        composite_performance_result_config = None
+
     overwrite = config['overwrite']
     manual_name = config['manual_name']
     analyze_3d = config['analyze_3d']
     analyze_pairwise = config['analyze_pairwise']
     plot_together_2d = config['plot_together_2d']
     plot_together_1d = config['plot_together_1d']
+
+    if manual_name is None and composite_performance_result is not None:
+        raise ValueError('compare_correlate() requires manual_name != None if composite_performance_result used')
 
     dir_name_result_identifiers = test_result_identifiers
     if different_result_identifiers:
@@ -196,8 +218,14 @@ def compare_correlate(config):
                                  overwrite=overwrite, manual_name=manual_name)
 
     log_config(output_dir, config)
+    if composite_performance_result_config:
+        log_config(output_dir, composite_performance_result_config,
+                   config_used_filename='composite_performance_result_config_used.yml')
 
     performance_results = get_multiple_model_distortion_performance_results(test_result_identifiers)
+
+    performance_results.append(composite_performance_result)
+
     different_performance_results = None
     if different_result_identifiers:
         different_performance_results = get_multiple_model_distortion_performance_results(different_result_identifiers)
@@ -222,6 +250,17 @@ def compare_correlate(config):
     if plot_together_1d:
         analyze_plot_results_together(performance_results, directory=output_dir, make_subdir=True, dim_tag='1d',
                                       identifier='1d')
+
+    log_accuracies(all_performance_results, output_dir)
+
+
+def log_accuracies(performance_results, output_dir):
+
+    with open(Path(output_dir, 'accuracies.txt'), 'w') as file:
+        for performance_result in performance_results:
+            identifier = performance_result.identifier
+            accuracy = performance_result.mean_accuracy()
+            print(f'{identifier} mean accuracy: {accuracy}', file=file)
 
 
 def make_log_dataframes(correlations, label_dict, output_dir=None):
@@ -263,7 +302,7 @@ def analyze_pairwise_1d_2d(model_results, directory='default', make_subdirectori
 
 if __name__ == '__main__':
 
-    config_filename = 's6_fr_models_fr90_megaset_1.yml'
+    config_filename = 'pl-dn161_fr-oct_comp-fr90-mega-2.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_filename, help='config filename to be used')

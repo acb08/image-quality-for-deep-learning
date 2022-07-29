@@ -1,0 +1,26 @@
+---
+
+identifier: composite
+parent_dir: default
+overwrite_extracted_props: True
+assign_by_octant_only: True
+
+performance_prediction_result_ids:
+  - 0122-rlt-0031-resnet18-oct_000_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0
+  - 0123-rlt-0031-resnet18-oct_001_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0
+  - 0109-rlt-0023-resnet18-oct_010_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0
+  - 0110-rlt-0023-resnet18-oct_011_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0
+  - 0111-rlt-0023-resnet18-oct_100_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0
+  - 0113-rlt-0023-resnet18-oct_101_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0
+  - 0120-rlt-0023-resnet18-oct_110_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0
+  - 0121-rlt-0023-resnet18-oct_111_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0
+
+performance_eval_result_ids:
+  - 0118-rlt-0031-resnet18-oct_000_best_loss-0012-tst-full_range_90_mega_set_2_noise:v0
+  - 0119-rlt-0031-resnet18-oct_001_best_loss-0012-tst-full_range_90_mega_set_2_noise:v0
+  - 0108-rlt-0023-resnet18-oct_010_best_loss-0012-tst-full_range_90_mega_set_2_noise:v0
+  - 0112-rlt-0023-resnet18-oct_011_best_loss-0012-tst-full_range_90_mega_set_2_noise:v0
+  - 0114-rlt-0023-resnet18-oct_100_best_loss-0012-tst-full_range_90_mega_set_2_noise:v0
+  - 0115-rlt-0023-resnet18-oct_101_best_loss-0012-tst-full_range_90_mega_set_2_noise:v0
+  - 0116-rlt-0023-resnet18-oct_110_best_loss-0012-tst-full_range_90_mega_set_2_noise:v0
+  - 0117-rlt-0023-resnet18-oct_111_best_loss-0012-tst-full_range_90_mega_set_2_noise:v0

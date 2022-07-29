@@ -195,3 +195,14 @@ class VariableResolution(object):
     def __call__(self, tensor):
         transform_use = random.choice(self.transform_bank)
         return transform_use(tensor)
+
+
+class PseudoArgs(object):
+    """
+    Imitates argparse.ArgumentParser() object to allow calls of functions.get_config(args) without actually using
+    argparse (i.e. it's useful when a function needs to retrieve a config file)
+    """
+    def __init__(self, config_dir, config_name):
+        self.config_dir = config_dir
+        self.config_name = config_name
+

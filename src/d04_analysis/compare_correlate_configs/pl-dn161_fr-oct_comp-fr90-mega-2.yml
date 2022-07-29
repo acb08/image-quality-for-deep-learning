@@ -1,0 +1,20 @@
+---
+
+test_result_identifiers:
+  - ['0103-rlt-0020-densenet161-full_range_best_loss-0012-tst-full_range_90_mega_set_2_noise:v0',
+     'DN-161 full-range model' ]
+
+# if a second set of test result identifiers is included here, inter-set results are cross correlated, whereas passing
+# only a single set of identifiers results in intra-set correlations being calculated.  In other words, passing a single
+# set results in a symmetric correlation matrix, whereas passing different sets will result in an asymmetric table
+different_test_result_identifiers: null
+
+composite_performance_result_config_id: pl_oct_composite_fr90_mega1_mega2_comp.yml
+
+overwrite: False
+manual_name: dn161-full-range-oct-composite
+analyze_3d: True
+analyze_pairwise: True
+plot_together_2d: True
+plot_together_1d: True
+

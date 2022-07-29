@@ -48,10 +48,8 @@ class CompositePerformanceResult(object):
         if not self.identifier:
             self.identifier = self.result_id
 
-        if self.assign_by_octant_only:
-            self.result_id = f'{self.result_id}-om'
-            if self.result_id != self.identifier:
-                self.identifier = f'{self.identifier}-om'
+        # if self.assign_by_octant_only and self.result_id != self.identifier:
+        #     self.identifier = f'{self.identifier}-om'
 
         self.performance_prediction_dataset_id, self.dataset_id = self._screen_dataset_ids()
 
@@ -119,6 +117,15 @@ class CompositePerformanceResult(object):
         self.model_id = surrogate_model_id
         self.perf_prediction_fit = None  # tuple of form (fit_coefficients, fit_key) once assigned
 
+    def mean_accuracy(self):
+        if self.top_1_vec is not None:
+            return np.mean(self.top_1_vec)
+        else:
+            return None
+
+    def mean_accuracy_predict(self):
+        return np.mean(self.top_1_vec_predict)
+
     # *** methods needed for compatibility with functions that use ModelDistortionPerformance instances ***************
     def get_processed_instance_props_path(self, predict_eval_flag):
         return _get_processed_instance_props_path(self, predict_eval_flag=predict_eval_flag)
@@ -131,7 +138,7 @@ class CompositePerformanceResult(object):
         return _archive_processed_props(self, res_values, blur_values, noise_values, perf_3d, distortion_array,
                                         perf_array, predict_eval_flag=predict_eval_flag)
 
-    def get_3d_distortion_perf_props(self, distortion_ids, predict_eval_flag):
+    def get_3d_distortion_perf_props(self, distortion_ids, predict_eval_flag='eval'):
         return _get_3d_distortion_perf_props(self, distortion_ids, predict_eval_flag=predict_eval_flag)
 
     def conditional_accuracy(self, distortion_id, per_class=False):
@@ -167,8 +174,8 @@ class CompositePerformanceResult(object):
             for eval_result_id in self.eval_result_ids:
                 composite_result_id = f'{composite_result_id}-{eval_result_id[:4]}'
 
-        if self.assign_by_octant_only:
-            composite_result_id = f'{composite_result_id}-om'
+        # if self.assign_by_octant_only:
+        #     composite_result_id = f'{composite_result_id}-om'
 
         return composite_result_id
 

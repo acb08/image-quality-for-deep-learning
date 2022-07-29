@@ -126,6 +126,9 @@ class ModelDistortionPerformanceResult(DistortedDataset):
     def get_accuracy_vector(self):
         return np.equal(self.labels, self.predicts)
 
+    def mean_accuracy(self):
+        return np.mean(self.top_1_vec)
+
     def conditional_accuracy(self, distortion_id, per_class=False):
         return conditional_mean_accuracy(self.labels, self.predicts, self.distortions[distortion_id],
                                          per_class=per_class)

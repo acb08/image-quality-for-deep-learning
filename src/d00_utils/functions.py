@@ -192,9 +192,9 @@ def get_config(args):
     return config
 
 
-def log_config(output_dir, config, return_path=False):
+def log_config(output_dir, config, return_path=False, config_used_filename=STANDARD_CONFIG_USED_FILENAME):
 
-    log_path = Path(output_dir, STANDARD_CONFIG_USED_FILENAME)
+    log_path = Path(output_dir, config_used_filename)
 
     with open(log_path, 'w') as file:
         dump(config, file)
