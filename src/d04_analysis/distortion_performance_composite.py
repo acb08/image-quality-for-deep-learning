@@ -422,7 +422,7 @@ class CompositePerformanceResult(object):
     def fit(self, add_bias=True, fit_key='linear'):
 
         x_vals, y_vals, z_vals, perf_3d, distortion_array, perf_array = self.get_3d_distortion_perf_props(
-            distortion_ids=self.distortion_ids)
+            distortion_ids=self.distortion_ids, predict_eval_flag='predict')
         w = fit(distortion_array, perf_array, distortion_ids=self.distortion_ids, add_bias=add_bias, fit_key=fit_key)
         self.perf_prediction_fit = (w, fit_key)
 
@@ -590,7 +590,7 @@ def log_uid(directory, uid):
         json.dump(uid_log, file)
 
 
-def get_sub_dir_and_log_filename(output_dir, analysis_type, distortion_clip=False):
+def get_sub_dir_and_log_filename(output_dir, analysis_type, distortion_clip=False):  # leaving distortion_clip for now
     if not distortion_clip:
         sub_directory = Path(output_dir, analysis_type)
     else:
@@ -615,8 +615,6 @@ if __name__ == '__main__':
     fit_keys = ['linear', 'nonlinear_0', 'nonlinear_1', 'giqe5_deriv', 'power_law', 'giqe5_deriv_2', 'giqe5_deriv_4',
                 'giqe5_deriv_5']
 
-    # fit_keys = ['giqe5_deriv_4']
-
     if not config_filename:
         config_filename = 'composite_distortion_analysis_config.yml'
 
@@ -631,15 +629,6 @@ if __name__ == '__main__':
 
     _composite_performance, _output_dir = get_composite_performance_result(config=run_config)
 
-    _res_limits = None
-    _blur_limits = None
-    _noise_limits = None
-
-    if _res_limits or _blur_limits or _noise_limits:
-        _distortion_clip = True
-    else:
-        _distortion_clip = False
-
     if analyze_1d:
         sub_dir, log_filename = get_sub_dir_and_log_filename(_output_dir, '1d')
         with open(Path(sub_dir, log_filename), 'w') as output_file:
@@ -653,14 +642,10 @@ if __name__ == '__main__':
                             distortion_ids=('res', 'blur', 'noise'))
 
     if analyze_3d:
-        sub_dir_3d, log_filename = get_sub_dir_and_log_filename(_output_dir, '3d', distortion_clip=_distortion_clip)
+        sub_dir_3d, log_filename = get_sub_dir_and_log_filename(_output_dir, '3d')  # got rid of distortion_clip
         with open((Path(sub_dir_3d, log_filename)), 'w') as output_file:
             for _fit_key in fit_keys:
                 fit_sub_dir, ___ = get_sub_dir_and_log_filename(sub_dir_3d, _fit_key)
                 analyze_perf_3d(_composite_performance, log_file=output_file, directory=fit_sub_dir, fit_key=_fit_key,
                                 standard_plots=True, residual_plot=True, make_residual_color_plot=False,
-                                distortion_ids=('res', 'blur', 'noise'),
-                                x_limits=_res_limits,
-                                y_limits=_blur_limits,
-                                z_limits=_noise_limits
-                                )
+                                distortion_ids=('res', 'blur', 'noise'))

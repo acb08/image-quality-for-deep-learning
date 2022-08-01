@@ -198,11 +198,11 @@ def analyze_perf_2d(model_performance,
     for i, (idx_0, idx_1) in enumerate(distortion_combinations):
         x_id, y_id = distortion_ids[idx_0], distortion_ids[idx_1]
 
-        x_values, y_values, accuracy_means, fit, corr, distortion_arr = get_distortion_perf_2d(model_performance,
-                                                                                               x_id,
-                                                                                               y_id,
-                                                                                               add_bias=add_bias,
-                                                                                               log_file=log_file)
+        x_values, y_values, accuracy_means, _fit, corr, distortion_arr = get_distortion_perf_2d(model_performance,
+                                                                                                x_id,
+                                                                                                y_id,
+                                                                                                add_bias=add_bias,
+                                                                                                log_file=log_file)
 
         plot_2d(x_values, y_values, accuracy_means, x_id, y_id,
                 result_identifier=identifier,
@@ -210,7 +210,7 @@ def analyze_perf_2d(model_performance,
                 az_el_combinations='all',
                 directory=directory)
 
-        plot_2d_linear_fit(distortion_arr, accuracy_means, fit, x_id, y_id,
+        plot_2d_linear_fit(distortion_arr, accuracy_means, _fit, x_id, y_id,
                            result_identifier=f'{identifier}_fit',
                            axis_labels='default',
                            az_el_combinations='all',
@@ -218,27 +218,15 @@ def analyze_perf_2d(model_performance,
 
 
 def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noise', add_bias=True, log_file=None,
-                           fit_key='linear', x_limits=None, y_limits=None, z_limits=None):
+                           fit_key='linear',):
 
     result_name = str(model_performance)
 
-    if not x_limits and not y_limits and not z_limits:
-
-        try:
-            x_values, y_values, z_values, perf_3d, distortion_array, perf_array, __ = (
-                model_performance.get_3d_distortion_perf_props(distortion_ids=(x_id, y_id, z_id),
-                                                               predict_eval_flag='predict'))
-        except ValueError:  # raised by get_3d_distortion_perf_props if distortion_ids != ('res', 'blur', 'noise')
-            accuracy_vector = model_performance.top_1_vec_predict
-            x = model_performance.distortions['predict'][x_id]
-            y = model_performance.distortions['predict'][y_id]
-            z = model_performance.distortions['predict'][z_id]
-
-            x_values, y_values, z_values, perf_3d, distortion_array, perf_array, __ = build_3d_field(x, y, z,
-                                                                                                     accuracy_vector,
-                                                                                                     data_dump=True)
-
-    else:
+    try:
+        x_values, y_values, z_values, perf_3d, distortion_array, perf_array, __ = (
+            model_performance.get_3d_distortion_perf_props(distortion_ids=(x_id, y_id, z_id),
+                                                           predict_eval_flag='predict'))
+    except ValueError:  # raised by get_3d_distortion_perf_props if distortion_ids != ('res', 'blur', 'noise')
         accuracy_vector = model_performance.top_1_vec_predict
         x = model_performance.distortions['predict'][x_id]
         y = model_performance.distortions['predict'][y_id]
@@ -246,13 +234,7 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
 
         x_values, y_values, z_values, perf_3d, distortion_array, perf_array, __ = build_3d_field(x, y, z,
                                                                                                  accuracy_vector,
-                                                                                                 data_dump=True,
-                                                                                                 x_limits=x_limits,
-                                                                                                 y_limits=y_limits,
-                                                                                                 z_limits=z_limits)
-
-    # add a try/except section so that composite performance results can fit on performance predict results and
-    # evaluate on eval results
+                                                                                                 data_dump=True)
 
     fit_coefficients = fit(distortion_array, perf_array, distortion_ids=(x_id, y_id, z_id), fit_key=fit_key,
                            add_bias=add_bias)
@@ -261,23 +243,9 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
                                           fit_key=fit_key, add_bias=add_bias)
 
     if hasattr(model_performance, 'eval_results'):
-        if not x_limits and not y_limits and not z_limits:
-            __, __, __, perf_3d_eval, distortion_array_eval, __, __ = (
-                model_performance.get_3d_distortion_perf_props(distortion_ids=(x_id, y_id, z_id),
-                                                               predict_eval_flag='eval'))
-
-        else:
-            accuracy_vector_eval = model_performance.top_1_vec
-            x_eval = model_performance.distortions['eval'][x_id]
-            y_eval = model_performance.distortions['eval'][y_id]
-            z_eval = model_performance.distortions['eval'][z_id]
-
-            __, __, __, perf_3d_eval, distortion_array_eval, __, __ = build_3d_field(x_eval, y_eval, z_eval,
-                                                                                     accuracy_vector_eval,
-                                                                                     data_dump=True,
-                                                                                     x_limits=x_limits,
-                                                                                     y_limits=y_limits,
-                                                                                     z_limits=z_limits)
+        __, __, __, perf_3d_eval, distortion_array_eval, __, __ = (
+            model_performance.get_3d_distortion_perf_props(distortion_ids=(x_id, y_id, z_id),
+                                                           predict_eval_flag='eval'))
 
     else:
         perf_3d_eval = perf_3d
@@ -333,13 +301,11 @@ def analyze_perf_3d(model_performance,
                     standard_plots=True,
                     residual_plot=True,
                     make_residual_color_plot=True,
-                    isosurf_plot=False,
-                    x_limits=None, y_limits=None, z_limits=None):
+                    isosurf_plot=False,):
 
     x_id, y_id, z_id = distortion_ids
     x_values, y_values, z_values, perf_3d, perf_3d_eval, fit_3d = get_distortion_perf_3d(
-        model_performance, x_id=x_id, y_id=y_id, z_id=z_id, add_bias=add_bias, log_file=log_file, fit_key=fit_key,
-        x_limits=x_limits, y_limits=y_limits, z_limits=z_limits)
+        model_performance, x_id=x_id, y_id=y_id, z_id=z_id, add_bias=add_bias, log_file=log_file, fit_key=fit_key,)
 
     check_histograms(perf_3d, fit_3d, directory=directory)
     sorted_linear_scatter(fit_3d, perf_3d_eval, directory=directory)
