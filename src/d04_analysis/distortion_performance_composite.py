@@ -64,6 +64,8 @@ class CompositePerformanceResult(object):
         self.noise_vals = None
         self._get_distortion_space()  # assigns distortion vectors to distortion variables above
 
+        self._distortion_perf_props_3d = {}  # used to store the output of self.get_3d_distortion_perf_props()
+
         if self.eval_results:
             self.labels = next(iter(self.eval_results.values())).labels
         else:
@@ -139,7 +141,19 @@ class CompositePerformanceResult(object):
                                         perf_array, predict_eval_flag=predict_eval_flag)
 
     def get_3d_distortion_perf_props(self, distortion_ids, predict_eval_flag='eval'):
-        return _get_3d_distortion_perf_props(self, distortion_ids, predict_eval_flag=predict_eval_flag)
+        """
+        returns 3d distortion performance properties in the form of a tuple:
+            res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array, None
+
+        Also stores the tuple above in the dictionary self.distortion_perf_props_3d, where the key is predict_eval_flag
+        so that any subsequent calls can avoid re-computing the distortion performance properties.
+        """
+        if predict_eval_flag in self._distortion_perf_props_3d:
+            return self._distortion_perf_props_3d[predict_eval_flag]
+        else:
+            self._distortion_perf_props_3d[predict_eval_flag] = _get_3d_distortion_perf_props(
+                self, distortion_ids, predict_eval_flag=predict_eval_flag)
+        return self._distortion_perf_props_3d[predict_eval_flag]
 
     def conditional_accuracy(self, distortion_id, per_class=False):
         assert per_class is False
@@ -419,16 +433,16 @@ class CompositePerformanceResult(object):
 
         pass
 
-    def fit(self, add_bias=True, fit_key='linear'):
-
-        x_vals, y_vals, z_vals, perf_3d, distortion_array, perf_array = self.get_3d_distortion_perf_props(
-            distortion_ids=self.distortion_ids, predict_eval_flag='predict')
-        w = fit(distortion_array, perf_array, distortion_ids=self.distortion_ids, add_bias=add_bias, fit_key=fit_key)
-        self.perf_prediction_fit = (w, fit_key)
-
-    def run_performance_prediction(self):
-        if self.perf_prediction_fit is None:
-            self.fit()
+    # def fit(self, add_bias=True, fit_key='linear'):
+    #
+    #     x_vals, y_vals, z_vals, perf_3d, distortion_array, perf_array = self.get_3d_distortion_perf_props(
+    #         distortion_ids=self.distortion_ids, predict_eval_flag='predict')
+    #     w = fit(distortion_array, perf_array, distortion_ids=self.distortion_ids, add_bias=add_bias, fit_key=fit_key)
+    #     self.perf_prediction_fit = (w, fit_key)
+    #
+    # def run_performance_prediction(self):
+    #     if self.perf_prediction_fit is None:
+    #         self.fit()
 
 
 def assign_octant_labels(distortion_array):
