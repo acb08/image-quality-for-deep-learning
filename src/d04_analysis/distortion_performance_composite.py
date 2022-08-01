@@ -433,16 +433,15 @@ class CompositePerformanceResult(object):
 
         pass
 
-    # def fit(self, add_bias=True, fit_key='linear'):
-    #
-    #     x_vals, y_vals, z_vals, perf_3d, distortion_array, perf_array = self.get_3d_distortion_perf_props(
-    #         distortion_ids=self.distortion_ids, predict_eval_flag='predict')
-    #     w = fit(distortion_array, perf_array, distortion_ids=self.distortion_ids, add_bias=add_bias, fit_key=fit_key)
-    #     self.perf_prediction_fit = (w, fit_key)
-    #
-    # def run_performance_prediction(self):
-    #     if self.perf_prediction_fit is None:
-    #         self.fit()
+    def compare_predict_eval(self, distortion_ids=('res', 'blur', 'noise')):
+        __, __, __, perf_3d_predict, __, perf_array_predict, __ = self.get_3d_distortion_perf_props(
+            distortion_ids=distortion_ids, predict_eval_flag='predict')
+        __, __, __, perf_3d_eval, __, perf_array_eval, __ = self.get_3d_distortion_perf_props(
+            distortion_ids=distortion_ids, predict_eval_flag='eval')
+
+        diff_3d = perf_3d_eval - perf_3d_predict
+        diff_vec = perf_array_predict - perf_array_eval
+        return diff_3d, diff_vec
 
 
 def assign_octant_labels(distortion_array):
@@ -628,6 +627,8 @@ if __name__ == '__main__':
 
     fit_keys = ['linear', 'nonlinear_0', 'nonlinear_1', 'giqe5_deriv', 'power_law', 'giqe5_deriv_2', 'giqe5_deriv_4',
                 'giqe5_deriv_5']
+
+    # fit_keys = ['giqe5_deriv_5']
 
     if not config_filename:
         config_filename = 'composite_distortion_analysis_config.yml'

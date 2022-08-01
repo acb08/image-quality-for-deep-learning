@@ -582,14 +582,22 @@ def _heat_plot(arr, xlabel, ylabel, ax=None, vmin=None, vmax=None, extent=None):
     ax.set_ylabel(ylabel)
 
 
-def sorted_linear_scatter(prediction, result, directory=None):
+def sorted_linear_scatter(prediction, result, directory=None, include_y_eq_x=True):
 
     prediction, result = sort_parallel(prediction, result)
 
+    if include_y_eq_x:
+        x_min, x_max = np.min(prediction), np.max(prediction)
+        x = np.linspace(x_min, x_max)
+        y = x
+
     plt.figure()
     plt.scatter(prediction, result, marker=".", s=0.5)
+    if include_y_eq_x:
+        plt.plot(x, y, linestyle='--', color='k', label='1-to-1')
     plt.xlabel('predicted accuracy')
     plt.ylabel('accuracy')
+    plt.legend()
     if directory:
         plt.savefig(Path(directory, 'predict_result_scatter.png'))
     plt.show()

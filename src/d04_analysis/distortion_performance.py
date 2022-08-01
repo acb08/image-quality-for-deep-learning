@@ -247,6 +247,12 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
             model_performance.get_3d_distortion_perf_props(distortion_ids=(x_id, y_id, z_id),
                                                            predict_eval_flag='eval'))
 
+        predict_eval_perf_diff_mean = np.mean(perf_3d_eval - perf_3d)
+        print(f'{result_name} predict/eval perf differences: {predict_eval_perf_diff_mean}', file=log_file)
+
+        diff_check, __ = model_performance.compare_predict_eval()
+        assert np.mean(diff_check) == predict_eval_perf_diff_mean
+
     else:
         perf_3d_eval = perf_3d
         distortion_array_eval = distortion_array
@@ -357,6 +363,16 @@ def check_histograms(distortion_performance, performance_fit, directory=None):
     plt.xlabel('accuracy')
     if directory:
         plt.savefig(Path(directory, 'hist_fit.png'))
+    plt.show()
+
+    residuals = performance_fit - distortion_performance
+
+    plt.figure()
+    plt.hist(np.ravel(residuals))
+    plt.ylabel('occurrences')
+    plt.xlabel('residual')
+    if directory:
+        plt.savefig(Path(directory, 'hist_residuals.png'))
     plt.show()
 
 
