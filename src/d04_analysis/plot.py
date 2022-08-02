@@ -11,7 +11,7 @@ from skimage.measure import marching_cubes
 
 from src.d04_analysis.fit import linear_predict
 from src.d04_analysis.analysis_functions import conditional_extract_2d, create_identifier, get_distortion_perf_2d, \
-    get_distortion_perf_1d, measure_log_perf_correlation, flatten, keep_2_of_3, sort_parallel
+    get_distortion_perf_1d, measure_log_perf_correlation, flatten, keep_2_of_3, sort_parallel, simple_model_check
 
 # from src.d04_analysis.distortion_performance import plot_perf_2d_multi_result, plot_perf_1d_multi_result
 
@@ -582,22 +582,28 @@ def _heat_plot(arr, xlabel, ylabel, ax=None, vmin=None, vmax=None, extent=None):
     ax.set_ylabel(ylabel)
 
 
-def sorted_linear_scatter(prediction, result, directory=None, filename='predict_result_scatter.png',
-                          include_y_eq_x=True):
+def sorted_linear_scatter(prediction, result, directory=None, filename='predict_result_scatter.png', best_fit=True,
+                          xlabel='predicted accuracy', ylabel='accuracy'):
 
     prediction, result = sort_parallel(prediction, result)
 
-    if include_y_eq_x:
-        x_min, x_max = np.min(prediction), np.max(prediction)
-        x = np.linspace(x_min, x_max)
+    x_min, x_max = np.min(prediction), np.max(prediction)
+    x = np.linspace(x_min, x_max)
+
+    if best_fit:
+        slope, intercept, r_squared = simple_model_check(prediction, result, pre_sorted=True)
+        y = slope * x + intercept
+        label = fr'$y = {round(slope, 3)} x + {round(intercept, 3)}$, $r^2={round(r_squared, 3)}$'
+
+    else:
         y = x
+        label = '1-to-1'
 
     plt.figure()
     plt.scatter(prediction, result, marker=".", s=0.5)
-    if include_y_eq_x:
-        plt.plot(x, y, linestyle='--', color='k', label='1-to-1')
-    plt.xlabel('predicted accuracy')
-    plt.ylabel('accuracy')
+    plt.plot(x, y, linestyle='--', color='k', label=label)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
     plt.legend()
     if directory:
         plt.savefig(Path(directory, filename))

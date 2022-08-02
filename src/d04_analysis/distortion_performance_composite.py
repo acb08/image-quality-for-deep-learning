@@ -625,10 +625,10 @@ if __name__ == '__main__':
     analyze_2d = False
     analyze_3d = True
 
-    fit_keys = ['linear', 'nonlinear_0', 'nonlinear_1', 'giqe5_deriv', 'power_law', 'giqe5_deriv_2', 'giqe5_deriv_4',
-                'giqe5_deriv_5', 'giqe5_deriv_6']
+    # fit_keys = ['linear', 'nonlinear_0', 'nonlinear_1', 'giqe5_deriv', 'power_law', 'giqe5_deriv_2', 'giqe5_deriv_4',
+    #             'giqe5_deriv_5', 'giqe5_deriv_6']
 
-    # fit_keys = ['giqe5_deriv_5', 'giqe5_deriv_6']
+    fit_keys = ['giqe5_deriv_5', 'giqe5_deriv_6']
 
     if not config_filename:
         config_filename = 'composite_distortion_analysis_config.yml'
@@ -662,5 +662,5 @@ if __name__ == '__main__':
             for _fit_key in fit_keys:
                 fit_sub_dir, ___ = get_sub_dir_and_log_filename(sub_dir_3d, _fit_key)
                 analyze_perf_3d(_composite_performance, log_file=output_file, directory=fit_sub_dir, fit_key=_fit_key,
-                                standard_plots=True, residual_plot=True, make_residual_color_plot=False,
+                                standard_plots=True, residual_plot=False, make_residual_color_plot=False,
                                 distortion_ids=('res', 'blur', 'noise'))

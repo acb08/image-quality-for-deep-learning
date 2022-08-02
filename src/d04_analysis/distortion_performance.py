@@ -5,11 +5,11 @@ from src.d00_utils.functions import load_wandb_data_artifact, get_config, constr
 from src.d04_analysis._shared_methods import _get_processed_instance_props_path, _check_extract_processed_props, \
     _archive_processed_props, _get_3d_distortion_perf_props
 from src.d04_analysis.analysis_functions import conditional_mean_accuracy, extract_embedded_vectors, \
-    get_class_accuracies, build_3d_field, get_distortion_perf_2d, get_distortion_perf_1d
+    get_class_accuracies, build_3d_field, get_distortion_perf_2d, get_distortion_perf_1d, simple_model_check
 from src.d04_analysis.fit import fit, evaluate_fit, apply_fit
 from src.d04_analysis.plot import plot_1d_linear_fit, plot_2d, plot_2d_linear_fit, plot_isosurf, compare_2d_views, \
     residual_color_plot, sorted_linear_scatter
-from src.d04_analysis.binomial_simulation import get_ideal_correlation
+from src.d04_analysis.binomial_simulation import get_ideal_correlation, run_binomial_accuracy_experiment
 import numpy as np
 from pathlib import Path
 import wandb
@@ -314,8 +314,15 @@ def analyze_perf_3d(model_performance,
         model_performance, x_id=x_id, y_id=y_id, z_id=z_id, add_bias=add_bias, log_file=log_file, fit_key=fit_key,)
 
     check_histograms(perf_3d, perf_3d_eval, fit_3d, directory=directory)
-    sorted_linear_scatter(fit_3d, perf_3d, directory=directory)
-    sorted_linear_scatter(fit_3d, perf_3d_eval, directory=directory, filename='predict_result_eval_scatter.png')
+    sorted_linear_scatter(fit_3d, perf_3d, directory=directory, best_fit=True)
+    sorted_linear_scatter(fit_3d, perf_3d_eval, directory=directory, filename='predict_result_eval_scatter.png',
+                          best_fit=True)
+
+    trials_per_experiment = len(model_performance) / len(np.ravel(perf_3d))
+    perf_3d_simulated = run_binomial_accuracy_experiment(fit_3d, trials_per_experiment)
+    sorted_linear_scatter(fit_3d, perf_3d_simulated, directory=directory,
+                          filename='predict_simulated_result_scatter.png', best_fit=True,
+                          xlabel='predicted accuracy (binomial simulation p-success)', ylabel='accuracy (simulated)')
 
     if standard_plots:
         compare_2d_views(perf_3d, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,

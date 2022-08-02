@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.stats
 
 from src.d04_analysis.fit import fit_hyperplane, eval_linear_fit
 
@@ -498,3 +499,12 @@ def sort_parallel(prediction, result):
 
     return prediction, result
 
+
+def simple_model_check(x, y, pre_sorted=False):
+
+    if np.shape(x) != np.shape(y):
+        raise ValueError('arrays must be of the same shape')
+    if not pre_sorted:
+        x, y = sort_parallel(x, y)
+    slope, intercept, r, p, se = scipy.stats.linregress(x, y)
+    return slope, intercept, r ** 2
