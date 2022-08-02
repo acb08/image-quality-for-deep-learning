@@ -313,8 +313,9 @@ def analyze_perf_3d(model_performance,
     x_values, y_values, z_values, perf_3d, perf_3d_eval, fit_3d = get_distortion_perf_3d(
         model_performance, x_id=x_id, y_id=y_id, z_id=z_id, add_bias=add_bias, log_file=log_file, fit_key=fit_key,)
 
-    check_histograms(perf_3d, fit_3d, directory=directory)
-    sorted_linear_scatter(fit_3d, perf_3d_eval, directory=directory)
+    check_histograms(perf_3d, perf_3d_eval, fit_3d, directory=directory)
+    sorted_linear_scatter(fit_3d, perf_3d, directory=directory)
+    sorted_linear_scatter(fit_3d, perf_3d_eval, directory=directory, filename='predict_result_eval_scatter.png')
 
     if standard_plots:
         compare_2d_views(perf_3d, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
@@ -347,10 +348,18 @@ def analyze_perf_3d(model_performance,
                      level=np.mean(perf_3d), save_name=save_name, save_dir=directory)
 
 
-def check_histograms(distortion_performance, performance_fit, directory=None):
+def check_histograms(distortion_performance_predict, distortion_performance_eval, performance_fit, directory=None):
 
     plt.figure()
-    plt.hist(np.ravel(distortion_performance))
+    plt.hist(np.ravel(distortion_performance_predict))
+    plt.ylabel('occurrences')
+    plt.xlabel('accuracy')
+    if directory:
+        plt.savefig(Path(directory, 'hist_performance_predict.png'))
+    plt.show()
+
+    plt.figure()
+    plt.hist(np.ravel(distortion_performance_eval))
     plt.ylabel('occurrences')
     plt.xlabel('accuracy')
     if directory:
@@ -365,7 +374,7 @@ def check_histograms(distortion_performance, performance_fit, directory=None):
         plt.savefig(Path(directory, 'hist_fit.png'))
     plt.show()
 
-    residuals = performance_fit - distortion_performance
+    residuals = performance_fit - distortion_performance_eval
 
     plt.figure()
     plt.hist(np.ravel(residuals))

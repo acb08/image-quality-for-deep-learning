@@ -582,7 +582,8 @@ def _heat_plot(arr, xlabel, ylabel, ax=None, vmin=None, vmax=None, extent=None):
     ax.set_ylabel(ylabel)
 
 
-def sorted_linear_scatter(prediction, result, directory=None, include_y_eq_x=True):
+def sorted_linear_scatter(prediction, result, directory=None, filename='predict_result_scatter.png',
+                          include_y_eq_x=True):
 
     prediction, result = sort_parallel(prediction, result)
 
@@ -599,7 +600,7 @@ def sorted_linear_scatter(prediction, result, directory=None, include_y_eq_x=Tru
     plt.ylabel('accuracy')
     plt.legend()
     if directory:
-        plt.savefig(Path(directory, 'predict_result_scatter.png'))
+        plt.savefig(Path(directory, filename))
     plt.show()
 
 
