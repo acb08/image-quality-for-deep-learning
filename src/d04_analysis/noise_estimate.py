@@ -1,6 +1,6 @@
 """
-Makes a very rough estimate of the noise content in a typical grayscale 8-bit image with 50% saturation AFTER conversion
-from RGB to grayscale
+Makes a very rough estimate of the noise content in a typical 8-bit image with 50% saturation in its RGB format and
+after conversion to grayscale
 """
 
 import numpy as np
@@ -9,10 +9,15 @@ RNG = np.random.default_rng()
 
 
 def pre_sample_electrons(image_size, saturation_frac, well_depth, dark_electrons, read_noise):
+    """
+    Generates an array representative of pre-digitization electron counts in a detector array with constant signal
+    (defined in terms of saturation fraction), a known expected dark current count, and read noise defined by a
+    Gaussian standard deviation. Output incorporates signal shot noise.
+    """
 
-    electrons = well_depth * saturation_frac * np.ones(image_size) # expected signal electrons
+    electrons = well_depth * saturation_frac * np.ones(image_size)  # expected signal electrons
     electrons = add_dark_electrons(electrons, dark_electrons)  # expected signal plus dark current electrons
-    electrons = incorporate_shot_noise(electrons)  # Poisson distribution to account for shot noise
+    electrons = incorporate_shot_noise(electrons)  # Poisson distribution covering shot noise in signal & dark electrons
     electrons = add_read_noise(electrons, read_noise, well_depth=well_depth)  # Gaussian noise (std=read_noise, mean=0)
 
     return electrons
@@ -41,6 +46,9 @@ def incorporate_shot_noise(expected_electrons):
 
 
 def add_read_noise(image_electrons, read_noise, well_depth):
+    """
+    Incorporates Gaussian read noise, capped at well depth
+    """
     read_electrons = RNG.normal(read_noise, size=np.shape(image_electrons))
     image_electrons = image_electrons + read_electrons
     image_electrons = np.clip(image_electrons, 0, well_depth)
@@ -48,11 +56,19 @@ def add_read_noise(image_electrons, read_noise, well_depth):
 
 
 def add_dark_electrons(image_electrons, dark_count):
+    """
+    Simple addition of expected dark electrons, with shot noise incorporated after signal and dark electrons
+    accumulated
+    """
     expected_dark_electrons = dark_count * np.ones_like(image_electrons)  # shot noise added later
     return image_electrons + expected_dark_electrons
 
 
 def make_image(image_size, saturation_frac, well_depth, dark_electrons, read_noise, bit_depth):
+    """
+    Returns an image array for constant signal at saturation_frac, converted to an integer, where electrons per count
+    is given by well_depth / 2 ** bit_depth
+    """
     electrons = pre_sample_electrons(image_size=image_size, saturation_frac=saturation_frac, well_depth=well_depth,
                                      dark_electrons=dark_electrons, read_noise=read_noise)
     counts = electrons_to_counts(electrons, well_depth=well_depth, bit_depth=bit_depth)
@@ -60,6 +76,12 @@ def make_image(image_size, saturation_frac, well_depth, dark_electrons, read_noi
 
 
 def estimate_snr(image_size, saturation, well_depth, dark_electrons, read_noise, bit_depth):
+    """
+    Estimates SNR of an RGB image and it's grayscale counterpoint by comparing a light patch and dark patch, with light
+    patch signal specified by saturation and dark patch signal set to zero (before dark current and readout noise).
+    Signal is defined here as the mean difference between the light and dark patch, and noise is defined as the standard
+    deviation of the difference.
+    """
 
     light_patch = make_image(image_size, saturation_frac=saturation, well_depth=well_depth,
                              dark_electrons=dark_electrons, read_noise=read_noise, bit_depth=bit_depth)
