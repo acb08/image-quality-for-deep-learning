@@ -628,7 +628,7 @@ if __name__ == '__main__':
     # fit_keys = ['linear', 'nonlinear_0', 'nonlinear_1', 'giqe5_deriv', 'power_law', 'giqe5_deriv_2', 'giqe5_deriv_4',
     #             'giqe5_deriv_5', 'giqe5_deriv_6']
 
-    fit_keys = ['giqe5_deriv_5', 'giqe5_deriv_6']
+    fit_keys = ['giqe5_deriv_5', 'giqe5_deriv_6', 'giqe5_deriv_7']
 
     if not config_filename:
         config_filename = 'composite_distortion_analysis_config.yml'
