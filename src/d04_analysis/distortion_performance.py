@@ -319,7 +319,8 @@ def analyze_perf_3d(model_performance,
                           best_fit=True)
 
     trials_per_experiment = len(model_performance) / len(np.ravel(perf_3d))
-    perf_3d_simulated = run_binomial_accuracy_experiment(fit_3d, trials_per_experiment)
+    fit_3d_sim = np.clip(fit_3d, 0, 1)
+    perf_3d_simulated = run_binomial_accuracy_experiment(fit_3d_sim, trials_per_experiment)
     sorted_linear_scatter(fit_3d, perf_3d_simulated, directory=directory,
                           filename='predict_simulated_result_scatter.png', best_fit=True,
                           xlabel='predicted accuracy (binomial simulation p-success)', ylabel='accuracy (simulated)')
