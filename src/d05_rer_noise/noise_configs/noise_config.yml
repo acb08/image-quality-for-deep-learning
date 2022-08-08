@@ -1,0 +1,8 @@
+---
+
+image_size: 64
+saturation_frac: 0.2
+well_depth: 15_000  # electrons
+dark_electron_values: [100, 200, 400, 800, 1600, 3200]
+read_noise_values: [20, 40, 80, 160, 320]
+bit_depth: 8  # note: increasing bit depth increases absolute noise (measured in counts) but increases SNR too

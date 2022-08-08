@@ -56,7 +56,8 @@ REL_PATHS = {
     'multi_result': r'analysis/multi_result',
     'bar_charts': r'analysis/bar_charts',
     'mosaics': r'mosaics',
-    'composite_performance_configs': r'image-quality-for-deep-learning/src/d04_analysis/composite_performance_configs'
+    'composite_performance_configs': r'image-quality-for-deep-learning/src/d04_analysis/composite_performance_configs',
+    'noise_study': 'analysis/noise_study'
 }
 
 _project_config_filename = 'project_config.yml'

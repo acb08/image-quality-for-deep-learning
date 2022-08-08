@@ -1,6 +1,6 @@
 from PIL import Image
 import numpy as np
-import src.d05_rer.rer_defs as definitions
+import src.d05_rer_noise.rer_defs as definitions
 import torch
 import torchvision.transforms as transforms
 from src.d00_utils.definitions import ROOT_DIR, REL_PATHS, STANDARD_DATASET_FILENAME
