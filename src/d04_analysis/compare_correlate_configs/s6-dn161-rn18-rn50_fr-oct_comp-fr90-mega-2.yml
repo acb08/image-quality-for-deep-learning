@@ -1,0 +1,24 @@
+---
+
+test_result_identifiers:
+  - [ '0087-rlt-0011-resnet18_sat6-full_range_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0',
+        'RN-18 full-range' ]
+  - ['0093-rlt-0008-resnet50_sat6-full_range_v2_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0',
+     'RN-50 full-range']
+  - ['0082-rlt-0010-densenet161_sat6-full_range_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0',
+     'DN-161 full-range' ]
+
+# if a second set of test result identifiers is included here, inter-set results are cross correlated, whereas passing
+# only a single set of identifiers results in intra-set correlations being calculated.  In other words, passing a single
+# set results in a symmetric correlation matrix, whereas passing different sets will result in an asymmetric table
+different_test_result_identifiers: null
+
+composite_performance_result_config_id: s6_oct_fr90_composite_config.yml
+
+overwrite: False
+manual_name: dn161-rn50-rn18-full-range-oct-composite
+analyze_3d: False
+analyze_pairwise: True  # no summary log without pairwise analysis
+plot_together_2d: True
+plot_together_1d: True
+
