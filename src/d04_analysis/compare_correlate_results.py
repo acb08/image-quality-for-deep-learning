@@ -242,6 +242,7 @@ def compare_correlate(config):
         if different_result_identifiers:
             all_performance_results.extend(different_performance_results)
         analyze_pairwise_1d_2d(all_performance_results)
+        log_accuracies(all_performance_results, output_dir)
 
     if plot_together_2d:
         analyze_plot_results_together(performance_results, directory=output_dir, make_subdir=True, dim_tag='2d',
@@ -250,8 +251,6 @@ def compare_correlate(config):
     if plot_together_1d:
         analyze_plot_results_together(performance_results, directory=output_dir, make_subdir=True, dim_tag='1d',
                                       identifier='1d')
-
-    log_accuracies(all_performance_results, output_dir)
 
 
 def log_accuracies(performance_results, output_dir):
@@ -302,7 +301,7 @@ def analyze_pairwise_1d_2d(model_results, directory='default', make_subdirectori
 
 if __name__ == '__main__':
 
-    config_filename = 'pl-dn161-rn18_fr-oct_comp-fr90-mega-2.yml'
+    config_filename = 'pl-dn161-rn18-rn50_fr-oct_comp-fr90-mega-2.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_filename, help='config filename to be used')
