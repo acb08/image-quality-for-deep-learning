@@ -88,19 +88,20 @@ def _get_filenames(directory, extension, exclude=None):
     return image_filenames
 
 
-def make_image_strips_multi_dir(source_directories, output_directory, extension='png', background=255):
+def make_image_strips_multi_dir(source_directories, output_directory, extension='png', background=255,
+                                base_directory_idx=0):
 
     """
     Concatenates different versions of an image into a horizontal strip, where corresponding image versions are
     segregated by directory
     """
 
-    base_directory = Path(source_directories[0])
+    base_directory = Path(source_directories[base_directory_idx])
 
     image_filenames = _get_filenames(base_directory, extension)
 
     strip_shape = None
-    height, width, channels = 0, 0, 3
+    height, width, channels = 0, 0, 0
 
     for i, image_filename in enumerate(image_filenames):
         images = []
@@ -109,7 +110,7 @@ def make_image_strips_multi_dir(source_directories, output_directory, extension=
             image = np.asarray(image)
             images.append(image)
             if i == 0:
-                h, w, __ = np.shape(image)
+                h, w, channels = np.shape(image)
                 height = max(height, h)
                 width += w
 

@@ -1,0 +1,11 @@
+---
+
+parent_dir: 'analysis/composite_performance/oct-models-fr90-mega-1-mega-2/3d'  # places
+input_sub_dirs:
+  - giqe5_deriv_6
+  - giqe5_deriv_6_nq
+  - giqe5_deriv_7
+  - giqe5_deriv_7_nq
+
+output_dir: 'v6_v7_linear_quad_compare'
+base_directory_idx: -1 # determines which directory is used to generate the master filename list
