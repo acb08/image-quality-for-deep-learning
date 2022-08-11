@@ -110,10 +110,29 @@ def _giqe5_deriv_residuals_6(params, y, distortion_vector):
     return err
 
 
+def giqe5_deriv_6_nq(params, distortion_vector):
+    # update from giqe5_deriv_6 to add noise in quadrature
+    c0, c1, c2, c3, c4, c5, c6 = params
+    res, blur, noise = distortion_vector[:, 0], distortion_vector[:, 1], distortion_vector[:, 2]
+    noise_native = 1  # counts, estimated/sanity checked using very simple model in src.analysis.noise_estimate
+    noise = np.sqrt(noise ** 2 + noise_native ** 2)
+    rer = 1 / np.sqrt(2 * np.pi * ((c4 * res) ** 2 + blur ** 2))  # scale by res sq since down-sampling sharpens
+    y = c0 + c1 * np.log10(res) + c2 * (1 - np.exp(c3 * noise)) * np.log10(rer) + c5 * np.log10(rer) \
+        + c6 * noise
+
+    return y
+
+
+def _giqe5_deriv_residuals_6_nq(params, y, distortion_vector):
+    err = np.ravel(y) - giqe5_deriv_6_nq(params, distortion_vector)
+    return err
+
+
 def giqe5_deriv_7(params, distortion_vector):
 
     """
-    same as v6, except that noise-rer cross term is removed (basically a sensitivity analysis)
+    same as v6, except that noise-rer cross term is removed (basically a sensitivity analysis).
+
     """
 
     c0, c1, c4, c5, c6 = params  # keeping parameter names consistent with v6
@@ -128,6 +147,29 @@ def giqe5_deriv_7(params, distortion_vector):
 
 def _giqe5_deriv_residuals_7(params, y, distortion_vector):
     err = np.ravel(y) - giqe5_deriv_7(params, distortion_vector)
+    return err
+
+
+def giqe5_deriv_7_nq(params, distortion_vector):
+
+    """
+    same as v6, except that noise-rer cross term is removed (basically a sensitivity analysis)
+
+    update from giqe5_deriv_7 to add noise in quadrature
+    """
+
+    c0, c1, c4, c5, c6 = params  # keeping parameter names consistent with v6
+    res, blur, noise = distortion_vector[:, 0], distortion_vector[:, 1], distortion_vector[:, 2]
+    noise_native = 1  # counts, estimated/sanity checked using very simple model in src.analysis.noise_estimate
+    noise = np.sqrt(noise ** 2 + noise_native ** 2)
+    rer = 1 / np.sqrt(2 * np.pi * ((c4 * res) ** 2 + blur ** 2))  # scale by res sq since down-sampling sharpens
+    y = c0 + c1 * np.log10(res) + c5 * np.log10(rer) + c6 * noise  # trying to keep the coefficients named the same
+
+    return y
+
+
+def _giqe5_deriv_residuals_7_nq(params, y, distortion_vector):
+    err = np.ravel(y) - giqe5_deriv_7_nq(params, distortion_vector)
     return err
 
 
@@ -257,6 +299,9 @@ _c6 = 0.5
 _c7 = -0.01
 
 _leastsq_inputs = {
+    'giqe5_deriv_7_nq': (_giqe5_deriv_residuals_7_nq, (_c0, _c1, 1, 0.5, -0.01)),  # cross term removed
+    'giqe5_deriv_6_nq': (_giqe5_deriv_residuals_6_nq, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
+
     'giqe5_deriv_7': (_giqe5_deriv_residuals_7, (_c0, _c1, 1, 0.5, -0.01)),  # cross term removed
     'giqe5_deriv_6': (_giqe5_deriv_residuals_6, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
     'giqe5_deriv_5': (_giqe5_deriv_residuals_5, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
@@ -274,6 +319,9 @@ _leastsq_inputs = {
 }
 
 _fit_functions = {
+    'giqe5_deriv_7_nq': giqe5_deriv_7_nq,
+    'giqe5_deriv_6_nq': giqe5_deriv_6_nq,
+
     'giqe5_deriv_7': giqe5_deriv_7,
     'giqe5_deriv_6': giqe5_deriv_6,
     'giqe5_deriv_5': giqe5_deriv_5,
