@@ -31,6 +31,7 @@ KEY_LENGTH = 4
 REL_PATHS = {
     'train_dataset': r'datasets/train',
     'test_dataset': r'datasets/test',
+    'demo_dataset': r'datasets/demo',
     'images': r'images',
     'train_vectors': r'train_split',
     'val_vectors': r'val_split',
@@ -102,7 +103,8 @@ ARTIFACT_TYPE_TAGS = {
     'test_dataset': 'tst',
     'model': r'mdl',
     'test_result': r'rlt',
-    'entropy_properties': r'ent'
+    'entropy_properties': r'ent',
+    'demo_dataset': r'demo'
 }
 
 # enables storing data types as strings that are json serializable
@@ -177,6 +179,11 @@ elif WANDB_PID[:6] == 'places':
             'names_labels_filename': 'places365_train_challenge.txt',
             'artifact_type': 'train_dataset'
         },
+        'upsplash_demo': {
+            'rel_path': r'datasets/demo/upsplash_256',
+            'names_labels_filename': 'upsplash_demo_256.txt',
+            'artifact_type': 'demo_dataset'
+        }
     }
 
     ORIGINAL_PRETRAINED_MODELS = {

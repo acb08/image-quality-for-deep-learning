@@ -1,0 +1,23 @@
+---
+
+description: creating mp90 demo dataset with non-copyrighted upsplash images
+
+parent_dataset_id: upsplash_demo
+parent_artifact_alias: latest
+parent_artifact_filename: standard  # standard functions as a flag to use definitions.STANDARD_ARTIFACT_FILENAME
+
+num_images: 19
+images_per_file: 19
+distortion_tags: ['r_mp90_pl', 'b_mp90_pl', 'n_mp90_pl']
+distortion_type_flags: ['res', 'blur', 'noise']  # specifies distortion_tags associated distortion types
+iterations: 1
+artifact_type: demo_dataset
+dataset_split_key: test  # used to mirror 'train'/'val' split in data structure
+artifact_filename: standard
+datatype_key: np.uint8
+
+image_shape: [256, 256, 3]  # only used by places scripts
+
+name_string: mp90_upsplash  # manually renamed to midpoint90
+
+save_rgb_vector: True
