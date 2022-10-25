@@ -370,51 +370,6 @@ def conditional_multi_plot_3d(blur_sigmas, noise_means, z_dict,
     return save_name
 
 
-def conditional_plot_3d(blur_sigmas, noise_means, z,
-                        xlabel=r'$\sigma$ Gaussian blur',
-                        ylabel=r'$\lambda$ Poisson noise',
-                        zlabel='default',
-                        title=None,
-                        folder=None,
-                        save_name=None,
-                        az=AZ_EL_DEFAULTS['az'],
-                        el=AZ_EL_DEFAULTS['el'],
-                        indexing='ij'):
-
-    sigma_vals, mean_vals, blur_noise_Shannon_entropy_2d, __ = (
-        conditional_extract_2d(blur_sigmas,
-                               noise_means,
-                               z))
-
-    X, Y = np.meshgrid(sigma_vals, mean_vals, indexing=indexing)
-    fig = plt.figure()
-    ax = plt.axes(projection='3d', azim=az, elev=el)
-    ax.plot_wireframe(X, Y, blur_noise_Shannon_entropy_2d)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-    if zlabel:
-        if zlabel == 'default':
-            zlabel = AXIS_LABELS['z']
-        ax.set_zlabel(zlabel)
-    ax.set_title(title)
-
-    # ax.view_init(ax, el)
-
-    if save_name:
-        if az != AZ_EL_DEFAULTS['az'] or el != AZ_EL_DEFAULTS['el']:
-            seed = save_name.split('.')[0]
-            azInt = int(az)
-            elInt = int(el)
-            save_name = f"{seed}_az{azInt}_el{elInt}.png"
-
-    if folder and save_name:
-        plt.savefig(os.path.join(folder, save_name))
-
-    fig.show()
-
-    return save_name
-
-
 def plot_isosurf(vol_data, x, y, z, scx=1, scy=1, scz=1,
                  level=None, save_name=None, save_dir=None,
                  x_label='resolution', y_label='blur', z_label='noise',
