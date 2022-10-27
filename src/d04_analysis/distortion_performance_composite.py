@@ -617,8 +617,8 @@ def get_sub_dir_and_log_filename(output_dir, analysis_type, distortion_clip=Fals
 if __name__ == '__main__':
 
     # config_filename = 'pl_dn161_fr_mega1_mega2_composite.yml'
-    # config_filename = 's6_oct_composite_config.yml'
-    config_filename = 's6_oct_fr90_composite_config.yml'
+    config_filename = 's6_oct_composite_config.yml'
+    # config_filename = 's6_oct_fr90_composite_config.yml'
     # config_filename = 'pl_oct_composite_fr90_mega1_mega2.yml'
 
     analyze_1d = True
@@ -628,7 +628,8 @@ if __name__ == '__main__':
     # fit_keys = ['linear', 'nonlinear_0', 'nonlinear_1', 'giqe5_deriv', 'power_law', 'giqe5_deriv_2', 'giqe5_deriv_4',
     #             'giqe5_deriv_5', 'giqe5_deriv_6']
 
-    fit_keys = ['giqe5_deriv_5', 'giqe5_deriv_6', 'giqe5_deriv_7', 'giqe5_deriv_6_nq', 'giqe5_deriv_7_nq']
+    fit_keys = ['giqe5_deriv_5', 'giqe5_deriv_6', 'giqe5_deriv_7', 'giqe5_deriv_6_nq', 'giqe5_deriv_7_nq',
+                'giqe5_deriv_8', 'giqe5_deriv_9']
 
     if not config_filename:
         config_filename = 'composite_distortion_analysis_config.yml'
