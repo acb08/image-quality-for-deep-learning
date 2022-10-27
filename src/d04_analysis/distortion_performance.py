@@ -5,7 +5,7 @@ from src.d00_utils.functions import load_wandb_data_artifact, get_config, constr
 from src.d04_analysis._shared_methods import _get_processed_instance_props_path, _check_extract_processed_props, \
     _archive_processed_props, _get_3d_distortion_perf_props
 from src.d04_analysis.analysis_functions import conditional_mean_accuracy, extract_embedded_vectors, \
-    get_class_accuracies, build_3d_field, get_distortion_perf_2d, get_distortion_perf_1d, simple_model_check
+    get_class_accuracies, build_3d_field, get_distortion_perf_2d, get_distortion_perf_1d, get_durbin_watson_statistics
 from src.d04_analysis.fit import fit, evaluate_fit, apply_fit
 from src.d04_analysis.plot import plot_1d_linear_fit, plot_2d, plot_2d_linear_fit, plot_isosurf, compare_2d_views, \
     residual_color_plot, sorted_linear_scatter
@@ -283,6 +283,12 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
     mean_perf_prediction = np.mean(performance_prediction_3d)
     mean_perf_eval = np.mean(perf_3d_eval)
 
+    trials_per_experiment = len(model_performance) / len(np.ravel(perf_3d))
+    perf_3d_simulated = run_binomial_accuracy_experiment(p_simulate, trials_per_experiment)
+
+    dw_stat = get_durbin_watson_statistics(performance_prediction_3d, perf_3d)
+    dw_stat_simulated = get_durbin_watson_statistics(performance_prediction_3d, perf_3d_simulated)
+
     print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} performance means (performance / perf_fit_prediction'
           f'/perf_eval): {mean_perf} / {mean_perf_prediction} / {mean_perf_eval}', file=log_file)
     print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} fit: \n', fit_coefficients, file=log_file)
@@ -292,10 +298,14 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
           file=log_file)
     print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} ideal fit correlation: ', ideal_correlation, '\n',
           file=log_file)
+    print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} durban-watson statistic: ', dw_stat, '\n',
+          file=log_file)
+    print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} simulation durban-watson statistic: ', dw_stat_simulated, '\n',
+          file=log_file)
     print(f'{result_name} ideal fit simulation clipped values: {num_clipped_points}, '
           f'{100 * num_clipped_points / len(np.ravel(performance_prediction_3d))}% of total', '\n', file=log_file)
 
-    return x_values, y_values, z_values, perf_3d, perf_3d_eval, performance_prediction_3d
+    return x_values, y_values, z_values, perf_3d, perf_3d_eval, performance_prediction_3d, perf_3d_simulated
 
 
 def analyze_perf_3d(model_performance,
@@ -310,7 +320,7 @@ def analyze_perf_3d(model_performance,
                     isosurf_plot=False,):
 
     x_id, y_id, z_id = distortion_ids
-    x_values, y_values, z_values, perf_3d, perf_3d_eval, fit_3d = get_distortion_perf_3d(
+    x_values, y_values, z_values, perf_3d, perf_3d_eval, fit_3d, perf_3d_simulated = get_distortion_perf_3d(
         model_performance, x_id=x_id, y_id=y_id, z_id=z_id, add_bias=add_bias, log_file=log_file, fit_key=fit_key,)
 
     check_histograms(perf_3d, perf_3d_eval, fit_3d, directory=directory)
@@ -318,9 +328,9 @@ def analyze_perf_3d(model_performance,
     sorted_linear_scatter(fit_3d, perf_3d_eval, directory=directory, filename='predict_result_eval_scatter.png',
                           best_fit=True)
 
-    trials_per_experiment = len(model_performance) / len(np.ravel(perf_3d))
-    fit_3d_sim = np.clip(fit_3d, 0, 1)
-    perf_3d_simulated = run_binomial_accuracy_experiment(fit_3d_sim, trials_per_experiment)
+    # trials_per_experiment = len(model_performance) / len(np.ravel(perf_3d))
+    # fit_3d_sim = np.clip(fit_3d, 0, 1)
+
     sorted_linear_scatter(fit_3d, perf_3d_simulated, directory=directory,
                           filename='predict_simulated_result_scatter.png', best_fit=True,
                           xlabel='predicted accuracy (binomial simulation p-success)', ylabel='accuracy (simulated)')
@@ -393,14 +403,14 @@ def check_histograms(distortion_performance_predict, distortion_performance_eval
     plt.show()
 
 
-def check_extraction_method(model_performance):
-
-    built_in = model_performance.get_3d_distortion_perf_props(('res', 'blur', 'noise'))
-    built_in_compare = built_in[:4]
-    original = get_distortion_perf_3d(model_performance)
-
-    for i, arr in enumerate(original):
-        print(np.array_equal(arr, built_in_compare[i]))
+# def check_extraction_method(model_performance):
+#
+#     built_in = model_performance.get_3d_distortion_perf_props(('res', 'blur', 'noise'))
+#     built_in_compare = built_in[:4]
+#     original = get_distortion_perf_3d(model_performance)
+#
+#     for i, arr in enumerate(original):
+#         print(np.array_equal(arr, built_in_compare[i]))
 
 
 def _fetch_model_distortion_performance_result(run, result_id, identifier, distortion_ids, make_dir=True):

@@ -438,3 +438,36 @@ def simple_model_check(x, y, pre_sorted=False):
         x, y = sort_parallel(x, y)
     slope, intercept, r, p, se = scipy.stats.linregress(x, y)
     return slope, intercept, r ** 2
+
+
+def durbin_watson(prediction, measurement):
+    """
+    Calculates the Durbin-Watson test statistic, which measures the autocorrelation between regression residuals.
+    :param prediction: 1d numpy array of length n
+    :param measurement: 1d numpy array of length n
+    :return: Dubin-Watson test statistic d, where 0 < d < 4
+    """
+    residuals = prediction - measurement
+    shifted_diffs = residuals[1:] - residuals[:-1]
+    return np.sum(shifted_diffs ** 2) / np.sum(residuals ** 2)
+#
+#
+# def raster_plane_ravel(array, axis=0):
+#
+#     shape = np.shape(array)
+#
+#     raster_plane_shape = list(shape)
+#     raster_plane_shape.pop(axis)
+#     raster_plane_shape = tuple(raster_plane_shape)
+#
+#     raster_plane_indices = np.arange()
+#
+#     pass
+
+
+def get_durbin_watson_statistics(prediction, measurement):
+
+    prediction_sorted, measurement_sorted = sort_parallel(prediction, measurement)
+    dw_prediction_sorted = durbin_watson(prediction_sorted, measurement_sorted)
+
+    return dw_prediction_sorted
