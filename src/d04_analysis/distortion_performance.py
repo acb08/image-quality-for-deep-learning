@@ -286,22 +286,28 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
     trials_per_experiment = len(model_performance) / len(np.ravel(perf_3d))
     perf_3d_simulated = run_binomial_accuracy_experiment(p_simulate, trials_per_experiment)
 
-    dw_stat = get_durbin_watson_statistics(performance_prediction_3d, perf_3d)
-    dw_stat_simulated = get_durbin_watson_statistics(performance_prediction_3d, perf_3d_simulated)
+    dw_stat_prop_sorted, dw_by_axis = get_durbin_watson_statistics(performance_prediction_3d, perf_3d)
+    dw_stat_simulated_prob_sorted, dw_by_axis_sim = get_durbin_watson_statistics(performance_prediction_3d,
+                                                                                 perf_3d_simulated)
 
     print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} performance means (performance / perf_fit_prediction'
           f'/perf_eval): {mean_perf} / {mean_perf_prediction} / {mean_perf_eval}', file=log_file)
-    print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} fit: \n', fit_coefficients, file=log_file)
-    print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} direct fit correlation: ', fit_direct_correlation,
+    print(f'{fit_key} fit: \n', fit_coefficients, file=log_file)
+    print(f'{fit_key} direct fit correlation: ', fit_direct_correlation,
           file=log_file)
-    print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} eval fit correlation: ', eval_fit_correlation,
+    print(f'{fit_key} eval fit correlation: ', eval_fit_correlation,
           file=log_file)
-    print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} ideal fit correlation: ', ideal_correlation, '\n',
+    print(f'{fit_key} ideal fit correlation: ', ideal_correlation, '\n',
           file=log_file)
-    print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} durban-watson statistic: ', dw_stat, '\n',
-          file=log_file)
-    print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} simulation durban-watson statistic: ', dw_stat_simulated, '\n',
-          file=log_file)
+    print(f'{fit_key} durban-watson statistic: ', dw_stat_prop_sorted, file=log_file)
+    print(f'{fit_key} durban-watson axis-raveled statistics: ', {round(dw_by_axis[0], 3)},
+          {round(dw_by_axis[1], 3)}, {round(dw_by_axis[2], 3)}, '\n', file=log_file)
+
+    print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} simulation durban-watson statistic: ',
+          dw_stat_simulated_prob_sorted, file=log_file)
+    print(f'{fit_key} simulation durban-watson axis-raveled statistics: ', {round(dw_by_axis_sim[0], 3)},
+          {round(dw_by_axis_sim[1], 3)}, {round(dw_by_axis_sim[2], 3)}, '\n', file=log_file)
+
     print(f'{result_name} ideal fit simulation clipped values: {num_clipped_points}, '
           f'{100 * num_clipped_points / len(np.ravel(performance_prediction_3d))}% of total', '\n', file=log_file)
 

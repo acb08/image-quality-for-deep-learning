@@ -440,34 +440,61 @@ def simple_model_check(x, y, pre_sorted=False):
     return slope, intercept, r ** 2
 
 
-def durbin_watson(prediction, measurement):
+def durbin_watson(prediction=None, measurement=None, residuals=None):
     """
     Calculates the Durbin-Watson test statistic, which measures the autocorrelation between regression residuals.
     :param prediction: 1d numpy array of length n
     :param measurement: 1d numpy array of length n
+    :param residuals: 1d numpy array of length n
     :return: Dubin-Watson test statistic d, where 0 < d < 4
     """
-    residuals = prediction - measurement
+    if residuals is None:
+        residuals = measurement - prediction
     shifted_diffs = residuals[1:] - residuals[:-1]
     return np.sum(shifted_diffs ** 2) / np.sum(residuals ** 2)
-#
-#
-# def raster_plane_ravel(array, axis=0):
-#
-#     shape = np.shape(array)
-#
-#     raster_plane_shape = list(shape)
-#     raster_plane_shape.pop(axis)
-#     raster_plane_shape = tuple(raster_plane_shape)
-#
-#     raster_plane_indices = np.arange()
-#
-#     pass
 
 
-def get_durbin_watson_statistics(prediction, measurement):
+def raster_plane_ravel(array, axis=0):
+    """
+    Takes a 3d array and unravels along the specified axis.
+    :param array: 3d numpy array
+    :param axis: axis along which to unravel, with the function starting each unraveled strand
+    :return:
+    """
+
+    shape = np.shape(array)
+
+    raster_plane_shape = list(shape)
+    raster_plane_shape.pop(axis)
+    n0, n1 = tuple(raster_plane_shape)
+
+    array_1d = []
+
+    for i in range(n0):
+        for j in range(n1):
+            if axis == 0:
+                strand = array[:, i, j]
+            elif axis == 1:
+                strand = array[i, :, j]
+            elif axis == 2:
+                strand = array[i, j, :]
+            else:
+                raise ValueError('axis must be either 0, 1, or 2')
+            array_1d.extend(list(strand))
+
+    return np.asarray(array_1d)
+
+
+def get_durbin_watson_statistics(prediction, measurement, axes=(0, 1, 2)):
 
     prediction_sorted, measurement_sorted = sort_parallel(prediction, measurement)
     dw_prediction_sorted = durbin_watson(prediction_sorted, measurement_sorted)
 
-    return dw_prediction_sorted
+    residuals_3d = measurement - prediction
+    dw_stats = []
+    for axis in axes:
+        sorted_residuals = raster_plane_ravel(residuals_3d, axis=axis)
+        dw_stat = durbin_watson(residuals=sorted_residuals)
+        dw_stats.append(dw_stat)
+
+    return dw_prediction_sorted, dw_stats
