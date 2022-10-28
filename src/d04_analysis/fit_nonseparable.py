@@ -6,6 +6,22 @@ from scipy.optimize import leastsq
 from matplotlib import pyplot as plt
 
 
+class Fitter(object):
+
+    def __init__(self, x, y, fit_function, initial_params):
+
+        self.x = x
+        self.y = y
+        self.fit_function = fit_function
+        self.initial_params = initial_params
+
+    def residuals(self, params):
+        return np.ravel(self.y) - np.ravel(self.fit_function(params, self.x))
+
+    def fit(self):
+        return leastsq(self.residuals, self.initial_params)[0]
+
+
 def make_sample_data(params, x, sigma=0.1):
     y = giqe5_deriv(params, x)
     return y, y + np.random.randn(len(y)) * sigma
@@ -21,9 +37,9 @@ def giqe5_deriv(params, distortion_vector):
     return y
 
 
-def _giqe5_deriv_residuals(params, y, distortion_vector):
-    err = np.ravel(y) - giqe5_deriv(params, distortion_vector)
-    return err
+# def _giqe5_deriv_residuals(params, y, distortion_vector):
+#     err = np.ravel(y) - giqe5_deriv(params, distortion_vector)
+#     return err
 
 
 def giqe5_deriv_2(params, distortion_vector):
@@ -37,9 +53,9 @@ def giqe5_deriv_2(params, distortion_vector):
     return y
 
 
-def _giqe5_deriv_residuals_2(params, y, distortion_vector):
-    err = np.ravel(y) - giqe5_deriv_2(params, distortion_vector)
-    return err
+# def _giqe5_deriv_residuals_2(params, y, distortion_vector):
+#     err = np.ravel(y) - giqe5_deriv_2(params, distortion_vector)
+#     return err
 
 
 def giqe5_deriv_3(params, distortion_vector):
@@ -53,9 +69,9 @@ def giqe5_deriv_3(params, distortion_vector):
     return y
 
 
-def _giqe5_deriv_residuals_3(params, y, distortion_vector):
-    err = np.ravel(y) - giqe5_deriv_3(params, distortion_vector)
-    return err
+# def _giqe5_deriv_residuals_3(params, y, distortion_vector):
+#     err = np.ravel(y) - giqe5_deriv_3(params, distortion_vector)
+#     return err
 
 
 def giqe5_deriv_4(params, distortion_vector):
@@ -69,9 +85,9 @@ def giqe5_deriv_4(params, distortion_vector):
     return y
 
 
-def _giqe5_deriv_residuals_4(params, y, distortion_vector):
-    err = np.ravel(y) - giqe5_deriv_4(params, distortion_vector)
-    return err
+# def _giqe5_deriv_residuals_4(params, y, distortion_vector):
+#     err = np.ravel(y) - giqe5_deriv_4(params, distortion_vector)
+#     return err
 
 
 def giqe5_deriv_5(params, distortion_vector):
@@ -87,9 +103,9 @@ def giqe5_deriv_5(params, distortion_vector):
     return y
 
 
-def _giqe5_deriv_residuals_5(params, y, distortion_vector):
-    err = np.ravel(y) - giqe5_deriv_5(params, distortion_vector)
-    return err
+# def _giqe5_deriv_residuals_5(params, y, distortion_vector):
+#     err = np.ravel(y) - giqe5_deriv_5(params, distortion_vector)
+#     return err
 
 
 def giqe5_deriv_6(params, distortion_vector):
@@ -105,9 +121,9 @@ def giqe5_deriv_6(params, distortion_vector):
     return y
 
 
-def _giqe5_deriv_residuals_6(params, y, distortion_vector):
-    err = np.ravel(y) - giqe5_deriv_6(params, distortion_vector)
-    return err
+# def _giqe5_deriv_residuals_6(params, y, distortion_vector):
+#     err = np.ravel(y) - giqe5_deriv_6(params, distortion_vector)
+#     return err
 
 
 def giqe5_deriv_6_nq(params, distortion_vector):
@@ -123,9 +139,9 @@ def giqe5_deriv_6_nq(params, distortion_vector):
     return y
 
 
-def _giqe5_deriv_residuals_6_nq(params, y, distortion_vector):
-    err = np.ravel(y) - giqe5_deriv_6_nq(params, distortion_vector)
-    return err
+# def _giqe5_deriv_residuals_6_nq(params, y, distortion_vector):
+#     err = np.ravel(y) - giqe5_deriv_6_nq(params, distortion_vector)
+#     return err
 
 
 def giqe5_deriv_7(params, distortion_vector):
@@ -145,9 +161,9 @@ def giqe5_deriv_7(params, distortion_vector):
     return y
 
 
-def _giqe5_deriv_residuals_7(params, y, distortion_vector):
-    err = np.ravel(y) - giqe5_deriv_7(params, distortion_vector)
-    return err
+# def _giqe5_deriv_residuals_7(params, y, distortion_vector):
+#     err = np.ravel(y) - giqe5_deriv_7(params, distortion_vector)
+#     return err
 
 
 def giqe5_deriv_7_nq(params, distortion_vector):
@@ -168,9 +184,9 @@ def giqe5_deriv_7_nq(params, distortion_vector):
     return y
 
 
-def _giqe5_deriv_residuals_7_nq(params, y, distortion_vector):
-    err = np.ravel(y) - giqe5_deriv_7_nq(params, distortion_vector)
-    return err
+# def _giqe5_deriv_residuals_7_nq(params, y, distortion_vector):
+#     err = np.ravel(y) - giqe5_deriv_7_nq(params, distortion_vector)
+#     return err
 
 
 def giqe5_deriv_8(params, distortion_vector):
@@ -190,9 +206,9 @@ def giqe5_deriv_8(params, distortion_vector):
     return y
 
 
-def _giqe5_deriv_residuals_8(params, y, distortion_vector):
-    err = np.ravel(y) - giqe5_deriv_8(params, distortion_vector)
-    return err
+# def _giqe5_deriv_residuals_8(params, y, distortion_vector):
+#     err = np.ravel(y) - giqe5_deriv_8(params, distortion_vector)
+#     return err
 
 
 def giqe5_deriv_9(params, distortion_vector):
@@ -214,9 +230,9 @@ def giqe5_deriv_9(params, distortion_vector):
     return y
 
 
-def _giqe5_deriv_residuals_9(params, y, distortion_vector):
-    err = np.ravel(y) - giqe5_deriv_9(params, distortion_vector)
-    return err
+# def _giqe5_deriv_residuals_9(params, y, distortion_vector):
+#     err = np.ravel(y) - giqe5_deriv_9(params, distortion_vector)
+#     return err
 
 
 def power_law(params, distortion_vector):
@@ -228,9 +244,9 @@ def power_law(params, distortion_vector):
     return y
 
 
-def _power_law_residuals(params, y, distortion_vector):
-    err = np.ravel(y) - power_law(params, distortion_vector)
-    return err
+# def _power_law_residuals(params, y, distortion_vector):
+#     err = np.ravel(y) - power_law(params, distortion_vector)
+#     return err
 
 
 def rer_0(params, distortion_vector):
@@ -245,9 +261,9 @@ def rer_0(params, distortion_vector):
     return y
 
 
-def _rer_0_residuals(params, y, distortion_vector):
-    err = np.ravel(y) - rer_0(params, distortion_vector)
-    return err
+# def _rer_0_residuals(params, y, distortion_vector):
+#     err = np.ravel(y) - rer_0(params, distortion_vector)
+#     return err
 
 
 def rer_1(params, distortion_vector):
@@ -262,9 +278,9 @@ def rer_1(params, distortion_vector):
     return y
 
 
-def _rer_1_residuals(params, y, distortion_vector):
-    err = np.ravel(y) - rer_1(params, distortion_vector)
-    return err
+# def _rer_1_residuals(params, y, distortion_vector):
+#     err = np.ravel(y) - rer_1(params, distortion_vector)
+#     return err
 
 
 def rer_2(params, distortion_vector):
@@ -279,9 +295,9 @@ def rer_2(params, distortion_vector):
     return y
 
 
-def _rer_2_residuals(params, y, distortion_vector):
-    err = np.ravel(y) - rer_2(params, distortion_vector)
-    return err
+# def _rer_2_residuals(params, y, distortion_vector):
+#     err = np.ravel(y) - rer_2(params, distortion_vector)
+#     return err
 
 
 def rer_3(params, distortion_vector):
@@ -296,9 +312,9 @@ def rer_3(params, distortion_vector):
     return y
 
 
-def _rer_3_residuals(params, y, distortion_vector):
-    err = np.ravel(y) - rer_3(params, distortion_vector)
-    return err
+# def _rer_3_residuals(params, y, distortion_vector):
+#     err = np.ravel(y) - rer_3(params, distortion_vector)
+#     return err
 
 
 def rer_4(params, distortion_vector):
@@ -313,9 +329,9 @@ def rer_4(params, distortion_vector):
     return y
 
 
-def _rer_4_residuals(params, y, distortion_vector):
-    err = np.ravel(y) - rer_4(params, distortion_vector)
-    return err
+# def _rer_4_residuals(params, y, distortion_vector):
+#     err = np.ravel(y) - rer_4(params, distortion_vector)
+#     return err
 
 
 def fit(x, y, distortion_ids=('res', 'blur', 'noise'), fit_key='giqe5_deriv'):
@@ -323,14 +339,17 @@ def fit(x, y, distortion_ids=('res', 'blur', 'noise'), fit_key='giqe5_deriv'):
     if distortion_ids != ('res', 'blur', 'noise'):
         raise Exception('distortion_ids must == (res, blur, noise)')
 
-    residuals, initial_params = _leastsq_inputs[fit_key]
-    w = leastsq(residuals, initial_params, args=(y, x))[0]
+    fit_function, initial_params = _fit_functions[fit_key]
+    w = Fitter(x, y, fit_function, initial_params).fit()
+
+    # residuals, initial_params = _leastsq_inputs[fit_key]
+    # w = leastsq(residuals, initial_params, args=(y, x))[0]
 
     return w
 
 
 def apply_fit(w, x, fit_key):
-    fit_function = _fit_functions[fit_key]
+    fit_function = _fit_functions[fit_key][0]
     return fit_function(w, x)
 
 
@@ -344,50 +363,50 @@ _c5 = 5
 _c6 = 0.5
 _c7 = -0.01
 
-_leastsq_inputs = {
-    'giqe5_deriv_9': (_giqe5_deriv_residuals_9, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
-    'giqe5_deriv_8': (_giqe5_deriv_residuals_8, (_c0, _c1, 1, 0.5, -0.01)),  # RER term raised to the 4th power
-
-    'giqe5_deriv_7_nq': (_giqe5_deriv_residuals_7_nq, (_c0, _c1, 1, 0.5, -0.01)),
-    'giqe5_deriv_6_nq': (_giqe5_deriv_residuals_6_nq, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
-
-    'giqe5_deriv_7': (_giqe5_deriv_residuals_7, (_c0, _c1, 1, 0.5, -0.01)),  # cross term removed
-    'giqe5_deriv_6': (_giqe5_deriv_residuals_6, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
-    'giqe5_deriv_5': (_giqe5_deriv_residuals_5, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
-    'giqe5_deriv_4': (_giqe5_deriv_residuals_4, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
-    # 'giqe5_deriv_3': (_giqe5_deriv_residuals_2, (_c0, _c1, _c2, _c3, _c4, _c5, _c6, _c7)),
-    'giqe5_deriv_2': (_giqe5_deriv_residuals_2, (_c0, _c1, _c2, _c3, _c4, _c5, _c6, _c7)),
-    'giqe5_deriv': (_giqe5_deriv_residuals, (0.5, 0.3, 0.3, -1, 0.3, -0.14)),
-    'power_law': (_power_law_residuals, (0.5, 0.5, 1, -0.1, 1, -0.05, 1)),
-
-    'rer_0': (_rer_0_residuals, (0.9, 0.25, 1, -1)),
-    'rer_1': (_rer_1_residuals, (0.9, -1)),
-    'rer_2': (_rer_2_residuals, (1, 1)),
-    'rer_3': (_rer_3_residuals, (1, )),
-    'rer_4': (_rer_4_residuals, (1, ))
-}
+# _leastsq_inputs = {
+#     'giqe5_deriv_9': (_giqe5_deriv_residuals_9, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
+#     'giqe5_deriv_8': (_giqe5_deriv_residuals_8, (_c0, _c1, 1, 0.5, -0.01)),  # RER term raised to the 4th power
+#
+#     'giqe5_deriv_7_nq': (_giqe5_deriv_residuals_7_nq, (_c0, _c1, 1, 0.5, -0.01)),
+#     'giqe5_deriv_6_nq': (_giqe5_deriv_residuals_6_nq, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
+#
+#     'giqe5_deriv_7': (_giqe5_deriv_residuals_7, (_c0, _c1, 1, 0.5, -0.01)),  # cross term removed
+#     'giqe5_deriv_6': (_giqe5_deriv_residuals_6, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
+#     'giqe5_deriv_5': (_giqe5_deriv_residuals_5, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
+#     'giqe5_deriv_4': (_giqe5_deriv_residuals_4, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
+#     # 'giqe5_deriv_3': (_giqe5_deriv_residuals_2, (_c0, _c1, _c2, _c3, _c4, _c5, _c6, _c7)),
+#     'giqe5_deriv_2': (_giqe5_deriv_residuals_2, (_c0, _c1, _c2, _c3, _c4, _c5, _c6, _c7)),
+#     'giqe5_deriv': (_giqe5_deriv_residuals, (0.5, 0.3, 0.3, -1, 0.3, -0.14)),
+#     'power_law': (_power_law_residuals, (0.5, 0.5, 1, -0.1, 1, -0.05, 1)),
+#
+#     'rer_0': (_rer_0_residuals, (0.9, 0.25, 1, -1)),
+#     'rer_1': (_rer_1_residuals, (0.9, -1)),
+#     'rer_2': (_rer_2_residuals, (1, 1)),
+#     'rer_3': (_rer_3_residuals, (1, )),
+#     'rer_4': (_rer_4_residuals, (1, ))
+# }
 
 _fit_functions = {
-    'giqe5_deriv_9': giqe5_deriv_9,
-    'giqe5_deriv_8': giqe5_deriv_8,
+    'giqe5_deriv_9': (giqe5_deriv_9, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
+    'giqe5_deriv_8': (giqe5_deriv_8, (_c0, _c1, 1, 0.5, -0.01)),
 
-    'giqe5_deriv_7_nq': giqe5_deriv_7_nq,
-    'giqe5_deriv_6_nq': giqe5_deriv_6_nq,
+    'giqe5_deriv_7_nq': (giqe5_deriv_7_nq, (_c0, _c1, 1, 0.5, -0.01)),
+    'giqe5_deriv_6_nq': (giqe5_deriv_6_nq, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
 
-    'giqe5_deriv_7': giqe5_deriv_7,
-    'giqe5_deriv_6': giqe5_deriv_6,
-    'giqe5_deriv_5': giqe5_deriv_5,
-    'giqe5_deriv_4': giqe5_deriv_4,
+    'giqe5_deriv_7': (giqe5_deriv_7, (_c0, _c1, 1, 0.5, -0.01)),
+    'giqe5_deriv_6': (giqe5_deriv_6, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
+    'giqe5_deriv_5': (giqe5_deriv_5, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
+    'giqe5_deriv_4': (giqe5_deriv_4, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
     # 'giqe5_deriv_3': giqe5_deriv_3,
-    'giqe5_deriv_2': giqe5_deriv_2,
-    'giqe5_deriv': giqe5_deriv,
-    'power_law': power_law,
+    'giqe5_deriv_2': (giqe5_deriv_2,  (_c0, _c1, _c2, _c3, _c4, _c5, _c6, _c7)),
+    'giqe5_deriv': (giqe5_deriv, (0.5, 0.3, 0.3, -1, 0.3, -0.14)),
+    'power_law': (power_law, (0.5, 0.5, 1, -0.1, 1, -0.05, 1)),
 
-    'rer_0': rer_0,
-    'rer_1': rer_1,
-    'rer_2': rer_2,
-    'rer_3': rer_3,
-    'rer_4': rer_4
+    'rer_0': (rer_0,  (0.9, 0.25, 1, -1)),
+    'rer_1': (rer_1, (0.9, -1)),
+    'rer_2': (rer_2, (1, 1)),
+    'rer_3': (rer_3, (1, )),
+    'rer_4': (rer_4, (1, ))
 }
 
 
