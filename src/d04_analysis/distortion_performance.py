@@ -311,7 +311,8 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
     print(f'{result_name} ideal fit simulation clipped values: {num_clipped_points}, '
           f'{100 * num_clipped_points / len(np.ravel(performance_prediction_3d))}% of total', '\n', file=log_file)
 
-    return x_values, y_values, z_values, perf_3d, perf_3d_eval, performance_prediction_3d, perf_3d_simulated
+    return (x_values, y_values, z_values, perf_3d, perf_3d_eval, performance_prediction_3d, perf_3d_simulated,
+            eval_fit_correlation)
 
 
 def analyze_perf_3d(model_performance,
@@ -326,8 +327,9 @@ def analyze_perf_3d(model_performance,
                     isosurf_plot=False,):
 
     x_id, y_id, z_id = distortion_ids
-    x_values, y_values, z_values, perf_3d, perf_3d_eval, fit_3d, perf_3d_simulated = get_distortion_perf_3d(
-        model_performance, x_id=x_id, y_id=y_id, z_id=z_id, add_bias=add_bias, log_file=log_file, fit_key=fit_key,)
+    x_values, y_values, z_values, perf_3d, perf_3d_eval, fit_3d, perf_3d_simulated, eval_fit_correlation = (
+        get_distortion_perf_3d(model_performance, x_id=x_id, y_id=y_id, z_id=z_id, add_bias=add_bias, log_file=log_file,
+                               fit_key=fit_key,))
 
     check_histograms(perf_3d, perf_3d_eval, fit_3d, directory=directory)
     sorted_linear_scatter(fit_3d, perf_3d, directory=directory, best_fit=True)
@@ -370,6 +372,8 @@ def analyze_perf_3d(model_performance,
         save_name = f'{str(model_performance)}_fit_isosurf.png'
         plot_isosurf(x_values, y_values, z_values, fit_3d,
                      level=np.mean(perf_3d), save_name=save_name, save_dir=directory)
+
+    return eval_fit_correlation
 
 
 def check_histograms(distortion_performance_predict, distortion_performance_eval, performance_fit, directory=None):
@@ -474,6 +478,14 @@ def get_multiple_model_distortion_performance_results(result_id_pairs, distortio
                 performance_results[artifact_id] = performance_result
 
     return performance_results
+
+
+def performance_fit_summary_text_dump(fit_summary, header='eval fit correlation summary', file=None):
+
+    print(header, file=file)
+
+    for key, val in fit_summary.items():
+        print(f'{key}: {val}', file=file)
 
 
 if __name__ == '__main__':

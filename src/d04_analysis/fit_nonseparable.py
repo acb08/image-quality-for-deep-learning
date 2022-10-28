@@ -4,6 +4,11 @@ Function for fits to be used when there is not a linear transform to enable fitt
 import numpy as np
 from scipy.optimize import leastsq
 from matplotlib import pyplot as plt
+from scipy.special import erf
+
+
+def discrete_sampling_rer_model(sigma_blur):
+    return erf(1 / (2 * np.sqrt(2) * sigma_blur))
 
 
 class Fitter(object):
@@ -164,8 +169,7 @@ def giqe5_deriv_8(params, distortion_vector):
 def giqe5_deriv_9(params, distortion_vector):
 
     """
-    Incorporates raising the RER term to the fourth power (which I missed for an embarrassingly long time). Still no
-    cross term.
+    Incorporates raising the RER term to the fourth power (which I missed for an embarrassingly long time).
 
     Includes RER-SNR cross term.
     """
@@ -180,11 +184,87 @@ def giqe5_deriv_9(params, distortion_vector):
     return y
 
 
+def giqe5_deriv_10(params, distortion_vector):
+
+    """
+    Incorporates raising the RER term to the fourth power (which I missed for an embarrassingly long time).
+
+    No cross term.
+
+    Uses discrete sampling (error function) RER model.
+    """
+
+    c0, c1, c4, c5, c6 = params  # keeping parameter names consistent with v6
+    res, blur, noise = distortion_vector[:, 0], distortion_vector[:, 1], distortion_vector[:, 2]
+    noise_native = 1  # counts, estimated/sanity checked using very simple model in src.analysis.noise_estimate
+    noise = np.sqrt(noise ** 2 + noise_native ** 2)
+    sigma_combined = np.sqrt((c4 * res)**2 + blur**2)
+    rer = discrete_sampling_rer_model(sigma_combined)
+    y = c0 + c1 * np.log10(res) + c5 * np.log10(rer)**4 + c6 * noise  # trying to keep the coefficients named the same
+
+    return y
+
+
+def giqe5_deriv_11(params, distortion_vector):
+
+    """
+    Incorporates raising the RER term to the fourth power (which I missed for an embarrassingly long time).
+
+    Includes RER-SNR cross term.
+
+    Uses discrete sampling (error function) RER model.
+    """
+
+    c0, c1, c2, c3, c4, c5, c6 = params  # keeping parameter names consistent with v6
+    res, blur, noise = distortion_vector[:, 0], distortion_vector[:, 1], distortion_vector[:, 2]
+    noise_native = 1  # counts, estimated/sanity checked using very simple model in src.analysis.noise_estimate
+    noise = np.sqrt(noise ** 2 + noise_native ** 2)
+    sigma_combined = np.sqrt((c4 * res)**2 + blur**2)
+    rer = discrete_sampling_rer_model(sigma_combined)
+    # rer = 1 / np.sqrt(2 * np.pi * ((c4 * res) ** 2 + blur ** 2))  # scale by res sq since down-sampling sharpens
+    y = c0 + c1 * np.log10(res) + c2 * (1 - np.exp(c3 * noise)) * np.log10(rer) + c5 * np.log10(rer)**4 + c6 * noise
+
+    return y
+
+
+def giqe5_deriv_12(params, distortion_vector):
+
+    """
+    Same as v7_nq, with RER updated for discrete sampling.
+
+    No RER-SNR cross term
+    """
+
+    c0, c1, c4, c5, c6 = params  # keeping parameter names consistent with v6
+    res, blur, noise = distortion_vector[:, 0], distortion_vector[:, 1], distortion_vector[:, 2]
+    noise_native = 1  # counts, estimated/sanity checked using very simple model in src.analysis.noise_estimate
+    noise = np.sqrt(noise ** 2 + noise_native ** 2)
+    sigma_combined = np.sqrt((c4 * res) ** 2 + blur ** 2)
+    rer = discrete_sampling_rer_model(sigma_combined)
+    y = c0 + c1 * np.log10(res) + c5 * np.log10(rer) + c6 * noise  # trying to keep the coefficients named the same
+
+    return y
+
+
 def power_law(params, distortion_vector):
 
     c0, c1, c2, c3, c4, c5, c6 = params
     res, blur, noise = distortion_vector[:, 0], distortion_vector[:, 1], distortion_vector[:, 2]
     y = c0 + c1 * res ** c2 + c3 * blur ** c4 + c5 * noise ** c6
+
+    return y
+
+
+def power_law_2(params, distortion_vector):
+
+    c0, c1, c2, c3, c4, c5, c6 = params
+    res, blur, noise = distortion_vector[:, 0], distortion_vector[:, 1], distortion_vector[:, 2]
+
+    sigma_combined = np.sqrt((2 * res)**2 + blur**2)
+    rer = discrete_sampling_rer_model(sigma_combined)
+    noise = np.sqrt(1 + noise**2)
+
+    y = c0 + c1 * res ** c2 + c3 * rer ** c4 + c5 * noise ** c6
 
     return y
 
@@ -277,6 +357,10 @@ _c7 = -0.01
 
 
 _fit_functions = {
+    'giqe5_deriv_12': (giqe5_deriv_12, (_c0, _c1, 1, 0.5, -0.01)),
+    'giqe5_deriv_11': (giqe5_deriv_11, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
+    'giqe5_deriv_10': (giqe5_deriv_10, (_c0, _c1, 1, 0.5, -0.01)),
+
     'giqe5_deriv_9': (giqe5_deriv_9, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
     'giqe5_deriv_8': (giqe5_deriv_8, (_c0, _c1, 1, 0.5, -0.01)),
 
@@ -290,7 +374,8 @@ _fit_functions = {
     # 'giqe5_deriv_3': giqe5_deriv_3,
     'giqe5_deriv_2': (giqe5_deriv_2,  (_c0, _c1, _c2, _c3, _c4, _c5, _c6, _c7)),
     'giqe5_deriv': (giqe5_deriv, (0.5, 0.3, 0.3, -1, 0.3, -0.14)),
-    'power_law': (power_law, (0.5, 0.5, 1, -0.1, 1, -0.05, 1)),
+    'power_law': (power_law, (0.5, 0.5, 0.5, -0.1, 0.5, -0.05, 0.5)),
+    'power_law_2': (power_law_2, (0.5, 0.5, 0.5, -0.1, 0.5, -0.05, 0.5)),
 
     'rer_0': (rer_0,  (0.9, 0.25, 1, -1)),
     'rer_1': (rer_1, (0.9, -1)),

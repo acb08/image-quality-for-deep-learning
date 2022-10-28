@@ -4,13 +4,13 @@ import argparse
 from src.d04_analysis.distortion_performance import get_multiple_model_distortion_performance_results
 from src.d04_analysis._shared_methods import _get_processed_instance_props_path, _check_extract_processed_props, \
     _archive_processed_props, _get_3d_distortion_perf_props, get_instance_hash
-from src.d04_analysis.fit import fit
 from src.d00_utils.definitions import STANDARD_UID_FILENAME, KEY_LENGTH, ROOT_DIR, \
     REL_PATHS, PROJECT_ID, DISTORTION_RANGE
 from src.d00_utils.functions import get_config, log_config, increment_suffix
 from src.d04_analysis.analysis_functions import conditional_mean_accuracy
 from pathlib import Path
-from src.d04_analysis.distortion_performance import analyze_perf_1d, analyze_perf_2d, analyze_perf_3d
+from src.d04_analysis.distortion_performance import analyze_perf_1d, analyze_perf_2d, analyze_perf_3d, \
+    performance_fit_summary_text_dump
 from hashlib import blake2b
 import copy
 
@@ -22,8 +22,8 @@ class CompositePerformanceResult(object):
     each distortion point in the second dataset
     """
 
-    def __init__(self, performance_prediction_result_ids, assign_by_octant_only=False, performance_eval_result_ids=None, identifier=None,
-                 distortion_ids=('res', 'blur', 'noise'), surrogate_model_id='composite'):
+    def __init__(self, performance_prediction_result_ids, assign_by_octant_only=False, performance_eval_result_ids=None,
+                 identifier=None, distortion_ids=('res', 'blur', 'noise'), surrogate_model_id='composite'):
 
         self.performance_prediction_result_ids = performance_prediction_result_ids
         self.assign_by_octant_only = assign_by_octant_only
@@ -618,8 +618,8 @@ if __name__ == '__main__':
 
     # config_filename = 'pl_dn161_fr_mega1_mega2_composite.yml'
     # config_filename = 's6_oct_composite_config.yml'
-    config_filename = 's6_oct_fr90_composite_config.yml'
-    # config_filename = 'pl_oct_composite_fr90_mega1_mega2.yml'
+    # config_filename = 's6_oct_fr90_composite_config.yml'
+    config_filename = 'pl_oct_composite_fr90_mega1_mega2.yml'
 
     analyze_1d = True
     analyze_2d = False
@@ -628,8 +628,13 @@ if __name__ == '__main__':
     # fit_keys = ['linear', 'nonlinear_0', 'nonlinear_1', 'giqe5_deriv', 'power_law', 'giqe5_deriv_2', 'giqe5_deriv_4',
     #             'giqe5_deriv_5', 'giqe5_deriv_6']
 
-    fit_keys = ['giqe5_deriv_5', 'giqe5_deriv_6', 'giqe5_deriv_7', 'giqe5_deriv_6_nq', 'giqe5_deriv_7_nq',
-                'giqe5_deriv_8', 'giqe5_deriv_9']
+    fit_keys = ['power_law', 'power_law_2', 'giqe5_deriv_5', 'giqe5_deriv_6', 'giqe5_deriv_7', 'giqe5_deriv_6_nq',
+                'giqe5_deriv_7_nq', 'giqe5_deriv_8', 'giqe5_deriv_9', 'giqe5_deriv_10', 'giqe5_deriv_11',
+                'giqe5_deriv_12']
+
+    make_standard_plots = False
+
+    performance_fit_summary = {}
 
     if not config_filename:
         config_filename = 'composite_distortion_analysis_config.yml'
@@ -662,6 +667,10 @@ if __name__ == '__main__':
         with open((Path(sub_dir_3d, log_filename)), 'w') as output_file:
             for _fit_key in fit_keys:
                 fit_sub_dir, ___ = get_sub_dir_and_log_filename(sub_dir_3d, _fit_key)
-                analyze_perf_3d(_composite_performance, log_file=output_file, directory=fit_sub_dir, fit_key=_fit_key,
-                                standard_plots=True, residual_plot=False, make_residual_color_plot=False,
-                                distortion_ids=('res', 'blur', 'noise'), isosurf_plot=False)
+                fit_correlation = analyze_perf_3d(_composite_performance, log_file=output_file, directory=fit_sub_dir,
+                                                  fit_key=_fit_key, standard_plots=make_standard_plots,
+                                                  residual_plot=False, make_residual_color_plot=False,
+                                                  distortion_ids=('res', 'blur', 'noise'), isosurf_plot=False)
+                performance_fit_summary[_fit_key] = fit_correlation
+
+            performance_fit_summary_text_dump(performance_fit_summary, file=output_file)
