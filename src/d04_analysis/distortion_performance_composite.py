@@ -616,31 +616,33 @@ def get_sub_dir_and_log_filename(output_dir, analysis_type, distortion_clip=Fals
 
 if __name__ == '__main__':
 
-    # config_filename = 'pl_dn161_fr_mega1_mega2_composite.yml'
-    # config_filename = 's6_oct_composite_config.yml'
-    config_filename = 's6_oct_fr90_composite_config.yml'
-    # config_filename = 'pl_oct_composite_fr90_mega1_mega2.yml'
+    # config_filename = 's6_oct_fr90_composite_config.yml'
+    config_filename = 'pl_oct_composite_fr90_mega1_mega2.yml'
 
     analyze_1d = False
     analyze_2d = False
     analyze_3d = True
 
-    fit_keys = ['power_law',  # simplest / naive mapping
-                'power_law_2',  # total noise estimated in quadrature, discrete sampling rer
-                'power_law_3',  # total noise estimated in quadrature
-                'giqe3_deriv_5',  # cross-term, noise added linearly, pure slope rer,  c4 * res not squared
-                'giqe3_deriv_6',  # cross-term, noise added linearly, pure slope rer, c4 * res squared
-                'giqe3_deriv_7',   # no cross-term, noise added linearly, pure slope rer, c4 * res squared
-                'giqe3_deriv_6_nq',  # cross-term, noise added in quadrature, pure slope rer, c4 * res squared
-                'giqe3_deriv_7_nq',  # no cross-term, noise added in quadrature, pure slope rer, c4 * res squared
-                'giqe5_deriv_8',  # no cross-term, noise added in quadrature, pure slope rer, c4 * res squared
-                'giqe5_deriv_9',  # cross-term, noise added in quadrature, pure slope rer, c4 * res squared
-                'giqe5_deriv_10',  # no cross-term, noise added in quadrature, discrete sampling rer, c4 * res squared
-                'giqe5_deriv_11',  # cross-term, noise added in quadrature, discrete sampling rer, c4 * res squared
-                'giqe3_deriv_12',  # no cross-term, noise added in quadrature, discrete sampling rer, c4 * res squared
-                ]
+    make_standard_plots = True
 
-    make_standard_plots = False
+    make_simulation_plots_1d = False
+    make_simulation_plots_2d = False
+
+    fit_keys = [
+        # 'power_law',  # simplest / naive mapping
+        # 'power_law_2',  # total noise estimated in quadrature, discrete sampling rer
+        # 'power_law_3',  # total noise estimated in quadrature
+        # 'giqe3_deriv_5',  # cross-term, noise added linearly, pure slope rer,  c4 * res not squared
+        # 'giqe3_deriv_6',  # cross-term, noise added linearly, pure slope rer, c4 * res squared
+        # 'giqe3_deriv_7',   # no cross-term, noise added linearly, pure slope rer, c4 * res squared
+        # 'giqe3_deriv_6_nq',  # cross-term, noise added in quadrature, pure slope rer, c4 * res squared
+        # 'giqe3_deriv_7_nq',  # no cross-term, noise added in quadrature, pure slope rer, c4 * res squared
+        'giqe5_deriv_8',  # no cross-term, noise added in quadrature, pure slope rer, c4 * res squared
+        # 'giqe5_deriv_9',  # cross-term, noise added in quadrature, pure slope rer, c4 * res squared
+        # 'giqe5_deriv_10',  # no cross-term, noise added in quadrature, discrete sampling rer, c4 * res squared
+        # 'giqe5_deriv_11',  # cross-term, noise added in quadrature, discrete sampling rer, c4 * res squared
+        'giqe3_deriv_12',  # no cross-term, noise added in quadrature, discrete sampling rer, c4 * res squared
+        ]
 
     performance_fit_summary = {}
 
@@ -675,10 +677,12 @@ if __name__ == '__main__':
         with open((Path(sub_dir_3d, log_filename)), 'w') as output_file:
             for _fit_key in fit_keys:
                 fit_sub_dir, ___ = get_sub_dir_and_log_filename(sub_dir_3d, _fit_key)
-                fit_correlation = analyze_perf_3d(_composite_performance, log_file=output_file, directory=fit_sub_dir,
-                                                  fit_key=_fit_key, standard_plots=make_standard_plots,
-                                                  residual_plot=False, make_residual_color_plot=False,
-                                                  distortion_ids=('res', 'blur', 'noise'), isosurf_plot=False)
-                performance_fit_summary[_fit_key] = fit_correlation
+                fit_summary_stats = analyze_perf_3d(_composite_performance, log_file=output_file, directory=fit_sub_dir,
+                                                    fit_key=_fit_key, standard_plots=make_standard_plots,
+                                                    residual_plot=False, make_residual_color_plot=False,
+                                                    distortion_ids=('res', 'blur', 'noise'), isosurf_plot=False,
+                                                    make_simulation_plots_1d=make_simulation_plots_1d,
+                                                    make_simulation_plots_2d=make_simulation_plots_2d)
+                performance_fit_summary[_fit_key] = fit_summary_stats
 
             performance_fit_summary_text_dump(performance_fit_summary, file=output_file)

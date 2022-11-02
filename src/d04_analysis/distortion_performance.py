@@ -297,7 +297,7 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
           file=log_file)
 
     print('dw stats (measured results)', file=log_file)
-    dw_prob_sorted, dw_min_2d, dw_min_1d = check_durbin_watson_statistics(performance_prediction_3d, perf_3d,
+    dw_prob_sorted, dw_min_2d, dw_min_1d = check_durbin_watson_statistics(performance_prediction_3d, perf_3d_eval,
                                                                           x_id=x_id, y_id=y_id, z_id=z_id,
                                                                           output_file=log_file)
     print('dw stats (simulated results)', file=log_file)
@@ -337,13 +337,16 @@ def analyze_perf_3d(model_performance,
                     standard_plots=True,
                     residual_plot=True,
                     make_residual_color_plot=True,
-                    isosurf_plot=False,):
+                    isosurf_plot=False,
+                    make_simulation_plots_1d=False,
+                    make_simulation_plots_2d=False
+                    ):
 
     x_id, y_id, z_id = distortion_ids
-    (x_values, y_values, z_values, perf_3d, perf_3d_eval, fit_3d, perf_3d_simulated, eval_fit_correlation, dw_prob_sorted,
-     dw_min_2d, dw_min_1d) = (get_distortion_perf_3d(model_performance, x_id=x_id, y_id=y_id, z_id=z_id,
-                                                     add_bias=add_bias, log_file=log_file,
-                                                     fit_key=fit_key,))
+    (x_values, y_values, z_values, perf_3d, perf_3d_eval, fit_3d, perf_3d_simulated, eval_fit_correlation,
+     dw_prob_sorted, dw_min_2d, dw_min_1d) = (get_distortion_perf_3d(model_performance, x_id=x_id, y_id=y_id, z_id=z_id,
+                                                                     add_bias=add_bias, log_file=log_file,
+                                                                     fit_key=fit_key,))
 
     check_histograms(perf_3d, perf_3d_eval, fit_3d, directory=directory)
     sorted_linear_scatter(fit_3d, perf_3d, directory=directory, best_fit=True)
@@ -374,6 +377,16 @@ def analyze_perf_3d(model_performance,
             compare_1d_views(perf_3d_eval, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
                              data_labels=('measured (eval)', 'fit'), directory=directory,
                              result_id='mean_1d_eval')
+
+    if make_simulation_plots_1d:
+        compare_1d_views(perf_3d_simulated, fit_3d,  x_values, y_values, z_values, distortion_ids=distortion_ids,
+                         data_labels=('simulated', 'fit'), directory=directory,
+                         result_id='mean_1d_simulated')
+
+    if make_simulation_plots_2d:
+        compare_2d_views(perf_3d_simulated, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
+                         data_labels=('simulated', 'fit'), az_el_combinations='all', directory=directory,
+                         residual_plot=False, result_id='simulation_fit_3d_proj')
 
     if residual_plot:
         compare_2d_views(perf_3d, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
