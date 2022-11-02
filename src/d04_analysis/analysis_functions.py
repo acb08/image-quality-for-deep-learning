@@ -605,6 +605,7 @@ def check_durbin_watson_statistics(prediction, measurement, x_id, y_id, z_id, ax
             dw_stats_1d[f'{remaining_axis_0}-{remaining_axis_1}-{array_mean_axis}-1d'] = dw_stat_1d
             # dw_stats_2d.append(dw_stat_2d)
 
+    dw_stats['3d'] = dw_stats_3d_ravel
     dw_stats['2d'] = dw_stats_2d_ravel
     dw_stats['1d'] = dw_stats_1d
 
