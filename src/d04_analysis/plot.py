@@ -11,7 +11,8 @@ from skimage.measure import marching_cubes
 
 from src.d04_analysis.fit import linear_predict
 from src.d04_analysis.analysis_functions import conditional_extract_2d, create_identifier, get_distortion_perf_2d, \
-    get_distortion_perf_1d, measure_log_perf_correlation, flatten, keep_2_of_3, sort_parallel, simple_model_check
+    get_distortion_perf_1d, measure_log_perf_correlation, flatten, keep_2_of_3, sort_parallel, simple_model_check, \
+    flatten_2x, keep_1_of_3, durbin_watson
 
 # from src.d04_analysis.distortion_performance import plot_perf_2d_multi_result, plot_perf_1d_multi_result
 
@@ -99,6 +100,36 @@ def plot_1d_linear_fit(x_data, y_data, fit_coefficients, distortion_id,
             save_name = f'{distortion_id}_{result_identifier}_{ylabel}'
         else:
             save_name = f'{distortion_id}_{ylabel}'
+        save_name = save_name + '.png'
+        plt.savefig(Path(directory, save_name))
+    plt.show()
+
+
+def plot_1d_fit(x, y_data, y_fit, distortion_id, measured_label='measured', fit_label='fit',
+                result_identifier=None, ylabel=None, directory=None, legend=True):
+
+    xlabel = AXIS_LABELS[distortion_id]
+
+    ax = plt.figure().gca()
+
+    ax.plot(x, y_fit, label=fit_label, linestyle='dashed', lw=0.8, color='k')
+    ax.scatter(x, y_data, color='k', marker='+', label=measured_label)
+    ax.set_xlabel(xlabel)
+    if 'noise' in xlabel or np.max(x) > 5:
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+
+    if not ylabel:
+        ylabel = AXIS_LABELS['y']
+    ax.set_ylabel(ylabel)
+
+    if legend:
+        ax.legend()
+
+    if directory:
+        if result_identifier:
+            save_name = f'{result_identifier}_{distortion_id}'
+        else:
+            save_name = f'{distortion_id}'
         save_name = save_name + '.png'
         plt.savefig(Path(directory, save_name))
     plt.show()
@@ -479,6 +510,30 @@ def compare_2d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blu
 
         plot_2d(axis0, axis1, views_2d, x_id=xlabel, y_id=ylabel, result_identifier=result_id,
                 az_el_combinations=az_el_combinations, directory=directory)
+
+
+def compare_1d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),
+                     flatten_axis_combinations=((0, 1), (0, 2), (1, 2)), data_labels=('measured', 'fit'),
+                     result_id='3d_1d_projection', directory=None, include_fit_stats=True):
+
+    for flatten_axes in flatten_axis_combinations:
+        f0_1d, axis = flatten_2x(f0, x_vals, y_vals, z_vals, flatten_axes=flatten_axes)
+        f1_1d, __ = flatten_2x(f1, x_vals, y_vals, z_vals, flatten_axes=flatten_axes)
+        axis_label = keep_1_of_3(a=distortion_ids, discard_indices=flatten_axes)
+        axis_check = keep_1_of_3(a=x_vals, b=y_vals, c=z_vals, discard_indices=flatten_axes)
+        assert np.array_equal(axis, axis_check)
+
+        if include_fit_stats:
+            dw = durbin_watson(prediction=f0_1d, measurement=f1_1d)
+            dw = round(dw, 3)
+            rho = np.corrcoef(f0_1d, f1_1d)[0, 1]
+            rho = round(rho, 3)
+            fit_label = f'{data_labels[1]}, correlation = {rho}, Durbin-Watson = {dw}'
+        else:
+            fit_label = data_labels[1]
+
+        plot_1d_fit(axis, f0_1d, f1_1d, axis_label, measured_label=data_labels[0], fit_label=fit_label,
+                    result_identifier=result_id, directory=directory)
 
 
 def residual_color_plot(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),

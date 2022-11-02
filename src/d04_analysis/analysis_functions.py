@@ -372,7 +372,7 @@ def flatten(f, x_vals, y_vals, z_vals, flatten_axis=0):
     :param z_vals: independent variable values on to axis-2
     :param flatten_axis: the axis along which f will be averaged (i.e. the axis to be removed by averaging out). Must be
     0, 1, or 2.
-    :return: 2d array corresponding of f averaged along flatten axis, 1d array containing first remaining axis not
+    :return: 2d array corresponding to f averaged along flatten axis, 1d array containing first remaining axis not
     eliminated by averaging (i.e. x_vals or y_vals), and 1d array containing the second axis not eliminated by
     averaging (i.e. y_vals or z_vals)
     """
@@ -399,13 +399,8 @@ def keep_2_of_3(a=None, b=None, c=None, discard_idx=0):
         if len(a) != 3:
             raise Exception('if b and c are None, a must be length 3')
         starters = a
-    # elif hasattr(a, '__len__'):
-    #     raise Exception('a must not have attribute __len__ if b and c are not None')
     else:
         starters = (a, b, c)
-        # if None in starters:
-        #     raise Exception('keep_2_of_3 requires either len(a) == 3 with b and c None, or else a, b, and c must not '
-        #                     'be None')
 
     keepers = []
     if discard_idx not in range(3):
@@ -416,6 +411,57 @@ def keep_2_of_3(a=None, b=None, c=None, discard_idx=0):
             keepers.append(starters[i])
 
     return keepers
+
+
+def flatten_2x(f, x_vals, y_vals, z_vals, flatten_axes=(0, 1)):
+    """
+    :param f: 3d array of shape (len(x_vals), len(y_vals), len(z_vals)), presumed to be a function f(x, y, z).
+    Note this shape corresponds to the array shape returned by np.meshgrid(x_vals, y_vals, z_vals, indexing='ij').
+    :param x_vals: independent variable values on to axis-0
+    :param y_vals: independent variable values on to axis-1
+    :param z_vals: independent variable values on to axis-2
+    :param flatten_axes: : the axes along which f will be averaged (i.e. axes to be removed by averaging out).
+    :return: 1d array corresponding to f averaged along flatten axis, 1d array containing the remaining axis not
+    eliminated by averaging (i.e. either x_vals, y_vals, or z_vals, where the other two of these three correspond to
+    axes averaged out)
+    """
+
+    if max(flatten_axes) not in range(3):
+        raise ValueError
+
+    f_1d = np.mean(f, axis=flatten_axes)
+    remaining_axis = keep_1_of_3(a=x_vals, b=y_vals, c=z_vals, discard_indices=flatten_axes)
+
+    return f_1d, remaining_axis
+
+
+def keep_1_of_3(a=None, b=None, c=None, discard_indices=(0, 1)):
+
+    """
+    Intended for use with flatten_2x() function to keep track of the remaining axes/labels when a 3d array is flattened
+    its 1d average along one of its 3 axes. Essentially, if we average along axes 1 and 2 (i.e x and y), keep_1_of_3()
+    takes the original 3 axes (or their labels) and returns the one remaining, in this case z.
+
+    NOTE: assumes that the 3d array in array in question uses 'ij' rather than 'xy' indexing.
+    """
+
+    if b is None and c is None:
+        if len(a) != 3:
+            raise Exception('if b and c are None, a must be length 3')
+        starters = a
+    else:
+        starters = (a, b, c)
+
+    if len(discard_indices) != 2:
+        raise ValueError
+    if max(discard_indices) not in range(3):
+        raise ValueError
+    if min(discard_indices) not in range(3):
+        raise ValueError
+
+    for i in range(3):
+        if i not in discard_indices:
+            return starters[i]
 
 
 def sort_parallel(prediction, result):
@@ -458,8 +504,9 @@ def raster_plane_ravel(array, axis=0):
     """
     Takes a 3d array and unravels along the specified axis.
     :param array: 3d numpy array
-    :param axis: axis along which to unravel, with the function starting each unraveled strand
-    :return:
+    :param axis: axis along which to unravel
+    :return: 1d array containing the values of the original array, unraveled with "strands" originating in the plane
+    orthogonal to the unravel axis.
     """
 
     shape = np.shape(array)
@@ -485,16 +532,93 @@ def raster_plane_ravel(array, axis=0):
     return np.asarray(array_1d)
 
 
-def get_durbin_watson_statistics(prediction, measurement, axes=(0, 1, 2)):
+def raster_line_ravel(array, axis=0):
+    """
+    Takes a 2d array and unravels along the specified axis.
+
+    Follows the form of raster_plane_ravel(), where the term raster makes more sense. A better programmer would have
+    made a function a capable of handing arrays or arbitrary dimension, but I decided to use separate functions for
+    2d and 3d arrays.
+
+    :param array: 2d numpy array
+    :param axis: axis along which to unravel
+    :return: 1d array containing the values of the original array, unraveled with "strands" originating in the line
+    orthogonal to the unravel axis.
+    """
+
+    shape = np.shape(array)
+
+    raster_line_shape = list(shape)
+    raster_line_shape.pop(axis)
+    n0 = raster_line_shape[0]
+
+    array_1d = []
+
+    for i in range(n0):
+        if axis == 0:
+            strand = array[:, i]
+        elif axis == 1:
+            strand = array[i, :]
+        else:
+            raise ValueError('axis must be either 0 or 1')
+
+        array_1d.extend(list(strand))
+
+    return np.asarray(array_1d)
+
+
+def check_durbin_watson_statistics(prediction, measurement, x_id, y_id, z_id, axes=(0, 1, 2), secondary_axes=(0, 1),
+                                   output_file=None):
+
+    axis_ids = (x_id, y_id, z_id)
 
     prediction_sorted, measurement_sorted = sort_parallel(prediction, measurement)
     dw_prediction_sorted = durbin_watson(prediction_sorted, measurement_sorted)
 
     residuals_3d = measurement - prediction
-    dw_stats = []
-    for axis in axes:
+    dw_stats = {'prediction_prop_sorted': dw_prediction_sorted}
+    dw_stats_3d_ravel = {}
+    dw_stats_2d_ravel = {}
+    dw_stats_1d = {}
+
+    for axis, axis_id in enumerate(axis_ids):
+        # get dw stats unraveled from 3d array
         sorted_residuals = raster_plane_ravel(residuals_3d, axis=axis)
         dw_stat = durbin_watson(residuals=sorted_residuals)
-        dw_stats.append(dw_stat)
+        axis_id = axis_ids[axis]
+        dw_stats_3d_ravel[axis_id] = dw_stat
 
-    return dw_prediction_sorted, dw_stats
+        residuals_2d, remaining_axis_0, remaining_axis_1 = flatten(residuals_3d, x_vals=x_id, y_vals=y_id, z_vals=z_id,
+                                                                   flatten_axis=axis)
+        remaining_axes = (remaining_axis_0, remaining_axis_1)
+
+        for ravel_axis, secondary_axis_id in enumerate(remaining_axes):
+
+            sorted_residuals_2d_to_1d = raster_line_ravel(residuals_2d, axis=ravel_axis)
+            dw_stat_2d = durbin_watson(residuals=sorted_residuals_2d_to_1d)
+            dw_stats_2d_ravel[f'{remaining_axis_0}-{remaining_axis_1}-{secondary_axis_id}'] = dw_stat_2d
+
+            array_mean_axis = list(set(remaining_axes).difference({secondary_axis_id}))[0]  # get the other axis
+            residuals_1d = np.mean(residuals_2d, axis=ravel_axis)
+            dw_stat_1d = durbin_watson(residuals=residuals_1d)
+
+            dw_stats_1d[f'{remaining_axis_0}-{remaining_axis_1}-{array_mean_axis}-1d'] = dw_stat_1d
+            # dw_stats_2d.append(dw_stat_2d)
+
+    dw_stats['2d'] = dw_stats_2d_ravel
+    dw_stats['1d'] = dw_stats_1d
+
+    if output_file:
+        for key, val in dw_stats.items():
+            if type(val) == dict:
+                for _key, _val in val.items():
+                    print(f'{_key}: {_val}', file=output_file)
+            else:
+                print(f'{key}: {val}', file=output_file)
+
+    dw_min_1d = np.min(list(dw_stats_1d.values()))
+    dw_min_2d = np.min(list(dw_stats_2d_ravel.values()))
+
+    return dw_prediction_sorted, dw_min_2d, dw_min_1d
+
+    # return dw_prediction_sorted, dw_stats,  # dw_stats_2d

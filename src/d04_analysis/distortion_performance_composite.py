@@ -618,19 +618,27 @@ if __name__ == '__main__':
 
     # config_filename = 'pl_dn161_fr_mega1_mega2_composite.yml'
     # config_filename = 's6_oct_composite_config.yml'
-    config_filename = 's6_oct_fr90_composite_config.yml'
-    # config_filename = 'pl_oct_composite_fr90_mega1_mega2.yml'
+    # config_filename = 's6_oct_fr90_composite_config.yml'
+    config_filename = 'pl_oct_composite_fr90_mega1_mega2.yml'
 
-    analyze_1d = True
+    analyze_1d = False
     analyze_2d = False
     analyze_3d = True
 
-    # fit_keys = ['linear', 'nonlinear_0', 'nonlinear_1', 'giqe5_deriv', 'power_law', 'giqe5_deriv_2', 'giqe5_deriv_4',
-    #             'giqe5_deriv_5', 'giqe5_deriv_6']
-
-    fit_keys = ['power_law', 'power_law_2', 'giqe5_deriv_5', 'giqe5_deriv_6', 'giqe5_deriv_7', 'giqe5_deriv_6_nq',
-                'giqe5_deriv_7_nq', 'giqe5_deriv_8', 'giqe5_deriv_9', 'giqe5_deriv_10', 'giqe5_deriv_11',
-                'giqe5_deriv_12']
+    fit_keys = ['power_law',  # simplest / naive mapping
+                'power_law_2',  # total noise estimated in quadrature, discrete sampling rer
+                'power_law_3',  # total noise estimated in quadrature
+                'giqe3_deriv_5',  # cross-term, noise added linearly, pure slope rer,  c4 * res not squared
+                'giqe3_deriv_6',  # cross-term, noise added linearly, pure slope rer, c4 * res squared
+                'giqe3_deriv_7',   # no cross-term, noise added linearly, pure slope rer, c4 * res squared
+                'giqe3_deriv_6_nq',  # cross-term, noise added in quadrature, pure slope rer, c4 * res squared
+                'giqe3_deriv_7_nq',  # no cross-term, noise added in quadrature, pure slope rer, c4 * res squared
+                'giqe5_deriv_8',  # no cross-term, noise added in quadrature, pure slope rer, c4 * res squared
+                'giqe5_deriv_9',  # cross-term, noise added in quadrature, pure slope rer, c4 * res squared
+                'giqe5_deriv_10',  # no cross-term, noise added in quadrature, discrete sampling rer, c4 * res squared
+                'giqe5_deriv_11',  # cross-term, noise added in quadrature, discrete sampling rer, c4 * res squared
+                'giqe3_deriv_12',  # no cross-term, noise added in quadrature, discrete sampling rer, c4 * res squared
+                ]
 
     make_standard_plots = True
 

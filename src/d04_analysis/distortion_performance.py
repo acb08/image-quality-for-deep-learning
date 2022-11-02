@@ -5,10 +5,10 @@ from src.d00_utils.functions import load_wandb_data_artifact, get_config, constr
 from src.d04_analysis._shared_methods import _get_processed_instance_props_path, _check_extract_processed_props, \
     _archive_processed_props, _get_3d_distortion_perf_props
 from src.d04_analysis.analysis_functions import conditional_mean_accuracy, extract_embedded_vectors, \
-    get_class_accuracies, build_3d_field, get_distortion_perf_2d, get_distortion_perf_1d, get_durbin_watson_statistics
+    get_class_accuracies, build_3d_field, get_distortion_perf_2d, get_distortion_perf_1d, check_durbin_watson_statistics
 from src.d04_analysis.fit import fit, evaluate_fit, apply_fit
 from src.d04_analysis.plot import plot_1d_linear_fit, plot_2d, plot_2d_linear_fit, plot_isosurf, compare_2d_views, \
-    residual_color_plot, sorted_linear_scatter
+    residual_color_plot, sorted_linear_scatter, compare_1d_views
 from src.d04_analysis.binomial_simulation import get_ideal_correlation, run_binomial_accuracy_experiment
 import numpy as np
 from pathlib import Path
@@ -286,10 +286,6 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
     trials_per_experiment = len(model_performance) / len(np.ravel(perf_3d))
     perf_3d_simulated = run_binomial_accuracy_experiment(p_simulate, trials_per_experiment)
 
-    dw_stat_prop_sorted, dw_by_axis = get_durbin_watson_statistics(performance_prediction_3d, perf_3d)
-    dw_stat_simulated_prob_sorted, dw_by_axis_sim = get_durbin_watson_statistics(performance_prediction_3d,
-                                                                                 perf_3d_simulated)
-
     print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} performance means (performance / perf_fit_prediction'
           f'/perf_eval): {mean_perf} / {mean_perf_prediction} / {mean_perf_eval}', file=log_file)
     print(f'{fit_key} fit: \n', fit_coefficients, file=log_file)
@@ -299,20 +295,37 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
           file=log_file)
     print(f'{fit_key} ideal fit correlation: ', ideal_correlation, '\n',
           file=log_file)
-    print(f'{fit_key} durban-watson statistic: ', dw_stat_prop_sorted, file=log_file)
-    print(f'{fit_key} durban-watson axis-raveled statistics: ', {round(dw_by_axis[0], 3)},
-          {round(dw_by_axis[1], 3)}, {round(dw_by_axis[2], 3)}, '\n', file=log_file)
 
-    print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} simulation durban-watson statistic: ',
-          dw_stat_simulated_prob_sorted, file=log_file)
-    print(f'{fit_key} simulation durban-watson axis-raveled statistics: ', {round(dw_by_axis_sim[0], 3)},
-          {round(dw_by_axis_sim[1], 3)}, {round(dw_by_axis_sim[2], 3)}, '\n', file=log_file)
+    print('dw stats (measured results)', file=log_file)
+    dw_prob_sorted, dw_min_2d, dw_min_1d = check_durbin_watson_statistics(performance_prediction_3d, perf_3d,
+                                                                          x_id=x_id, y_id=y_id, z_id=z_id,
+                                                                          output_file=log_file)
+    print('dw stats (simulated results)', file=log_file)
+    __, __, __ = check_durbin_watson_statistics(performance_prediction_3d, perf_3d_simulated,
+                                                x_id=x_id, y_id=y_id, z_id=z_id, output_file=log_file)
+    print('\n', file=log_file)
+
+    #
+    # print(f'{fit_key} durban-watson statistic: ', dw_stat_prop_sorted, file=log_file)
+    # print(f'{fit_key} durban-watson axis-raveled statistics: {round(dw_by_axis[0], 3)}, {round(dw_by_axis[1], 3)}, '
+    #       f'{round(dw_by_axis[2], 3)}', file=log_file)
+    # print(f'{fit_key} durban-watson 2d axis-raveled statistics: {round(dw_by_axis_2d[0], 3)}, '
+    #       f'{round(dw_by_axis_2d[1], 3)}, {round(dw_by_axis_2d[2], 3)}, {round(dw_by_axis_2d[3], 3)}, '
+    #       f'{round(dw_by_axis_2d[4], 3)}, {round(dw_by_axis_2d[5], 3)}, \n', file=log_file)
+    #
+    # print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} simulation durban-watson statistic: ',
+    #       dw_stat_simulated_prob_sorted, file=log_file)
+    # print(f'{fit_key} simulation durban-watson axis-raveled statistics: , {round(dw_by_axis_sim[0], 3)},'
+    #       f'{round(dw_by_axis_sim[1], 3)}, {round(dw_by_axis_sim[2], 3)}', file=log_file)
+    # print(f'{fit_key} durban-watson 2d axis-raveled statistics: {round(dw_by_axis_2d_sim[0], 3)}, '
+    #       f'{round(dw_by_axis_2d_sim[1], 3)}, {round(dw_by_axis_2d_sim[2], 3)}, {round(dw_by_axis_2d_sim[3], 3)}, '
+    #       f'{round(dw_by_axis_2d_sim[4], 3)}, {round(dw_by_axis_2d_sim[5], 3)}, \n', file=log_file)
 
     print(f'{result_name} ideal fit simulation clipped values: {num_clipped_points}, '
           f'{100 * num_clipped_points / len(np.ravel(performance_prediction_3d))}% of total', '\n', file=log_file)
 
     return (x_values, y_values, z_values, perf_3d, perf_3d_eval, performance_prediction_3d, perf_3d_simulated,
-            eval_fit_correlation)
+            eval_fit_correlation, dw_prob_sorted, dw_min_2d, dw_min_1d)
 
 
 def analyze_perf_3d(model_performance,
@@ -327,9 +340,10 @@ def analyze_perf_3d(model_performance,
                     isosurf_plot=False,):
 
     x_id, y_id, z_id = distortion_ids
-    x_values, y_values, z_values, perf_3d, perf_3d_eval, fit_3d, perf_3d_simulated, eval_fit_correlation = (
-        get_distortion_perf_3d(model_performance, x_id=x_id, y_id=y_id, z_id=z_id, add_bias=add_bias, log_file=log_file,
-                               fit_key=fit_key,))
+    (x_values, y_values, z_values, perf_3d, perf_3d_eval, fit_3d, perf_3d_simulated, eval_fit_correlation, dw_prob_sorted,
+     dw_min_2d, dw_min_1d) = (get_distortion_perf_3d(model_performance, x_id=x_id, y_id=y_id, z_id=z_id,
+                                                     add_bias=add_bias, log_file=log_file,
+                                                     fit_key=fit_key,))
 
     check_histograms(perf_3d, perf_3d_eval, fit_3d, directory=directory)
     sorted_linear_scatter(fit_3d, perf_3d, directory=directory, best_fit=True)
@@ -348,13 +362,20 @@ def analyze_perf_3d(model_performance,
                          data_labels=('measured (predict)', 'fit'), az_el_combinations='all', directory=directory,
                          residual_plot=False, result_id='predict_fit_3d_proj')
 
+        compare_1d_views(perf_3d, fit_3d,  x_values, y_values, z_values, distortion_ids=distortion_ids,
+                         data_labels=('measured (predict)', 'fit'), directory=directory,
+                         result_id='mean_1d_predict')
+
         if not np.array_equal(perf_3d, perf_3d_eval):
             compare_2d_views(perf_3d_eval, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
                              data_labels=('measured (eval)', 'fit'), az_el_combinations='all', directory=directory,
                              residual_plot=False, result_id='eval_fit_3d_proj')
 
-    if residual_plot:
+            compare_1d_views(perf_3d_eval, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
+                             data_labels=('measured (eval)', 'fit'), directory=directory,
+                             result_id='mean_1d_eval')
 
+    if residual_plot:
         compare_2d_views(perf_3d, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
                          data_labels=('measured (predict)', 'fit'), az_el_combinations='all', directory=directory,
                          residual_plot=residual_plot, result_id='predict_fit_3d_proj')
@@ -373,7 +394,7 @@ def analyze_perf_3d(model_performance,
         plot_isosurf(x_values, y_values, z_values, fit_3d,
                      level=np.mean(perf_3d), save_name=save_name, save_dir=directory)
 
-    return eval_fit_correlation
+    return round(eval_fit_correlation, 3), round(dw_prob_sorted, 3), round(dw_min_2d, 3), round(dw_min_1d, 3)
 
 
 def check_histograms(distortion_performance_predict, distortion_performance_eval, performance_fit, directory=None):
@@ -480,7 +501,7 @@ def get_multiple_model_distortion_performance_results(result_id_pairs, distortio
     return performance_results
 
 
-def performance_fit_summary_text_dump(fit_summary, header='eval fit correlation summary', file=None):
+def performance_fit_summary_text_dump(fit_summary, header='eval fit correlation / durbin-watson summary', file=None):
 
     print(header, file=file)
 
