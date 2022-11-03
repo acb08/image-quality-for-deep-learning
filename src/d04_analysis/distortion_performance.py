@@ -404,8 +404,12 @@ def analyze_perf_3d(model_performance,
 
     if isosurf_plot:
         save_name = f'{str(model_performance)}_fit_isosurf.png'
-        plot_isosurf(x_values, y_values, z_values, fit_3d,
-                     level=np.mean(perf_3d), save_name=save_name, save_dir=directory)
+        iso_save_dir = Path(directory, 'isosurf')
+        if not iso_save_dir.is_dir():
+            Path.mkdir(iso_save_dir)
+        plot_isosurf(fit_3d, x_values, y_values, z_values,
+                     levels=[0.3, 0.5, 0.7], save_name=save_name, save_dir=iso_save_dir,
+                     az_el_combinations='all')
 
     return round(eval_fit_correlation, 3), round(dw_prob_sorted, 3), round(dw_min_2d, 3), round(dw_min_1d, 3)
 

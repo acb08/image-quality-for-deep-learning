@@ -1,7 +1,7 @@
 import os
 
 import numpy as np
-import matplotlib.pyplot as plt
+
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from pathlib import Path
@@ -21,6 +21,7 @@ AZ_EL_DEFAULTS = {
     'el': 30
 }
 
+# I do not remember why the keys are structured this way, but I do not think it's worth changing
 AZ_EL_COMBINATIONS = {
     '0-0': {'az': AZ_EL_DEFAULTS['az'], 'el': AZ_EL_DEFAULTS['el']},
     '1-0': {'az': -30, 'el': 30},
@@ -50,6 +51,25 @@ AZ_EL_COMBINATIONS = {
     '11-2': {'az': 120, 'el': 20},
     '12-2': {'az': 135, 'el': 20},
 
+
+    '01': {'az': -60, 'el': 40},
+    '11': {'az': -30, 'el': 40},
+    '21': {'az': 30, 'el': 40},
+    '31': {'az': 60, 'el': 40},
+}
+
+ISOSURF_AZ_EL_COMBINATIONS = {
+    '0-0': {'az': AZ_EL_DEFAULTS['az'], 'el': AZ_EL_DEFAULTS['el']},
+    '1-0': {'az': -30, 'el': 30},
+    '5-0': {'az': 30, 'el': 20},
+    '7-0': {'az': 60, 'el': 30},
+    '11-0': {'az': 120, 'el': 30},
+
+    '0-2': {'az': AZ_EL_DEFAULTS['az'], 'el': 20},
+    '1-2': {'az': -30, 'el': 20},
+    '5-2': {'az': 30, 'el': 20},
+    '7-2': {'az': 60, 'el': 20},
+    '11-2': {'az': 120, 'el': 20},
 
     '01': {'az': -60, 'el': 40},
     '11': {'az': -30, 'el': 40},
@@ -402,9 +422,9 @@ def conditional_multi_plot_3d(blur_sigmas, noise_means, z_dict,
 
 
 def plot_isosurf(vol_data, x, y, z, scx=1, scy=1, scz=1,
-                 level=None, save_name=None, save_dir=None,
+                 levels=None, save_name=None, save_dir=None,
                  x_label='resolution', y_label='blur', z_label='noise',
-                 az=30, el=30, alpha=0.2, step_size=1, verbose=False):
+                 alpha=0.2, step_size=1, az_el_combinations='default'):
     """
     Uses the marching cubes method to identify iso-surfaces in 3d data and then creates a 3d plot of the iso-surface at
     the value specified by level. If level==None, the mean of the min and max value in vol_data is used.
@@ -413,44 +433,78 @@ def plot_isosurf(vol_data, x, y, z, scx=1, scy=1, scz=1,
     delta_x = x[1] - x[0]
     delta_y = y[1] - y[0]
     delta_z = z[1] - z[0]
-
-    if not level:
-        verts, faces, normals, values = marching_cubes(vol_data,
-                                                       spacing=(delta_x, delta_y, delta_z),
-                                                       step_size=step_size)
-    else:
-        verts, faces, normals, values = marching_cubes(vol_data,
-                                                       spacing=(delta_x, delta_y, delta_z),
-                                                       level=level,
-                                                       step_size=step_size)
-
-    # slide vertices by appropriate offset in x, y, z since marching cubes does not account
-    # for absolute coordinates
     x0, y0, z0 = np.min(x), np.min(y), np.min(z)
-    offset = np.multiply([x0, y0, z0], np.ones(np.shape(verts)))
-    verts += offset
 
-    fig = plt.figure(figsize=(10, 10))
-    ax = fig.add_subplot(111, projection='3d', azim=az, elev=el)
+    vertices_list = []
+    faces_list = []
 
-    mesh = Poly3DCollection(verts[faces], alpha=alpha)
-    mesh.set_edgecolor('k')
-    ax.add_collection3d(mesh)
+    if not levels:
+        verts, faces, normals, values = marching_cubes(vol_data,
+                                                       spacing=(delta_x, delta_y, delta_z),
+                                                       step_size=step_size)
+        # slide vertices by appropriate offset in x, y, z since marching cubes does not account
+        # for absolute coordinates
+        offset = np.multiply([x0, y0, z0], np.ones(np.shape(verts)))
+        verts += offset
 
-    ax.set_xlabel(x_label)
-    ax.set_ylabel(y_label)
-    ax.set_zlabel(z_label)
+        vertices_list.append(verts)
+        faces_list.append(faces)
 
-    ax.set_xlim(min(0, scx * np.min(x)), scx * np.max(x))
-    ax.set_ylim(min(0, scy * np.min(y)), scy * np.max(y))
-    ax.set_zlim(min(0, scz * np.min(z)), scz * np.max(z))
-    plt.tight_layout()
-    if save_name and save_dir:
-        plt.savefig(Path(save_dir, save_name))
-    plt.show()
+    else:
+        for level in levels:
+            scaled_level = level * np.max(vol_data)
+            verts, faces, normals, values = marching_cubes(vol_data,
+                                                           spacing=(delta_x, delta_y, delta_z),
+                                                           level=scaled_level,
+                                                           step_size=step_size)
+            # slide vertices by appropriate offset in x, y, z since marching cubes does not account
+            # for absolute coordinates
+            offset = np.multiply([x0, y0, z0], np.ones(np.shape(verts)))
+            verts += offset
 
-    if verbose:
-        return verts, faces, normals, values
+            vertices_list.append(verts)
+            faces_list.append(faces)
+
+    if az_el_combinations == 'all':
+        az_el_combinations_local = AZ_EL_COMBINATIONS
+    elif az_el_combinations == 'default':
+        az_el_combinations_local = {'0-0': {'az': AZ_EL_DEFAULTS['az'], 'el': AZ_EL_DEFAULTS['el']}}
+    elif az_el_combinations == 'iso_default':
+        az_el_combinations_local = ISOSURF_AZ_EL_COMBINATIONS
+    else:
+        raise ValueError('az_el_combinations must be either "all", "default", or "iso_default"')
+
+    for combination_key in az_el_combinations_local:
+        az, el = az_el_combinations_local[combination_key]['az'], az_el_combinations_local[combination_key]['el']
+
+        fig = plt.figure(figsize=(10, 10))
+        ax = fig.add_subplot(111, projection='3d', azim=az, elev=el)
+
+        for i, verts in enumerate(vertices_list):
+            faces = faces_list[i]
+            mesh = Poly3DCollection(verts[faces], alpha=alpha)
+            mesh.set_edgecolor('k')
+            ax.add_collection3d(mesh)
+
+        ax.set_xlabel(x_label)
+        ax.set_ylabel(y_label)
+        ax.set_zlabel(z_label)
+
+        ax.set_xlim(min(0, scx * np.min(x)), scx * np.max(x))
+        ax.set_ylim(min(0, scy * np.min(y)), scy * np.max(y))
+        ax.set_zlim(min(0, scz * np.min(z)), scz * np.max(z))
+        plt.tight_layout()
+
+        if az_el_combinations != 'default':
+            save_name_stem = save_name.split('.')[0]
+            save_name_updated = f'{save_name_stem}_az{az}_el{el}.png'
+        else:
+            save_name_updated = save_name
+
+        if save_name and save_dir:
+            plt.savefig(Path(save_dir, save_name_updated))
+        # plt.show()
+        plt.close()
 
 
 def plot_1d_performance(x, performance_dict, distortion_id,
@@ -622,11 +676,19 @@ def sorted_linear_scatter(prediction, result, directory=None, filename='predict_
 
 if __name__ == '__main__':
 
-    _res_vals = np.linspace(0.1, 1, num=10)
-    _blur_vals = np.linspace(0.1, 5, num=20)
-    _noise_vals = np.arange(40) * 2
+    # _res_vals = np.linspace(0.1, 1, num=10)
+    # _blur_vals = np.linspace(0.1, 5, num=20)
+    # _noise_vals = np.arange(40) * 2
+    #
+    # _f0 = np.random.rand(len(_res_vals), len(_blur_vals), len(_noise_vals))
+    # _f1 = np.random.rand(len(_res_vals), len(_blur_vals), len(_noise_vals))
+    #
+    # residual_color_plot(_f0, _f1, _res_vals, _blur_vals, _noise_vals)
 
-    _f0 = np.random.rand(len(_res_vals), len(_blur_vals), len(_noise_vals))
-    _f1 = np.random.rand(len(_res_vals), len(_blur_vals), len(_noise_vals))
+    _x = np.linspace(0, 1, num=50)
+    _y = np.copy(_x)
+    _z = np.copy(_x)
 
-    residual_color_plot(_f0, _f1, _res_vals, _blur_vals, _noise_vals)
+    _xx, _yy, _zz = np.meshgrid(_x, _y, _z)
+    f = np.sqrt(_xx**2 + _yy + _zz)
+    plot_isosurf(f, _x, _y, _z, levels=[0.3, 0.5, 0.7], az_el_combinations='iso_default')

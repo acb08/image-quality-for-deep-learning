@@ -623,10 +623,11 @@ if __name__ == '__main__':
     analyze_2d = False
     analyze_3d = True
 
-    make_standard_plots = True
+    make_standard_plots = False
 
     make_simulation_plots_1d = False
     make_simulation_plots_2d = False
+    make_isosurf_plots = True
 
     fit_keys = [
         # 'power_law',  # simplest / naive mapping
@@ -680,7 +681,8 @@ if __name__ == '__main__':
                 fit_summary_stats = analyze_perf_3d(_composite_performance, log_file=output_file, directory=fit_sub_dir,
                                                     fit_key=_fit_key, standard_plots=make_standard_plots,
                                                     residual_plot=False, make_residual_color_plot=False,
-                                                    distortion_ids=('res', 'blur', 'noise'), isosurf_plot=False,
+                                                    distortion_ids=('res', 'blur', 'noise'),
+                                                    isosurf_plot=make_isosurf_plots,
                                                     make_simulation_plots_1d=make_simulation_plots_1d,
                                                     make_simulation_plots_2d=make_simulation_plots_2d)
                 performance_fit_summary[_fit_key] = fit_summary_stats
