@@ -439,23 +439,9 @@ def plot_isosurf(vol_data, x, y, z, scx=1, scy=1, scz=1,
     faces_list = []
 
     if not levels:
-        verts, faces, normals, values = marching_cubes(vol_data,
-                                                       spacing=(delta_x, delta_y, delta_z),
-                                                       step_size=step_size)
-        # slide vertices by appropriate offset in x, y, z since marching cubes does not account
-        # for absolute coordinates
-        offset = np.multiply([x0, y0, z0], np.ones(np.shape(verts)))
-        verts += offset
-
-        vertices_list.append(verts)
-        faces_list.append(faces)
-
-    else:
-        for level in levels:
-            scaled_level = level * np.max(vol_data)
+        try:
             verts, faces, normals, values = marching_cubes(vol_data,
                                                            spacing=(delta_x, delta_y, delta_z),
-                                                           level=scaled_level,
                                                            step_size=step_size)
             # slide vertices by appropriate offset in x, y, z since marching cubes does not account
             # for absolute coordinates
@@ -464,6 +450,27 @@ def plot_isosurf(vol_data, x, y, z, scx=1, scy=1, scz=1,
 
             vertices_list.append(verts)
             faces_list.append(faces)
+        except ValueError:
+            print('unable to generate iso-surface')
+
+    else:
+        for level in levels:
+            mean, std = np.mean(vol_data), np.std(vol_data)
+            scaled_level = level * std + mean
+            try:
+                verts, faces, normals, values = marching_cubes(vol_data,
+                                                               spacing=(delta_x, delta_y, delta_z),
+                                                               level=scaled_level,
+                                                               step_size=step_size)
+                # slide vertices by appropriate offset in x, y, z since marching cubes does not account
+                # for absolute coordinates
+                offset = np.multiply([x0, y0, z0], np.ones(np.shape(verts)))
+                verts += offset
+
+                vertices_list.append(verts)
+                faces_list.append(faces)
+            except ValueError:
+                print(f'unable to generate iso-surface at level {level}')
 
     if az_el_combinations == 'all':
         az_el_combinations_local = AZ_EL_COMBINATIONS
