@@ -1,6 +1,6 @@
 import copy
 from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, STANDARD_TEST_RESULT_FILENAME, WANDB_PID, REL_PATHS, \
-    ROOT_DIR
+    ROOT_DIR, STANDARD_PERFORMANCE_PREDICTION_FILENAME
 from src.d00_utils.functions import load_wandb_data_artifact, get_config, construct_artifact_id
 from src.d04_analysis._shared_methods import _get_processed_instance_props_path, _check_extract_processed_props, \
     _archive_processed_props, _get_3d_distortion_perf_props
@@ -256,7 +256,6 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
     else:
         perf_3d_eval = perf_3d
         distortion_array_eval = distortion_array
-        # perf_array_eval = perf_array
 
     fit_prediction = apply_fit(fit_coefficients, distortion_array_eval, distortion_ids=(x_id, y_id, z_id),
                                fit_key=fit_key, add_bias=add_bias)
@@ -305,22 +304,6 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
                                                 x_id=x_id, y_id=y_id, z_id=z_id, output_file=log_file)
     print('\n', file=log_file)
 
-    #
-    # print(f'{fit_key} durban-watson statistic: ', dw_stat_prop_sorted, file=log_file)
-    # print(f'{fit_key} durban-watson axis-raveled statistics: {round(dw_by_axis[0], 3)}, {round(dw_by_axis[1], 3)}, '
-    #       f'{round(dw_by_axis[2], 3)}', file=log_file)
-    # print(f'{fit_key} durban-watson 2d axis-raveled statistics: {round(dw_by_axis_2d[0], 3)}, '
-    #       f'{round(dw_by_axis_2d[1], 3)}, {round(dw_by_axis_2d[2], 3)}, {round(dw_by_axis_2d[3], 3)}, '
-    #       f'{round(dw_by_axis_2d[4], 3)}, {round(dw_by_axis_2d[5], 3)}, \n', file=log_file)
-    #
-    # print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} simulation durban-watson statistic: ',
-    #       dw_stat_simulated_prob_sorted, file=log_file)
-    # print(f'{fit_key} simulation durban-watson axis-raveled statistics: , {round(dw_by_axis_sim[0], 3)},'
-    #       f'{round(dw_by_axis_sim[1], 3)}, {round(dw_by_axis_sim[2], 3)}', file=log_file)
-    # print(f'{fit_key} durban-watson 2d axis-raveled statistics: {round(dw_by_axis_2d_sim[0], 3)}, '
-    #       f'{round(dw_by_axis_2d_sim[1], 3)}, {round(dw_by_axis_2d_sim[2], 3)}, {round(dw_by_axis_2d_sim[3], 3)}, '
-    #       f'{round(dw_by_axis_2d_sim[4], 3)}, {round(dw_by_axis_2d_sim[5], 3)}, \n', file=log_file)
-
     print(f'{result_name} ideal fit simulation clipped values: {num_clipped_points}, '
           f'{100 * num_clipped_points / len(np.ravel(performance_prediction_3d))}% of total', '\n', file=log_file)
 
@@ -339,7 +322,8 @@ def analyze_perf_3d(model_performance,
                     make_residual_color_plot=True,
                     isosurf_plot=False,
                     make_simulation_plots_1d=False,
-                    make_simulation_plots_2d=False
+                    make_simulation_plots_2d=False,
+                    log_3d_prediction=True,
                     ):
 
     x_id, y_id, z_id = distortion_ids
@@ -411,6 +395,10 @@ def analyze_perf_3d(model_performance,
                      levels=[-0.3, 0, 0.3], save_name=save_name, save_dir=iso_save_dir,
                      az_el_combinations='all')
 
+    if log_3d_prediction:
+        perf_prediction_dir = Path(directory, REL_PATHS['perf_prediction'])
+        log_3d_perf_prediction(fit_3d, x_values, y_values, z_values, perf_prediction_dir, distortion_ids=distortion_ids)
+
     return round(eval_fit_correlation, 3), round(dw_prob_sorted, 3), round(dw_min_2d, 3), round(dw_min_1d, 3)
 
 
@@ -449,16 +437,6 @@ def check_histograms(distortion_performance_predict, distortion_performance_eval
     if directory:
         plt.savefig(Path(directory, 'hist_residuals.png'))
     plt.show()
-
-
-# def check_extraction_method(model_performance):
-#
-#     built_in = model_performance.get_3d_distortion_perf_props(('res', 'blur', 'noise'))
-#     built_in_compare = built_in[:4]
-#     original = get_distortion_perf_3d(model_performance)
-#
-#     for i, arr in enumerate(original):
-#         print(np.array_equal(arr, built_in_compare[i]))
 
 
 def _fetch_model_distortion_performance_result(run, result_id, identifier, distortion_ids, make_dir=True):
@@ -524,6 +502,19 @@ def performance_fit_summary_text_dump(fit_summary, header='eval fit correlation 
 
     for key, val in fit_summary.items():
         print(f'{key}: {val}', file=file)
+
+
+def log_3d_perf_prediction(perf_prediction_3d, x_values, y_values, z_values, directory, distortion_ids=None):
+
+    if not Path(directory).is_dir():
+        Path.mkdir(directory)
+
+    np.savez(Path(directory, STANDARD_PERFORMANCE_PREDICTION_FILENAME),
+             perf_prediction_3d=perf_prediction_3d,
+             x=x_values,
+             y=y_values,
+             z=z_values,
+             distortion_ids=distortion_ids)
 
 
 if __name__ == '__main__':

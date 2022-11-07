@@ -24,6 +24,7 @@ STANDARD_ENTROPY_PROPERTIES_FILENAME = 'entropy_properties.json'
 STANDARD_EFFECTIVE_ENTROPY_PROPERTIES_FILENAME = 'effective_entropy_properties.json'
 STANDARD_PROCESSED_DISTORTION_PERFORMANCE_PROPS_FILENAME = 'processed_distortion_performance_props.npz'
 STANDARD_COMPOSITE_DISTORTION_PERFORMANCE_PROPS_FILENAME = 'composite_distortion_performance_props.npz'
+STANDARD_PERFORMANCE_PREDICTION_FILENAME = 'performance_prediction_3d.npz'
 STANDARD_UID_FILENAME = 'uid.json'
 KEY_LENGTH = 4
 
@@ -58,7 +59,8 @@ REL_PATHS = {
     'bar_charts': r'analysis/bar_charts',
     'mosaics': r'mosaics',
     'composite_performance_configs': r'image-quality-for-deep-learning/src/d04_analysis/composite_performance_configs',
-    'noise_study': 'analysis/noise_study'
+    'noise_study': 'analysis/noise_study',
+    'perf_prediction': 'perf_prediction'
 }
 
 _project_config_filename = 'project_config.yml'
