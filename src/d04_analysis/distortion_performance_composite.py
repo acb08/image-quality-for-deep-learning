@@ -627,22 +627,26 @@ if __name__ == '__main__':
 
     make_simulation_plots_1d = False
     make_simulation_plots_2d = False
-    make_isosurf_plots = True
+    make_isosurf_plots = False
 
     fit_keys = [
+        'exponential',  # total noise estimated in quadrature, discrete sampling rer
         'power_law',  # simplest / naive mapping
         'power_law_2',  # total noise estimated in quadrature, discrete sampling rer
         'power_law_3',  # total noise estimated in quadrature
-        'giqe3_deriv_5',  # cross-term, noise added linearly, pure slope rer,  c4 * res not squared
-        'giqe3_deriv_6',  # cross-term, noise added linearly, pure slope rer, c4 * res squared
-        'giqe3_deriv_7',   # no cross-term, noise added linearly, pure slope rer, c4 * res squared
-        'giqe3_deriv_6_nq',  # cross-term, noise added in quadrature, pure slope rer, c4 * res squared
-        'giqe3_deriv_7_nq',  # no cross-term, noise added in quadrature, pure slope rer, c4 * res squared
-        'giqe5_deriv_8',  # no cross-term, noise added in quadrature, pure slope rer, c4 * res squared
-        'giqe5_deriv_9',  # cross-term, noise added in quadrature, pure slope rer, c4 * res squared
-        'giqe5_deriv_10',  # no cross-term, noise added in quadrature, discrete sampling rer, c4 * res squared
-        'giqe5_deriv_11',  # cross-term, noise added in quadrature, discrete sampling rer, c4 * res squared
-        'giqe3_deriv_12',  # no cross-term, noise added in quadrature, discrete sampling rer, c4 * res squared
+        'giqe3_deriv_5',  # cross-term, noise linearly, pure slope rer,  c4 * res not squared
+        'giqe3_deriv_6',  # cross-term, noise linearly, pure slope rer, c4 * res squared
+        'giqe3_deriv_7',   # no cross-term, noise linearly, pure slope rer, c4 * res squared
+        'giqe3_deriv_6_nq',  # cross-term, noise in quadrature, pure slope rer, c4 * res squared
+        'giqe3_deriv_7_nq',  # no cross-term, noise in quadrature, pure slope rer, c4 * res squared
+        'giqe5_deriv_8',  # no cross-term, noise in quadrature, pure slope rer, c4 * res squared
+        'giqe5_deriv_9',  # cross-term, noise in quadrature, pure slope rer, c4 * res squared
+        'giqe5_deriv_10',  # no cross-term, noise in quadrature, discrete sampling rer, c4 * res squared
+        'giqe5_deriv_11',  # cross-term, noise in quadrature, discrete sampling rer, c4 * res squared
+        'giqe3_deriv_12',  # no cross-term, noise in quadrature, discrete sampling rer, c4 * res squared
+        'giqe3_deriv_13',  # no cross-term, noise in quadrature, discrete sampling rer/blur corrected, c4 * res squared
+        'giqe5_deriv_14',  # cross-term, noise in quadrature, discrete sampling rer/blur corrected, c4 * res squared
+
         ]
 
     performance_fit_summary = {}

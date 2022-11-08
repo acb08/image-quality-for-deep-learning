@@ -6,9 +6,30 @@ from scipy.optimize import leastsq
 from matplotlib import pyplot as plt
 from scipy.special import erf
 
+LORENTZ_TERMS = (0.2630388847587775, -0.4590111280646474)  # correction for Gaussian to account for pixel xfer function
 
-def discrete_sampling_rer_model(sigma_blur):
-    return erf(1 / (2 * np.sqrt(2) * sigma_blur))
+
+def apply_xfer_function_correction(sigma):
+    """
+    Applies a correction to Gaussian blur standard deviation to incorporate the effects of the pixel transfer function,
+    which has a substantial impact at low blur values.
+    """
+    b = LORENTZ_TERMS[0]
+    m = LORENTZ_TERMS[1]
+
+    correction = b / (np.pi * (sigma - m)**2 + b**2)
+    return sigma + correction
+
+
+# def discrete_sampling_rer_model(sigma_blur):
+#     return erf(1 / (2 * np.sqrt(2) * sigma_blur))
+
+def discrete_sampling_rer_model(sigma_blur, apply_blur_correction=False):
+    if apply_blur_correction:
+        corrected_blur = apply_xfer_function_correction(sigma_blur)
+        return erf(1 / (2 * np.sqrt(2) * corrected_blur))
+    else:
+        return erf(1 / (2 * np.sqrt(2) * sigma_blur))
 
 
 class Fitter(object):
@@ -217,7 +238,7 @@ def giqe5_deriv_10(params, distortion_vector):
     noise_native = 1  # counts, estimated/sanity checked using very simple model in src.analysis.noise_estimate
     noise = np.sqrt(noise ** 2 + noise_native ** 2)
     sigma_combined = np.sqrt((c4 * res)**2 + blur**2)
-    rer = discrete_sampling_rer_model(sigma_combined)
+    rer = discrete_sampling_rer_model(sigma_combined, apply_blur_correction=False)
     y = c0 + c1 * np.log10(res) + c5 * np.log10(rer)**4 + c6 * noise  # trying to keep the coefficients named the same
 
     return y
@@ -238,7 +259,7 @@ def giqe5_deriv_11(params, distortion_vector):
     noise_native = 1  # counts, estimated/sanity checked using very simple model in src.analysis.noise_estimate
     noise = np.sqrt(noise ** 2 + noise_native ** 2)
     sigma_combined = np.sqrt((c4 * res)**2 + blur**2)
-    rer = discrete_sampling_rer_model(sigma_combined)
+    rer = discrete_sampling_rer_model(sigma_combined, apply_blur_correction=False)
     # rer = 1 / np.sqrt(2 * np.pi * ((c4 * res) ** 2 + blur ** 2))  # scale by res sq since down-sampling sharpens
     y = c0 + c1 * np.log10(res) + c2 * (1 - np.exp(c3 * noise)) * np.log10(rer) + c5 * np.log10(rer)**4 + c6 * noise
 
@@ -260,8 +281,50 @@ def giqe3_deriv_12(params, distortion_vector):
     noise_native = 1  # counts, estimated/sanity checked using very simple model in src.analysis.noise_estimate
     noise = np.sqrt(noise ** 2 + noise_native ** 2)
     sigma_combined = np.sqrt((c4 * res) ** 2 + blur ** 2)
-    rer = discrete_sampling_rer_model(sigma_combined)
+    rer = discrete_sampling_rer_model(sigma_combined, apply_blur_correction=False)
     y = c0 + c1 * np.log10(res) + c5 * np.log10(rer) + c6 * noise  # trying to keep the coefficients named the same
+
+    return y
+
+
+def giqe3_deriv_13(params, distortion_vector):
+
+    """
+    Derived from as v7_nq and v12, with RER updated for discrete sampling AND blur correction applied to account for
+    pixel transfer function.
+
+    No RER-SNR cross term
+    """
+
+    c0, c1, c4, c5, c6 = params  # keeping parameter names consistent with v6
+    res, blur, noise = distortion_vector[:, 0], distortion_vector[:, 1], distortion_vector[:, 2]
+    noise_native = 1  # counts, estimated/sanity checked using very simple model in src.analysis.noise_estimate
+    noise = np.sqrt(noise ** 2 + noise_native ** 2)
+    sigma_combined = np.sqrt((c4 * res) ** 2 + blur ** 2)
+    rer = discrete_sampling_rer_model(sigma_combined, apply_blur_correction=True)
+    y = c0 + c1 * np.log10(res) + c5 * np.log10(rer) + c6 * noise  # trying to keep the coefficients named the same
+
+    return y
+
+
+def giqe5_deriv_14(params, distortion_vector):
+
+    """
+    Incorporates raising the RER term to the fourth power (which I missed for an embarrassingly long time).
+
+    Includes RER-SNR cross term.
+
+    Uses discrete sampling (error function) RER model AND blur correction
+    """
+
+    c0, c1, c2, c3, c4, c5, c6 = params  # keeping parameter names consistent with v6
+    res, blur, noise = distortion_vector[:, 0], distortion_vector[:, 1], distortion_vector[:, 2]
+    noise_native = 1  # counts, estimated/sanity checked using very simple model in src.analysis.noise_estimate
+    noise = np.sqrt(noise ** 2 + noise_native ** 2)
+    sigma_combined = np.sqrt((c4 * res)**2 + blur**2)
+    rer = discrete_sampling_rer_model(sigma_combined, apply_blur_correction=True)
+    # rer = 1 / np.sqrt(2 * np.pi * ((c4 * res) ** 2 + blur ** 2))  # scale by res sq since down-sampling sharpens
+    y = c0 + c1 * np.log10(res) + c2 * (1 - np.exp(c3 * noise)) * np.log10(rer) + c5 * np.log10(rer)**4 + c6 * noise
 
     return y
 
@@ -290,6 +353,23 @@ def power_law_2(params, distortion_vector):
     noise = np.sqrt(1 + noise**2)
 
     y = c0 + c1 * res ** c2 + c3 * rer ** c4 + c5 * noise ** c6
+
+    return y
+
+
+def exponential(params, distortion_vector):
+    """
+    Distortions mapped to GIQE variables, with noise added in quadrature and blur mapped to RER va discrete sampling
+    erf
+    """
+    c0, c1, c2, c3, c4, c5, c6 = params
+    res, blur, noise = distortion_vector[:, 0], distortion_vector[:, 1], distortion_vector[:, 2]
+
+    sigma_combined = np.sqrt((2 * res)**2 + blur**2)
+    rer = discrete_sampling_rer_model(sigma_combined)
+    noise = np.sqrt(1 + noise**2)
+
+    y = c0 + c1 * np.exp(c2 * res) + c3 * np.exp(c3 * rer) + c5 * np.exp(c6 * noise)
 
     return y
 
@@ -394,6 +474,11 @@ _c7 = -0.01
 
 
 _fit_functions = {
+    'exponential': (exponential, (_c0, 0.1, 1, 0.1, 1, 0.1, -0.01)),
+
+    'giqe5_deriv_14': (giqe5_deriv_14,  (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
+    'giqe3_deriv_13': (giqe3_deriv_13, (_c0, _c1, 1, 0.5, -0.01)),
+
     'giqe3_deriv_12': (giqe3_deriv_12, (_c0, _c1, 1, 0.5, -0.01)),
     'giqe5_deriv_11': (giqe5_deriv_11, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
     'giqe5_deriv_10': (giqe5_deriv_10, (_c0, _c1, 1, 0.5, -0.01)),
