@@ -1,6 +1,5 @@
 import numpy as np
 import scipy.stats
-
 from src.d04_analysis.fit import fit_hyperplane, eval_linear_fit
 
 
@@ -497,7 +496,7 @@ def durbin_watson(prediction=None, measurement=None, residuals=None):
     if residuals is None:
         residuals = measurement - prediction
     shifted_diffs = residuals[1:] - residuals[:-1]
-    return np.sum(shifted_diffs ** 2) / np.sum(residuals ** 2)
+    return float(np.sum(shifted_diffs ** 2) / np.sum(residuals ** 2))
 
 
 def raster_plane_ravel(array, axis=0):
@@ -602,8 +601,7 @@ def check_durbin_watson_statistics(prediction, measurement, x_id, y_id, z_id, ax
             residuals_1d = np.mean(residuals_2d, axis=ravel_axis)
             dw_stat_1d = durbin_watson(residuals=residuals_1d)
 
-            dw_stats_1d[f'{remaining_axis_0}-{remaining_axis_1}-{array_mean_axis}-1d'] = dw_stat_1d
-            # dw_stats_2d.append(dw_stat_2d)
+            dw_stats_1d[array_mean_axis] = dw_stat_1d
 
     dw_stats['3d'] = dw_stats_3d_ravel
     dw_stats['2d'] = dw_stats_2d_ravel
@@ -620,6 +618,4 @@ def check_durbin_watson_statistics(prediction, measurement, x_id, y_id, z_id, ax
     dw_min_1d = np.min(list(dw_stats_1d.values()))
     dw_min_2d = np.min(list(dw_stats_2d_ravel.values()))
 
-    return dw_prediction_sorted, dw_min_2d, dw_min_1d
-
-    # return dw_prediction_sorted, dw_stats,  # dw_stats_2d
+    return dw_prediction_sorted, dw_min_2d, dw_min_1d, dw_stats

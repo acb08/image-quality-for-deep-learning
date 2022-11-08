@@ -93,7 +93,7 @@ def main(run_config):
 
 if __name__ == '__main__':
 
-    config_filename = 'places_summary_threshold.yml'
+    config_filename = 'bar_config.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_filename, help='config filename to be used')

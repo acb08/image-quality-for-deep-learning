@@ -16,6 +16,8 @@ import wandb
 import argparse
 import matplotlib.pyplot as plt
 from hashlib import blake2b
+from yaml import dump
+
 
 wandb.login()
 
@@ -296,19 +298,22 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
           file=log_file)
 
     print('dw stats (measured results)', file=log_file)
-    dw_prob_sorted, dw_min_2d, dw_min_1d = check_durbin_watson_statistics(performance_prediction_3d, perf_3d_eval,
-                                                                          x_id=x_id, y_id=y_id, z_id=z_id,
-                                                                          output_file=log_file)
+    dw_prob_sorted, dw_min_2d, dw_min_1d, dw_stats = check_durbin_watson_statistics(performance_prediction_3d,
+                                                                                    perf_3d_eval,
+                                                                                    x_id=x_id, y_id=y_id, z_id=z_id,
+                                                                                    output_file=log_file)
+    print('\n', file=log_file)
+
     print('dw stats (simulated results)', file=log_file)
-    __, __, __ = check_durbin_watson_statistics(performance_prediction_3d, perf_3d_simulated,
-                                                x_id=x_id, y_id=y_id, z_id=z_id, output_file=log_file)
+    __, __, __, __ = check_durbin_watson_statistics(performance_prediction_3d, perf_3d_simulated,
+                                                    x_id=x_id, y_id=y_id, z_id=z_id, output_file=log_file)
     print('\n', file=log_file)
 
     print(f'{result_name} ideal fit simulation clipped values: {num_clipped_points}, '
           f'{100 * num_clipped_points / len(np.ravel(performance_prediction_3d))}% of total', '\n', file=log_file)
 
     return (x_values, y_values, z_values, perf_3d, perf_3d_eval, performance_prediction_3d, perf_3d_simulated,
-            eval_fit_correlation, dw_prob_sorted, dw_min_2d, dw_min_1d)
+            eval_fit_correlation, dw_prob_sorted, dw_min_2d, dw_min_1d, dw_stats)
 
 
 def analyze_perf_3d(model_performance,
@@ -328,9 +333,10 @@ def analyze_perf_3d(model_performance,
 
     x_id, y_id, z_id = distortion_ids
     (x_values, y_values, z_values, perf_3d, perf_3d_eval, fit_3d, perf_3d_simulated, eval_fit_correlation,
-     dw_prob_sorted, dw_min_2d, dw_min_1d) = (get_distortion_perf_3d(model_performance, x_id=x_id, y_id=y_id, z_id=z_id,
-                                                                     add_bias=add_bias, log_file=log_file,
-                                                                     fit_key=fit_key,))
+     dw_prob_sorted, dw_min_2d, dw_min_1d, dw_stats) = (get_distortion_perf_3d(model_performance,
+                                                                               x_id=x_id, y_id=y_id, z_id=z_id,
+                                                                               add_bias=add_bias, log_file=log_file,
+                                                                               fit_key=fit_key,))
 
     check_histograms(perf_3d, perf_3d_eval, fit_3d, directory=directory)
     sorted_linear_scatter(fit_3d, perf_3d, directory=directory, best_fit=True)
@@ -398,6 +404,8 @@ def analyze_perf_3d(model_performance,
     if log_3d_prediction:
         perf_prediction_dir = Path(directory, REL_PATHS['perf_prediction'])
         log_3d_perf_prediction(fit_3d, x_values, y_values, z_values, perf_prediction_dir, distortion_ids=distortion_ids)
+
+    log_fit_stats(fit_stats=dw_stats, directory=directory, eval_fit_correlation=eval_fit_correlation, fit_key=fit_key)
 
     return round(eval_fit_correlation, 3), round(dw_prob_sorted, 3), round(dw_min_2d, 3), round(dw_min_1d, 3)
 
@@ -515,6 +523,18 @@ def log_3d_perf_prediction(perf_prediction_3d, x_values, y_values, z_values, dir
              y=y_values,
              z=z_values,
              distortion_ids=distortion_ids)
+
+
+def log_fit_stats(fit_stats, directory, eval_fit_correlation=None, fit_key=None):
+
+    if fit_key:
+        fit_stats['fit_key'] = fit_key
+
+    if eval_fit_correlation is not None:
+        fit_stats['eval_fit_correlation'] = float(eval_fit_correlation)
+
+    with open(Path(directory, 'fit_stats.yml'), 'w') as file:
+        dump(fit_stats, file)
 
 
 if __name__ == '__main__':
