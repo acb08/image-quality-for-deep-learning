@@ -7,7 +7,7 @@ from src.d04_analysis._shared_methods import _get_processed_instance_props_path,
 from src.d00_utils.definitions import STANDARD_UID_FILENAME, KEY_LENGTH, ROOT_DIR, \
     REL_PATHS, PROJECT_ID, DISTORTION_RANGE
 from src.d00_utils.functions import get_config, log_config, increment_suffix
-from src.d04_analysis.analysis_functions import conditional_mean_accuracy
+from src.d04_analysis.analysis_functions import conditional_mean_accuracy, get_sub_dir_and_log_filename
 from pathlib import Path
 from src.d04_analysis.distortion_performance import analyze_perf_1d, analyze_perf_2d, analyze_perf_3d, \
     performance_fit_summary_text_dump
@@ -603,21 +603,10 @@ def log_uid(directory, uid):
         json.dump(uid_log, file)
 
 
-def get_sub_dir_and_log_filename(output_dir, analysis_type, distortion_clip=False):  # leaving distortion_clip for now
-    if not distortion_clip:
-        sub_directory = Path(output_dir, analysis_type)
-    else:
-        sub_directory = Path(output_dir, f'{analysis_type}_dist_clip')
-    if not sub_directory.is_dir():
-        sub_directory.mkdir()
-    filename = f'composite_result_log_{analysis_type}.txt'
-    return sub_directory, filename
-
-
 if __name__ == '__main__':
 
-    config_filename = 's6_oct_fr90_composite_config.yml'
-    # config_filename = 'pl_oct_composite_fr90_mega1_mega2.yml'
+    # config_filename = 's6_oct_fr90_composite_config.yml'
+    config_filename = 'pl_oct_composite_fr90_mega1_mega2.yml'
 
     analyze_1d = False
     analyze_2d = False

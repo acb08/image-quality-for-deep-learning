@@ -26,6 +26,7 @@ STANDARD_PROCESSED_DISTORTION_PERFORMANCE_PROPS_FILENAME = 'processed_distortion
 STANDARD_COMPOSITE_DISTORTION_PERFORMANCE_PROPS_FILENAME = 'composite_distortion_performance_props.npz'
 STANDARD_PERFORMANCE_PREDICTION_FILENAME = 'performance_prediction_3d.npz'
 STANDARD_UID_FILENAME = 'uid.json'
+STANDARD_FIT_STATS_FILENAME = 'fit_stats.yml'
 KEY_LENGTH = 4
 
 # defines standard paths in project structure for different artifact types

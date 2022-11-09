@@ -1,6 +1,9 @@
 import numpy as np
 import scipy.stats
 from src.d04_analysis.fit import fit_hyperplane, eval_linear_fit
+from pathlib import Path
+from src.d00_utils.definitions import ROOT_DIR, REL_PATHS, STANDARD_FIT_STATS_FILENAME
+from yaml import safe_load
 
 
 def extract_combine_shard_vector_data(data, target_keys, check_keys=False):
@@ -619,3 +622,78 @@ def check_durbin_watson_statistics(prediction, measurement, x_id, y_id, z_id, ax
     dw_min_2d = np.min(list(dw_stats_2d_ravel.values()))
 
     return dw_prediction_sorted, dw_min_2d, dw_min_1d, dw_stats
+
+
+def get_sub_dir_and_log_filename(output_dir, analysis_type, distortion_clip=False):  # leaving distortion_clip for now
+    if not distortion_clip:
+        sub_directory = Path(output_dir, analysis_type)
+    else:
+        sub_directory = Path(output_dir, f'{analysis_type}_dist_clip')
+    if not sub_directory.is_dir():
+        sub_directory.mkdir()
+    filename = f'composite_result_log_{analysis_type}.txt'
+    return sub_directory, filename
+
+
+def load_fit_stats(directory, filename=STANDARD_FIT_STATS_FILENAME):
+
+    with open(Path(directory, filename), 'r') as file:
+        data = safe_load(file)
+
+    return data
+
+
+def consolidate_fit_stats(fit_keys, composite_result_id, analysis_type='3d'):
+
+    consolidated_stats = {}
+
+    parent_dir = Path(ROOT_DIR, REL_PATHS['composite_performance'], composite_result_id)
+    sub_dir, __ = get_sub_dir_and_log_filename(parent_dir, analysis_type)
+
+    for fit_key in fit_keys:
+        fit_dir, __ = get_sub_dir_and_log_filename(sub_dir, fit_key)
+        fit_stats = load_fit_stats(fit_dir, filename=STANDARD_FIT_STATS_FILENAME)
+
+        consolidated_stats[fit_key] = fit_stats
+
+    return consolidated_stats
+
+
+# if __name__ == '__main__':
+#
+#     _composite_result_id = 'oct-models-fr90-mega-1-mega-2'
+#     _fit_keys = [
+#         'exponential',  # total noise estimated in quadrature, discrete sampling rer
+#         'power_law',  # simplest / naive mapping
+#         'power_law_2',  # total noise estimated in quadrature, discrete sampling rer
+#         'power_law_3',  # total noise estimated in quadrature
+#         'giqe3_deriv_5',  # cross-term, noise linearly, pure slope rer,  c4 * res not squared
+#         'giqe3_deriv_6',  # cross-term, noise linearly, pure slope rer, c4 * res squared
+#         'giqe3_deriv_7',   # no cross-term, noise linearly, pure slope rer, c4 * res squared
+#         'giqe3_deriv_6_nq',  # cross-term, noise in quadrature, pure slope rer, c4 * res squared
+#         'giqe3_deriv_7_nq',  # no cross-term, noise in quadrature, pure slope rer, c4 * res squared
+#         'giqe5_deriv_8',  # no cross-term, noise in quadrature, pure slope rer, c4 * res squared
+#         'giqe5_deriv_9',  # cross-term, noise in quadrature, pure slope rer, c4 * res squared
+#         'giqe5_deriv_10',  # no cross-term, noise in quadrature, discrete sampling rer, c4 * res squared
+#         'giqe5_deriv_11',  # cross-term, noise in quadrature, discrete sampling rer, c4 * res squared
+#         'giqe3_deriv_12',  # no cross-term, noise in quadrature, discrete sampling rer, c4 * res squared
+#         'giqe3_deriv_13',  # no cross-term, noise in quadrature, discrete sampling rer/blur corrected, c4 * res squared
+#         'giqe5_deriv_14',  # cross-term, noise in quadrature, discrete sampling rer/blur corrected, c4 * res squared
+#         ]
+#
+#     # _directory = Path(ROOT_DIR, REL_PATHS['composite_performance'], _composite_result_id)
+#     _fit_stats = consolidate_fit_stats(_fit_keys, _composite_result_id, ['eval_fit_correlation'])
+#     _traverse_keys = ['1d']
+#     _keys, _data = sort_for_bar_chart(_fit_stats, target_keys='all',  traverse_keys=['1d'])
+#     print(_fit_stats)
+#     print(_keys)
+#     print(_data)
+#
+#     _keys, _data = sort_for_bar_chart(_fit_stats, target_keys='all', traverse_keys=['2d'])
+#     print(_fit_stats)
+#     print(_keys)
+#     print(_data)
+
+
+
+

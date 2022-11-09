@@ -1,6 +1,6 @@
 import copy
 from src.d00_utils.definitions import STANDARD_DATASET_FILENAME, STANDARD_TEST_RESULT_FILENAME, WANDB_PID, REL_PATHS, \
-    ROOT_DIR, STANDARD_PERFORMANCE_PREDICTION_FILENAME
+    ROOT_DIR, STANDARD_PERFORMANCE_PREDICTION_FILENAME, STANDARD_FIT_STATS_FILENAME
 from src.d00_utils.functions import load_wandb_data_artifact, get_config, construct_artifact_id
 from src.d04_analysis._shared_methods import _get_processed_instance_props_path, _check_extract_processed_props, \
     _archive_processed_props, _get_3d_distortion_perf_props
@@ -533,7 +533,7 @@ def log_fit_stats(fit_stats, directory, eval_fit_correlation=None, fit_key=None)
     if eval_fit_correlation is not None:
         fit_stats['eval_fit_correlation'] = float(eval_fit_correlation)
 
-    with open(Path(directory, 'fit_stats.yml'), 'w') as file:
+    with open(Path(directory, STANDARD_FIT_STATS_FILENAME), 'w') as file:
         dump(fit_stats, file)
 
 

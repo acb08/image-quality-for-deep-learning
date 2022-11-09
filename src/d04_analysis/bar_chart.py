@@ -1,5 +1,5 @@
 import copy
-
+from src.d04_analysis.analysis_functions import consolidate_fit_stats
 import matplotlib.pyplot as plt
 import numpy as np
 from src.d00_utils.functions import get_config
@@ -9,9 +9,10 @@ from src.d00_utils.definitions import ROOT_DIR, REL_PATHS
 from src.d00_utils.functions import increment_suffix, log_config
 
 
-def grouped_bar_chart(data, group_labels, ylabel='mean accuracy', group_width=0.7, padding=3, bar_width_frac=0.85,
+def grouped_bar_chart(data, group_labels, ylabel='mean accuracy', xlabel=None, group_width=0.7, padding=3, bar_width_frac=0.85,
                       edge_color='black', line_width=1, output_dir=None, x_scale=1,
-                      figsize=(8, 8 / 1.33), label_threshold=None, manual_name=None, overwrite=False):
+                      figsize=(8, 8 / 1.33), label_threshold=None, include_bar_labels=True, rotation=45,
+                      include_legend=True):
 
     x = np.arange(len(group_labels)) * x_scale
     num_items = len(data)
@@ -25,16 +26,20 @@ def grouped_bar_chart(data, group_labels, ylabel='mean accuracy', group_width=0.
         left_edge = bar_offset + (i + 0.5) * bar_space
         rect = ax.bar(x + left_edge, item_data, bar_width, label=label, edgecolor=edge_color, linewidth=line_width)
 
-        labels = [str(item)[1:] for item in item_data]  # strip off leading zeros (i.e. '0.01' -> '.01')
-        labels = [f'{item}0' if len(item) == 2 else item for item in labels]
-        if label_threshold:
-            labels = [f'<{str(label_threshold)[1:]}' if float(item) < label_threshold else item for item in labels]
-        ax.bar_label(rect, labels=labels, padding=padding)
+        if include_bar_labels:
+            labels = [round(item, 2) for item in item_data]
+            labels = [str(item)[1:] for item in labels]  # strip off leading zeros (i.e. '0.01' -> '.01')
+            labels = [f'{item}0' if len(item) == 2 else item for item in labels]
+            if label_threshold:
+                labels = [f'<{str(label_threshold)[1:]}' if float(item) < label_threshold else item for item in labels]
+            ax.bar_label(rect, labels=labels, padding=padding)
 
-        ax.set_ylabel(ylabel)
-        ax.set_xlabel('test dataset')
-        ax.set_xticks(x, group_labels)
-        ax.legend()
+    ax.set_ylabel(ylabel)
+    ax.set_xlabel(xlabel)
+    ax.set_xticks(x, group_labels, rotation=rotation)
+
+    if include_legend:
+        ax.legend(loc='upper right')
 
     fig.tight_layout()
     if output_dir:
@@ -82,18 +87,105 @@ def get_output_dir(data, parent_dir='default', overwrite=True, suffix=None, manu
                                   manual_name=manual_name)
 
 
+def sort_for_bar_chart(consolidated_stats, target_keys=('res', 'blur', 'noise'), traverse_keys=('1d',),
+                       outer_keys=None):
+
+    if outer_keys is None:
+        outer_keys = list(consolidated_stats.keys())
+
+    sorted_data = []
+
+    if target_keys == 'all':
+        sub_dict = consolidated_stats[outer_keys[0]]
+        if traverse_keys:
+            for traverse_key in traverse_keys:
+                sub_dict = sub_dict[traverse_key]
+            target_keys = list(sub_dict.keys())
+
+    for target_key in target_keys:
+        target_data = []
+        for outer_key in outer_keys:
+            sub_dict = consolidated_stats[outer_key]
+            if traverse_keys:
+                for traverse_key in traverse_keys:
+                    sub_dict = sub_dict[traverse_key]
+
+            target = sub_dict[target_key]
+            target_data.append(target)
+
+        sorted_data.append([
+            target_key, target_data
+        ])
+
+    return outer_keys, sorted_data
+
+
 def main(run_config):
 
-    output_dir = get_output_dir(run_config['data'], overwrite=run_config['overwrite'],
-                                manual_name=run_config['manual_name'])
-    run_config['output_dir'] = output_dir
-    grouped_bar_chart(**run_config)
+    """
+    Generates a grouped bar chart using either data in run_config or else data fit characterization data extracted and
+    grouped with the consolidate_fit_stats() and sort_for_bar_chart() functions.
+    """
+    if 'data' not in run_config.keys():
+
+        fit_keys = run_config['fit_keys']
+        composite_result_id = run_config['composite_result_id']
+        analysis_type = run_config['analysis_type']
+        target_keys = run_config['target_keys']
+        traverse_keys = run_config['traverse_keys']
+
+        group_labels = run_config['group_labels']
+
+        consolidated_fit_stats = consolidate_fit_stats(fit_keys=fit_keys,
+                                                       composite_result_id=composite_result_id,
+                                                       analysis_type=analysis_type)
+        __, data = sort_for_bar_chart(consolidated_fit_stats, target_keys=target_keys,
+                                      traverse_keys=traverse_keys, outer_keys=fit_keys)
+        if group_labels is None:
+            group_labels = copy.deepcopy(fit_keys)
+
+    else:
+        data = run_config['data']
+        group_labels = run_config['group_labels']
+
+    overwrite = run_config['overwrite']
+    manual_name = run_config['manual_name']
+    ylabel = run_config['ylabel']
+    xlabel = run_config['xlabel']
+    group_width = run_config['group_width']
+    padding = run_config['padding']
+    bar_width_frac = run_config['bar_width_frac']
+    edge_color = run_config['edge_color']
+    line_width = run_config['line_width']
+    label_threshold = run_config['label_threshold']
+    include_bar_labels = run_config['include_bar_labels']
+    rotation = run_config['rotation']
+    include_legend = run_config['include_legend']
+
+    output_dir = get_output_dir(data, overwrite=overwrite,
+                                manual_name=manual_name)
+
+    grouped_bar_chart(data=data,
+                      group_labels=group_labels,
+                      ylabel=ylabel,
+                      xlabel=xlabel,
+                      group_width=group_width,
+                      padding=padding,
+                      bar_width_frac=bar_width_frac,
+                      edge_color=edge_color,
+                      line_width=line_width,
+                      output_dir=output_dir,
+                      label_threshold=label_threshold,
+                      include_bar_labels=include_bar_labels,
+                      rotation=rotation,
+                      include_legend=include_legend)
+
     log_config(output_dir, run_config)
 
 
 if __name__ == '__main__':
 
-    config_filename = 'bar_config.yml'
+    config_filename = 'giqe3_places_3d.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_filename, help='config filename to be used')
