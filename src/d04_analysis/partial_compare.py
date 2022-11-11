@@ -142,7 +142,7 @@ def grad_plot(xx, yy, zz, u, v, w,
     fig.show()
 
 
-def load_3d_perf_prediction(composite_result_id, analysis_type='3d', fit_key='giqe3_deriv_12'):
+def load_3d_perf_prediction(composite_result_id, analysis_type='3d', fit_key='giqe3_b3n2'):
     parent_dir = Path(ROOT_DIR, REL_PATHS['composite_performance'], composite_result_id, analysis_type, fit_key,
                       REL_PATHS['perf_prediction'])
     data = load_npz_data(parent_dir, STANDARD_PERFORMANCE_PREDICTION_FILENAME)

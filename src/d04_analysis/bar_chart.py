@@ -87,8 +87,64 @@ def get_output_dir(data, parent_dir='default', overwrite=True, suffix=None, manu
                                   manual_name=manual_name)
 
 
-def sort_for_bar_chart(consolidated_stats, target_keys=('res', 'blur', 'noise'), traverse_keys=('1d',),
-                       outer_keys=None):
+def sort_filter_fit_stats_for_grouped_bar_chart(consolidated_stats, target_keys=('res', 'blur', 'noise'),
+                                                traverse_keys=('1d',), outer_keys=None, additional_filter=False):
+    """
+    Sorts through nested dictionary structure to extract data to be used by grouped_bar_chart() function. The
+    grouped_bar_chart() function takes data with the structure
+    [
+    data_label_0, --> i.e. the label that goes into the legend of the bar chart
+        [
+        group_0_value,
+        group_1_value,
+        ...
+        ]
+    data_label_1,
+        [
+        group_0_value,
+        group_1_value,
+        ...
+        ]
+    ],
+    and it is into this structure that this function places data from consolidated_stats.
+
+
+    :param consolidated_stats: dictionary containing nested dictionaries of fit statistics. Structured as follows:
+    {outer_key: --> the fit_key used mapped to a particular fit function
+        {
+        traverse_key_0:  --> if present, key mapped to method of fit stat collection (e.g. dw in 1d vs. 2d)
+            {
+            target_key_0: target_value_0,
+            target_key_1: target_value_1,
+            ...
+            }
+        traverse_key_1:
+            {
+            target_key_0: target_value_0
+            target_key_1: target_value_0
+            ...
+            }
+        target_key_0:  target_value_0--> if travers_keys is None, target_keys can be found at first level of nested dict
+        ...
+        }
+    }
+    :param target_keys: keys corresponding to the actual data to be extracted
+    :param traverse_keys:  intermediate keys mapped to method of stat collection
+    :param outer_keys: keys to separate the separate fit functions
+    :param additional_filter:  Not implemented yet
+    :return:
+        outer_keys --> list of the fit function keys used
+        target_data --> list structured as follows:
+        [target_key,
+            [target_value_0,
+            target_value_1,
+            ...
+            ]
+        ]
+    """
+
+    if additional_filter:
+        raise NotImplemented
 
     if outer_keys is None:
         outer_keys = list(consolidated_stats.keys())
@@ -103,9 +159,12 @@ def sort_for_bar_chart(consolidated_stats, target_keys=('res', 'blur', 'noise'),
             target_keys = list(sub_dict.keys())
 
     for target_key in target_keys:
+
         target_data = []
+
         for outer_key in outer_keys:
             sub_dict = consolidated_stats[outer_key]
+
             if traverse_keys:
                 for traverse_key in traverse_keys:
                     sub_dict = sub_dict[traverse_key]
@@ -120,11 +179,27 @@ def sort_for_bar_chart(consolidated_stats, target_keys=('res', 'blur', 'noise'),
     return outer_keys, sorted_data
 
 
+def min_value(data):
+
+    keys = tuple(data.keys())
+    values = tuple(data.values())
+    min_val = min(values)
+    min_val_idx = values.index(min_val)
+    min_val_key = keys[min_val_idx]
+
+    return min_val, min_val_key
+
+
+sub_dict_filter_functions = {
+    'min_value': min_value
+}
+
+
 def main(run_config):
 
     """
     Generates a grouped bar chart using either data in run_config or else data fit characterization data extracted and
-    grouped with the consolidate_fit_stats() and sort_for_bar_chart() functions.
+    grouped with the consolidate_fit_stats() and sort_filter_fit_stats_for_grouped_bar_chart() functions.
     """
     if 'data' not in run_config.keys():
 
@@ -136,11 +211,17 @@ def main(run_config):
 
         group_labels = run_config['group_labels']
 
+        if 'additional_filter' in run_config.keys():
+            additional_filter = run_config['additional_filter']
+        else:
+            additional_filter = None
+
         consolidated_fit_stats = consolidate_fit_stats(fit_keys=fit_keys,
                                                        composite_result_id=composite_result_id,
                                                        analysis_type=analysis_type)
-        __, data = sort_for_bar_chart(consolidated_fit_stats, target_keys=target_keys,
-                                      traverse_keys=traverse_keys, outer_keys=fit_keys)
+        __, data = sort_filter_fit_stats_for_grouped_bar_chart(consolidated_fit_stats, target_keys=target_keys,
+                                                               traverse_keys=traverse_keys, outer_keys=fit_keys,
+                                                               additional_filter=additional_filter)
         if group_labels is None:
             group_labels = copy.deepcopy(fit_keys)
 
@@ -178,14 +259,15 @@ def main(run_config):
                       label_threshold=label_threshold,
                       include_bar_labels=include_bar_labels,
                       rotation=rotation,
-                      include_legend=include_legend)
+                      include_legend=include_legend,
+                      )
 
     log_config(output_dir, run_config)
 
 
 if __name__ == '__main__':
 
-    config_filename = 'giqe3_places_3d.yml'
+    config_filename = 'pl_all_dw_2d.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_filename, help='config filename to be used')

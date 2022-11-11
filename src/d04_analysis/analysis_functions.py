@@ -663,33 +663,33 @@ def consolidate_fit_stats(fit_keys, composite_result_id, analysis_type='3d'):
 #
 #     _composite_result_id = 'oct-models-fr90-mega-1-mega-2'
 #     _fit_keys = [
-#         'exponential',  # total noise estimated in quadrature, discrete sampling rer
-#         'power_law',  # simplest / naive mapping
-#         'power_law_2',  # total noise estimated in quadrature, discrete sampling rer
-#         'power_law_3',  # total noise estimated in quadrature
+#         'exp_b3n2',  # total noise estimated in quadrature, discrete sampling rer
+#         'pl_b0n0',  # simplest / naive mapping
+#         'pl_b3n2',  # total noise estimated in quadrature, discrete sampling rer
+#         'pl_b0n2',  # total noise estimated in quadrature
 #         'giqe3_deriv_5',  # cross-term, noise linearly, pure slope rer,  c4 * res not squared
 #         'giqe3_deriv_6',  # cross-term, noise linearly, pure slope rer, c4 * res squared
-#         'giqe3_deriv_7',   # no cross-term, noise linearly, pure slope rer, c4 * res squared
+#         'giqe3_b2n1',   # no cross-term, noise linearly, pure slope rer, c4 * res squared
 #         'giqe3_deriv_6_nq',  # cross-term, noise in quadrature, pure slope rer, c4 * res squared
-#         'giqe3_deriv_7_nq',  # no cross-term, noise in quadrature, pure slope rer, c4 * res squared
-#         'giqe5_deriv_8',  # no cross-term, noise in quadrature, pure slope rer, c4 * res squared
-#         'giqe5_deriv_9',  # cross-term, noise in quadrature, pure slope rer, c4 * res squared
-#         'giqe5_deriv_10',  # no cross-term, noise in quadrature, discrete sampling rer, c4 * res squared
-#         'giqe5_deriv_11',  # cross-term, noise in quadrature, discrete sampling rer, c4 * res squared
-#         'giqe3_deriv_12',  # no cross-term, noise in quadrature, discrete sampling rer, c4 * res squared
-#         'giqe3_deriv_13',  # no cross-term, noise in quadrature, discrete sampling rer/blur corrected, c4 * res squared
-#         'giqe5_deriv_14',  # cross-term, noise in quadrature, discrete sampling rer/blur corrected, c4 * res squared
+#         'giqe3_b2n2',  # no cross-term, noise in quadrature, pure slope rer, c4 * res squared
+#         'giqe5_b2b2_nct',  # no cross-term, noise in quadrature, pure slope rer, c4 * res squared
+#         'giqe5_b2n2',  # cross-term, noise in quadrature, pure slope rer, c4 * res squared
+#         'giqe5_b3n2_nct',  # no cross-term, noise in quadrature, discrete sampling rer, c4 * res squared
+#         'giqe5_b3n2',  # cross-term, noise in quadrature, discrete sampling rer, c4 * res squared
+#         'giqe3_b3n2',  # no cross-term, noise in quadrature, discrete sampling rer, c4 * res squared
+#         'giqe3_b4n2',  # no cross-term, noise in quadrature, discrete sampling rer/blur corrected, c4 * res squared
+#         'giqe5_b4n2',  # cross-term, noise in quadrature, discrete sampling rer/blur corrected, c4 * res squared
 #         ]
 #
 #     # _directory = Path(ROOT_DIR, REL_PATHS['composite_performance'], _composite_result_id)
 #     _fit_stats = consolidate_fit_stats(_fit_keys, _composite_result_id, ['eval_fit_correlation'])
 #     _traverse_keys = ['1d']
-#     _keys, _data = sort_for_bar_chart(_fit_stats, target_keys='all',  traverse_keys=['1d'])
+#     _keys, _data = sort_filter_fit_stats_for_grouped_bar_chart(_fit_stats, target_keys='all',  traverse_keys=['1d'])
 #     print(_fit_stats)
 #     print(_keys)
 #     print(_data)
 #
-#     _keys, _data = sort_for_bar_chart(_fit_stats, target_keys='all', traverse_keys=['2d'])
+#     _keys, _data = sort_filter_fit_stats_for_grouped_bar_chart(_fit_stats, target_keys='all', traverse_keys=['2d'])
 #     print(_fit_stats)
 #     print(_keys)
 #     print(_data)
