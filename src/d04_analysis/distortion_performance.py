@@ -181,12 +181,14 @@ def analyze_perf_1d(model_performance,
                     distortion_ids=('res', 'blur', 'noise'),
                     directory=None,
                     log_file=None,
-                    per_class=False):
+                    per_class=False,
+                    show_plots=False):
     for i, distortion_id in enumerate(distortion_ids):
         x, y, fit_coefficients, fit_correlation = get_distortion_perf_1d(model_performance, distortion_id,
                                                                          log_file=log_file, per_class=per_class)
         plot_1d_linear_fit(x, y, fit_coefficients, distortion_id,
-                           result_identifier=str(model_performance), directory=directory, per_class=per_class)
+                           result_identifier=str(model_performance), directory=directory, per_class=per_class,
+                           show_plots=show_plots)
 
 
 def analyze_perf_2d(model_performance,
@@ -194,7 +196,8 @@ def analyze_perf_2d(model_performance,
                     distortion_combinations=((0, 1), (1, 2), (0, 2)),
                     directory=None,
                     log_file=None,
-                    add_bias=True):
+                    add_bias=True,
+                    show_plots=False):
     identifier = str(model_performance)
 
     for i, (idx_0, idx_1) in enumerate(distortion_combinations):
@@ -210,13 +213,15 @@ def analyze_perf_2d(model_performance,
                 result_identifier=identifier,
                 axis_labels='default',
                 az_el_combinations='all',
-                directory=directory)
+                directory=directory,
+                show_plots=show_plots)
 
         plot_2d_linear_fit(distortion_arr, accuracy_means, _fit, x_id, y_id,
                            result_identifier=f'{identifier}_fit',
                            axis_labels='default',
                            az_el_combinations='all',
-                           directory=directory)
+                           directory=directory,
+                           show_plots=show_plots)
 
 
 def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noise', add_bias=True, log_file=None,
@@ -329,7 +334,9 @@ def analyze_perf_3d(model_performance,
                     make_simulation_plots_1d=False,
                     make_simulation_plots_2d=False,
                     log_3d_prediction=True,
-                    ):
+                    show_plots=False,
+                    show_scatter_plots=True,
+                    show_1d_plots=True):
 
     x_id, y_id, z_id = distortion_ids
     (x_values, y_values, z_values, perf_3d, perf_3d_eval, fit_3d, perf_3d_simulated, eval_fit_correlation,
@@ -339,44 +346,51 @@ def analyze_perf_3d(model_performance,
                                                                                fit_key=fit_key,))
 
     check_histograms(perf_3d, perf_3d_eval, fit_3d, directory=directory)
-    sorted_linear_scatter(fit_3d, perf_3d, directory=directory, best_fit=True)
+    sorted_linear_scatter(fit_3d, perf_3d, directory=directory, best_fit=True, show_plots=show_scatter_plots)
     sorted_linear_scatter(fit_3d, perf_3d_eval, directory=directory, filename='predict_result_eval_scatter.png',
-                          best_fit=True)
-
-    # trials_per_experiment = len(model_performance) / len(np.ravel(perf_3d))
-    # fit_3d_sim = np.clip(fit_3d, 0, 1)
+                          best_fit=True, show_plots=show_scatter_plots)
 
     sorted_linear_scatter(fit_3d, perf_3d_simulated, directory=directory,
                           filename='predict_simulated_result_scatter.png', best_fit=True,
-                          xlabel='predicted accuracy (binomial simulation p-success)', ylabel='accuracy (simulated)')
+                          xlabel='predicted accuracy (binomial simulation p-success)', ylabel='accuracy (simulated)',
+                          show_plots=show_scatter_plots)
 
     if standard_plots:
         compare_2d_views(perf_3d, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
                          data_labels=('measured (predict)', 'fit'), az_el_combinations='all', directory=directory,
-                         residual_plot=False, result_id='predict_fit_3d_proj')
+                         residual_plot=False, result_id='predict_fit_3d_proj',
+                         show_plots=show_plots)
 
         compare_1d_views(perf_3d, fit_3d,  x_values, y_values, z_values, distortion_ids=distortion_ids,
                          data_labels=('measured (predict)', 'fit'), directory=directory,
-                         result_id='mean_1d_predict')
+                         result_id='mean_1d_predict',
+                         show_plots=show_1d_plots)
 
         if not np.array_equal(perf_3d, perf_3d_eval):
             compare_2d_views(perf_3d_eval, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
                              data_labels=('measured (eval)', 'fit'), az_el_combinations='all', directory=directory,
-                             residual_plot=False, result_id='eval_fit_3d_proj')
+                             residual_plot=False, result_id='eval_fit_3d_proj',
+                             show_plots=show_plots)
 
             compare_1d_views(perf_3d_eval, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
                              data_labels=('measured (eval)', 'fit'), directory=directory,
-                             result_id='mean_1d_eval')
+                             result_id='mean_1d_eval',
+                             show_plots=show_1d_plots)
+
+        else:
+            print('per_3d = perf_3d_eval for ', str(model_performance))
 
     if make_simulation_plots_1d:
         compare_1d_views(perf_3d_simulated, fit_3d,  x_values, y_values, z_values, distortion_ids=distortion_ids,
                          data_labels=('simulated', 'fit'), directory=directory,
-                         result_id='mean_1d_simulated')
+                         result_id='mean_1d_simulated',
+                         show_plots=show_1d_plots)
 
     if make_simulation_plots_2d:
         compare_2d_views(perf_3d_simulated, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
                          data_labels=('simulated', 'fit'), az_el_combinations='all', directory=directory,
-                         residual_plot=False, result_id='simulation_fit_3d_proj')
+                         residual_plot=False, result_id='simulation_fit_3d_proj',
+                         show_plots=show_plots)
 
     if residual_plot:
         compare_2d_views(perf_3d, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
@@ -386,7 +400,8 @@ def analyze_perf_3d(model_performance,
         if not np.array_equal(perf_3d, perf_3d_eval):
             compare_2d_views(perf_3d_eval, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
                              data_labels=('measured (eval)', 'fit'), az_el_combinations='all', directory=directory,
-                             residual_plot=residual_plot, result_id='eval_fit_3d_proj')
+                             residual_plot=residual_plot, result_id='eval_fit_3d_proj',
+                             show_plots=show_plots)
 
     if make_residual_color_plot:
         residual_color_plot(perf_3d, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
@@ -399,7 +414,8 @@ def analyze_perf_3d(model_performance,
             Path.mkdir(iso_save_dir)
         plot_isosurf(fit_3d, x_values, y_values, z_values,
                      levels=[-0.3, 0, 0.3], save_name=save_name, save_dir=iso_save_dir,
-                     az_el_combinations='all')
+                     az_el_combinations='all',
+                     show_plots=show_plots)
 
     if log_3d_prediction:
         perf_prediction_dir = Path(directory, REL_PATHS['perf_prediction'])
@@ -410,7 +426,8 @@ def analyze_perf_3d(model_performance,
     return round(eval_fit_correlation, 3), round(dw_prob_sorted, 3), round(dw_min_2d, 3), round(dw_min_1d, 3)
 
 
-def check_histograms(distortion_performance_predict, distortion_performance_eval, performance_fit, directory=None):
+def check_histograms(distortion_performance_predict, distortion_performance_eval, performance_fit, directory=None,
+                     show_plots=False):
 
     plt.figure()
     plt.hist(np.ravel(distortion_performance_predict))
@@ -418,7 +435,9 @@ def check_histograms(distortion_performance_predict, distortion_performance_eval
     plt.xlabel('accuracy')
     if directory:
         plt.savefig(Path(directory, 'hist_performance_predict.png'))
-    plt.show()
+    if show_plots:
+        plt.show()
+    plt.close()
 
     plt.figure()
     plt.hist(np.ravel(distortion_performance_eval))
@@ -426,7 +445,9 @@ def check_histograms(distortion_performance_predict, distortion_performance_eval
     plt.xlabel('accuracy')
     if directory:
         plt.savefig(Path(directory, 'hist_performance.png'))
-    plt.show()
+    if show_plots:
+        plt.show()
+    plt.close()
 
     plt.figure()
     plt.hist(np.ravel(performance_fit))
@@ -434,7 +455,9 @@ def check_histograms(distortion_performance_predict, distortion_performance_eval
     plt.xlabel('accuracy')
     if directory:
         plt.savefig(Path(directory, 'hist_fit.png'))
-    plt.show()
+    if show_plots:
+        plt.show()
+    plt.close()
 
     residuals = performance_fit - distortion_performance_eval
 
@@ -444,7 +467,9 @@ def check_histograms(distortion_performance_predict, distortion_performance_eval
     plt.xlabel('residual')
     if directory:
         plt.savefig(Path(directory, 'hist_residuals.png'))
-    plt.show()
+    if show_plots:
+        plt.show()
+    plt.close()
 
 
 def _fetch_model_distortion_performance_result(run, result_id, identifier, distortion_ids, make_dir=True):
@@ -504,12 +529,18 @@ def get_multiple_model_distortion_performance_results(result_id_pairs, distortio
     return performance_results
 
 
-def performance_fit_summary_text_dump(fit_summary, header='eval fit correlation / durbin-watson summary', file=None):
+def performance_fit_summary_text_dump(fit_summary, header='eval fit correlation / durbin-watson summary', file=None,
+                                      print_to_console=False):
 
     print(header, file=file)
+    if print_to_console:
+        print(header)
 
     for key, val in fit_summary.items():
         print(f'{key}: {val}', file=file)
+
+        if print_to_console:
+            print(f'{key}: {val}')
 
 
 def log_3d_perf_prediction(perf_prediction_3d, x_values, y_values, z_values, directory, distortion_ids=None):

@@ -614,30 +614,83 @@ if __name__ == '__main__':
 
     make_standard_plots = True
 
-    make_simulation_plots_1d = True
-    make_simulation_plots_2d = True
+    make_simulation_plots_1d = False
+    make_simulation_plots_2d = False
     make_isosurf_plots = False
+
+    show_plots = False
+    show_1d_plots = True
+    show_scatter_plots = False
+
+    print_summary_to_console = True
 
     fit_keys = [
         'exp_b0n0',
+        'exp_b0n1',
         'exp_b0n2',
+
+        'exp_b2n0',
+        'exp_b2n1',
         'exp_b2n2',
-        'exp_b3n2',  # total noise estimated in quadrature, discrete sampling rer
+
+        'exp_b3n0',
+        'exp_b3n1',
+        'exp_b3n2',
+
+        'exp_b4n0',
+        'exp_b4n1',
         'exp_b4n2',
 
         'pl_b0n0',  # simplest / naive mapping
-        'pl_b3n2',  # total noise estimated in quadrature, discrete sampling rer
-        'pl_b0n2',  # total noise estimated in quadrature
+        'pl_b0n1',
+        'pl_b0n2',
 
-        'giqe3_b2n1',   # no cross-term, noise linearly, pure slope rer, c4 * res squared
-        'giqe3_b2n2',  # no cross-term, noise in quadrature, pure slope rer, c4 * res squared
-        'giqe5_b2b2_nct',  # no cross-term, noise in quadrature, pure slope rer, c4 * res squared
-        'giqe5_b2n2',  # cross-term, noise in quadrature, pure slope rer, c4 * res squared
-        'giqe5_b3n2_nct',  # no cross-term, noise in quadrature, discrete sampling rer, c4 * res squared
-        'giqe5_b3n2',  # cross-term, noise in quadrature, discrete sampling rer, c4 * res squared
-        'giqe3_b3n2',  # no cross-term, noise in quadrature, discrete sampling rer, c4 * res squared
-        'giqe3_b4n2',  # no cross-term, noise in quadrature, discrete sampling rer/blur corrected, c4 * res squared
-        'giqe5_b4n2',  # cross-term, noise in quadrature, discrete sampling rer/blur corrected, c4 * res squared
+        'pl_b2n0',
+        'pl_b2n1',
+        'pl_b2n2',
+
+        'pl_b3n0',
+        'pl_b3n1',
+        'pl_b3n2',  # total noise estimated in quadrature, discrete sampling rer
+
+        'pl_b4n0',
+        'pl_b4n1',
+        'pl_b4n2',
+
+        'giqe3_b2n0',
+        'giqe3_b2n1',
+        'giqe3_b2n2',
+
+        'giqe3_b3n0',
+        'giqe3_b3n1',
+        'giqe3_b3n2',
+
+        'giqe3_b4n0',
+        'giqe3_b4n1',
+        'giqe3_b4n2',
+
+        'giqe5_b2n0',
+        'giqe5_b2n1',
+        'giqe5_b2n2',
+
+        'giqe5_b3n0',
+        'giqe5_b3n1',
+        'giqe5_b3n2',
+
+        'giqe5_b4n0',
+        'giqe5_b4n1',
+        'giqe5_b4n2',
+
+        #
+        # 'giqe3_b2n1',   # no cross-term, noise linearly, pure slope rer, c4 * res squared
+        # 'giqe3_b2n2',  # no cross-term, noise in quadrature, pure slope rer, c4 * res squared
+        # 'giqe5_b2b2_nct',  # no cross-term, noise in quadrature, pure slope rer, c4 * res squared
+        # 'giqe5_b2n2',  # cross-term, noise in quadrature, pure slope rer, c4 * res squared
+        # 'giqe5_b3n2_nct',  # no cross-term, noise in quadrature, discrete sampling rer, c4 * res squared
+        # 'giqe5_b3n2',  # cross-term, noise in quadrature, discrete sampling rer, c4 * res squared
+        # 'giqe3_b3n2',  # no cross-term, noise in quadrature, discrete sampling rer, c4 * res squared
+        # 'giqe3_b4n2',  # no cross-term, noise in quadrature, discrete sampling rer/blur corrected, c4 * res squared
+        # 'giqe5_b4n2',  # cross-term, noise in quadrature, discrete sampling rer/blur corrected, c4 * res squared
         ]
 
     performance_fit_summary = {}
@@ -660,13 +713,15 @@ if __name__ == '__main__':
         sub_dir, log_filename = get_sub_dir_and_log_filename(_output_dir, '1d')
         with open(Path(sub_dir, log_filename), 'w') as output_file:
             analyze_perf_1d(_composite_performance, log_file=output_file, directory=sub_dir, per_class=False,
-                            distortion_ids=('res', 'blur', 'noise'))
+                            distortion_ids=('res', 'blur', 'noise'),
+                            show_plots=show_1d_plots)
 
     if analyze_2d:
         sub_dir, log_filename = get_sub_dir_and_log_filename(_output_dir, '2d')
         with open((Path(sub_dir, log_filename)), 'w') as output_file:
             analyze_perf_2d(_composite_performance, log_file=output_file, directory=sub_dir,
-                            distortion_ids=('res', 'blur', 'noise'))
+                            distortion_ids=('res', 'blur', 'noise'),
+                            show_plots=show_plots)
 
     if analyze_3d:
         sub_dir_3d, log_filename = get_sub_dir_and_log_filename(_output_dir, '3d')  # got rid of distortion_clip
@@ -679,7 +734,11 @@ if __name__ == '__main__':
                                                     distortion_ids=('res', 'blur', 'noise'),
                                                     isosurf_plot=make_isosurf_plots,
                                                     make_simulation_plots_1d=make_simulation_plots_1d,
-                                                    make_simulation_plots_2d=make_simulation_plots_2d)
+                                                    make_simulation_plots_2d=make_simulation_plots_2d,
+                                                    show_plots=show_plots,
+                                                    show_1d_plots=show_1d_plots,
+                                                    show_scatter_plots=show_scatter_plots)
                 performance_fit_summary[_fit_key] = fit_summary_stats
 
-            performance_fit_summary_text_dump(performance_fit_summary, file=output_file)
+            performance_fit_summary_text_dump(performance_fit_summary, file=output_file,
+                                              print_to_console=print_summary_to_console)

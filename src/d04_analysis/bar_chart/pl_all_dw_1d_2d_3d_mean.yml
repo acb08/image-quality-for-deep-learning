@@ -25,12 +25,14 @@ fit_keys: [
 composite_result_id: 'oct-models-fr90-mega-1-mega-2'
 analysis_type: '3d'
 target_keys: 'all'
-traverse_keys: ['2d']
+traverse_keys: ['1d', '2d', '3d']
 group_labels: null
+
+additional_filter: 'mean'
 
 ylabel: 'Durbin-Watson Test Value'
 xlabel: null
-manual_name: 'dw_2d_all'
+manual_name: 'mean_dw_1d_2d_3d'
 
 group_width: 0.7
 padding: 3

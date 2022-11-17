@@ -94,7 +94,8 @@ COLORS = ['b', 'g', 'c', 'm', 'y', 'r', 'k']
 
 def plot_1d_linear_fit(x_data, y_data, fit_coefficients, distortion_id,
                        result_identifier=None, ylabel=None, title=None, directory=None,
-                       per_class=False):
+                       per_class=False, show_plots=False):
+
     xlabel = AXIS_LABELS[distortion_id]
     x_plot = np.linspace(np.min(x_data), np.max(x_data), num=50)
     y_plot = fit_coefficients[0] * x_plot + fit_coefficients[1]
@@ -122,11 +123,14 @@ def plot_1d_linear_fit(x_data, y_data, fit_coefficients, distortion_id,
             save_name = f'{distortion_id}_{ylabel}'
         save_name = save_name + '.png'
         plt.savefig(Path(directory, save_name))
-    plt.show()
+
+    if show_plots:
+        plt.show()
+    plt.close()
 
 
 def plot_1d_fit(x, y_data, y_fit, distortion_id, measured_label='measured', fit_label='fit',
-                result_identifier=None, ylabel=None, directory=None, legend=True):
+                result_identifier=None, ylabel=None, directory=None, legend=True, show_plots=True):
 
     xlabel = AXIS_LABELS[distortion_id]
 
@@ -152,7 +156,15 @@ def plot_1d_fit(x, y_data, y_fit, distortion_id, measured_label='measured', fit_
             save_name = f'{distortion_id}'
         save_name = save_name + '.png'
         plt.savefig(Path(directory, save_name))
-    plt.show()
+
+        print(f'saved {save_name} in {directory}')
+
+    else:
+        print(f'figure not save in {directory}, fit label: {fit_label}, measured label {measured_label}')
+
+    if show_plots:
+        plt.show()
+    plt.close()
 
 
 def plot_2d(x_values, y_values, accuracy_means, x_id, y_id,
@@ -160,7 +172,9 @@ def plot_2d(x_values, y_values, accuracy_means, x_id, y_id,
             result_identifier=None,
             axis_labels=None,
             az_el_combinations='all',
-            directory=None):
+            directory=None,
+            show_plots=False):
+
     if not axis_labels or axis_labels == 'default':
         xlabel, ylabel, zlabel = AXIS_LABELS[x_id], AXIS_LABELS[y_id], AXIS_LABELS['z']
     elif axis_labels == 'effective_entropy_default':
@@ -182,7 +196,8 @@ def plot_2d(x_values, y_values, accuracy_means, x_id, y_id,
                       xlabel=xlabel, ylabel=ylabel, zlabel=zlabel,
                       az=az, el=el,
                       save_name=save_name,
-                      directory=directory)
+                      directory=directory,
+                      show_plots=show_plots)
 
     else:
         if az_el_combinations == 'default':
@@ -196,7 +211,8 @@ def plot_2d(x_values, y_values, accuracy_means, x_id, y_id,
                   xlabel=xlabel, ylabel=ylabel,
                   az=az, el=el,
                   save_name=save_name,
-                  directory=directory)
+                  directory=directory,
+                  show_plots=show_plots)
 
 
 def wire_plot(x, y, z,
@@ -209,7 +225,8 @@ def wire_plot(x, y, z,
               az=AZ_EL_DEFAULTS['az'],
               el=AZ_EL_DEFAULTS['el'],
               alpha=0.5,
-              indexing='ij'):
+              indexing='ij',
+              show_plots=False):
 
     xx, yy = np.meshgrid(x, y, indexing=indexing)
     fig = plt.figure()
@@ -242,11 +259,15 @@ def wire_plot(x, y, z,
             save_name = f"{seed}_az{az_int}_el{el_int}.png"
     if directory and save_name:
         plt.savefig(Path(directory, save_name))
-    fig.show()
+
+    if show_plots:
+        fig.show()
+    plt.close(fig)
 
 
 def plot_2d_linear_fit(distortion_array, accuracy_means, fit, x_id, y_id,
-                       result_identifier=None, axis_labels='default', az_el_combinations='all', directory=None):
+                       result_identifier=None, axis_labels='default', az_el_combinations='all', directory=None,
+                       show_plots=False):
     x, y = distortion_array[:, 0], distortion_array[:, 1]
     predict_mean_accuracy_vector = linear_predict(fit, distortion_array)
     x_values, y_values, predicted_mean_accuracy, __ = conditional_extract_2d(x, y, predict_mean_accuracy_vector)
@@ -258,11 +279,12 @@ def plot_2d_linear_fit(distortion_array, accuracy_means, fit, x_id, y_id,
 
     plot_2d(x_values, y_values, z_plot, x_id, y_id,
             axis_labels=axis_labels, az_el_combinations=az_el_combinations, directory=directory,
-            result_identifier=result_identifier)
+            result_identifier=result_identifier, show_plots=show_plots)
 
 
 def analyze_plot_results_together(model_results, identifier=None, directory=None, make_subdir=False, dim_tag='2d',
-                                  legend_loc='best', pairwise_analysis=False, log_file=None, create_log_file=False):
+                                  legend_loc='best', pairwise_analysis=False, log_file=None, create_log_file=False,
+                                  show_plots=False):
     """
     Plots performance of multiple models together. If pairwise_analysis is True and len(model_results) is 2, measures
     the correlation coefficients between mean performances as a function of distortion combinations.
@@ -292,7 +314,8 @@ def analyze_plot_results_together(model_results, identifier=None, directory=None
     else:
         analyze_plot_perf_1d_multi_result(model_results, directory=directory, identifier=identifier,
                                           legend_loc=legend_loc,
-                                          pairwise_analysis=pairwise_analysis, log_file=log_file)
+                                          pairwise_analysis=pairwise_analysis, log_file=log_file,
+                                          show_plots=show_plots)
     if log_file is not None:
         log_file.close()
 
@@ -303,7 +326,8 @@ def analyze_plot_perf_1d_multi_result(model_performances,
                                       identifier=None,
                                       legend_loc='best',
                                       pairwise_analysis=False,
-                                      log_file=None):
+                                      log_file=None,
+                                      show_plots=False):
     """
     :param model_performances: list of model performance class instances
     :param distortion_ids: distortion type tags to be analyzed
@@ -312,6 +336,7 @@ def analyze_plot_perf_1d_multi_result(model_performances,
     :param legend_loc: str to specify plot legend location
     :param pairwise_analysis: bool, correlations between performance results measured if True
     :param log_file: text fle for logging analysis results
+    :param show_plots: determines whether plots are displayed
     """
 
     for i, distortion_id in enumerate(distortion_ids):
@@ -328,7 +353,7 @@ def analyze_plot_perf_1d_multi_result(model_performances,
             measure_log_perf_correlation(mean_performances, distortion_ids=distortion_id, log_file=log_file)
 
         plot_1d_performance(x, mean_performances, distortion_id, result_identifier=identifier, directory=directory,
-                            legend_loc=legend_loc)
+                            legend_loc=legend_loc, show_plot=show_plots)
 
 
 def analyze_plot_perf_2d_multi_result(model_performances,
@@ -338,7 +363,8 @@ def analyze_plot_perf_2d_multi_result(model_performances,
                                       add_bias=True,
                                       identifier=None,
                                       pairwise_analysis=False,
-                                      log_file=None):
+                                      log_file=None,
+                                      show_plots=False):
 
     for i, (idx_0, idx_1) in enumerate(distortion_combinations):
 
@@ -364,7 +390,8 @@ def analyze_plot_perf_2d_multi_result(model_performances,
                 result_identifier=identifier,
                 axis_labels='default',
                 az_el_combinations='all',
-                directory=directory)
+                directory=directory,
+                show_plots=show_plots)
 
 
 def conditional_multi_plot_3d(blur_sigmas, noise_means, z_dict,
@@ -424,7 +451,8 @@ def conditional_multi_plot_3d(blur_sigmas, noise_means, z_dict,
 def plot_isosurf(vol_data, x, y, z, scx=1, scy=1, scz=1,
                  levels=None, save_name=None, save_dir=None,
                  x_label='resolution', y_label='blur', z_label='noise',
-                 alpha=0.2, step_size=1, az_el_combinations='default'):
+                 alpha=0.2, step_size=1, az_el_combinations='default',
+                 show_plots=False):
     """
     Uses the marching cubes method to identify iso-surfaces in 3d data and then creates a 3d plot of the iso-surface at
     the value specified by level. If level==None, the mean of the min and max value in vol_data is used.
@@ -510,7 +538,9 @@ def plot_isosurf(vol_data, x, y, z, scx=1, scy=1, scz=1,
 
         if save_name and save_dir:
             plt.savefig(Path(save_dir, save_name_updated))
-        # plt.show()
+
+        if show_plots:
+            plt.show()
         plt.close()
 
 
@@ -520,7 +550,8 @@ def plot_1d_performance(x, performance_dict, distortion_id,
                         ylabel='default',
                         directory=None,
                         legend_loc='best',
-                        legend=True):
+                        legend=True,
+                        show_plots=False):
 
     if xlabel == 'default':
         xlabel = AXIS_LABELS[distortion_id]
@@ -547,12 +578,14 @@ def plot_1d_performance(x, performance_dict, distortion_id,
         plt.legend(loc=legend_loc)
     if directory:
         plt.savefig(Path(directory, save_name))
-    plt.show()
+    if show_plots:
+        plt.show()
+    plt.close()
 
 
 def compare_2d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),
                      flatten_axes=(0, 1, 2), data_labels=('f0', 'f1'), result_id='3d_projection',
-                     az_el_combinations='default', directory=None, residual_plot=False):
+                     az_el_combinations='default', directory=None, residual_plot=False, show_plots=False):
 
     for flatten_axis in flatten_axes:
         f0_2d, axis0, axis1 = flatten(f0, x_vals, y_vals, z_vals, flatten_axis=flatten_axis)
@@ -570,12 +603,12 @@ def compare_2d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blu
             result_id = f'{result_id}_rdl'
 
         plot_2d(axis0, axis1, views_2d, x_id=xlabel, y_id=ylabel, result_identifier=result_id,
-                az_el_combinations=az_el_combinations, directory=directory)
+                az_el_combinations=az_el_combinations, directory=directory, show_plots=show_plots)
 
 
 def compare_1d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),
                      flatten_axis_combinations=((0, 1), (0, 2), (1, 2)), data_labels=('measured', 'fit'),
-                     result_id='3d_1d_projection', directory=None, include_fit_stats=True):
+                     result_id='3d_1d_projection', directory=None, include_fit_stats=True, show_plots=True):
 
     for flatten_axes in flatten_axis_combinations:
         f0_1d, axis = flatten_2x(f0, x_vals, y_vals, z_vals, flatten_axes=flatten_axes)
@@ -594,7 +627,7 @@ def compare_1d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blu
             fit_label = data_labels[1]
 
         plot_1d_fit(axis, f0_1d, f1_1d, axis_label, measured_label=data_labels[0], fit_label=fit_label,
-                    result_identifier=result_id, directory=directory)
+                    result_identifier=result_id, directory=directory, show_plots=show_plots)
 
 
 def residual_color_plot(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),
@@ -634,8 +667,6 @@ def residual_color_plot(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', '
     cbar_ax = fig.add_axes([0.85, 0.38, 0.05, 0.3])
     fig.colorbar(img, cax=cbar_ax)
 
-    fig.show()
-
 
 def _heat_plot(arr, xlabel, ylabel, ax=None, vmin=None, vmax=None, extent=None):
 
@@ -654,7 +685,7 @@ def _heat_plot(arr, xlabel, ylabel, ax=None, vmin=None, vmax=None, extent=None):
 
 
 def sorted_linear_scatter(prediction, result, directory=None, filename='predict_result_scatter.png', best_fit=True,
-                          xlabel='predicted accuracy', ylabel='accuracy'):
+                          xlabel='predicted accuracy', ylabel='accuracy', show_plots=True):
 
     prediction, result = sort_parallel(prediction, result)
 
@@ -678,7 +709,10 @@ def sorted_linear_scatter(prediction, result, directory=None, filename='predict_
     plt.legend()
     if directory:
         plt.savefig(Path(directory, filename))
-    plt.show()
+
+    if show_plots:
+        plt.show()
+    plt.close()
 
 
 if __name__ == '__main__':

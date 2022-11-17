@@ -88,7 +88,7 @@ def get_output_dir(data, parent_dir='default', overwrite=True, suffix=None, manu
 
 
 def sort_filter_fit_stats_for_grouped_bar_chart(consolidated_stats, target_keys=('res', 'blur', 'noise'),
-                                                traverse_keys=('1d',), outer_keys=None, additional_filter=False):
+                                                traverse_keys=('1d',), outer_keys=None, additional_filter=None):
     """
     Sorts through nested dictionary structure to extract data to be used by grouped_bar_chart() function. The
     grouped_bar_chart() function takes data with the structure
@@ -143,11 +143,16 @@ def sort_filter_fit_stats_for_grouped_bar_chart(consolidated_stats, target_keys=
         ]
     """
 
-    if additional_filter:
-        raise NotImplemented
-
     if outer_keys is None:
         outer_keys = list(consolidated_stats.keys())
+
+    if additional_filter:
+        filter_func = sub_dict_filter_functions[additional_filter]
+        sorted_data = apply_filter_func(consolidated_stats,
+                                        outer_keys=outer_keys,
+                                        traverse_keys=traverse_keys,
+                                        filter_func=filter_func)
+        return outer_keys, sorted_data
 
     sorted_data = []
 
@@ -179,6 +184,32 @@ def sort_filter_fit_stats_for_grouped_bar_chart(consolidated_stats, target_keys=
     return outer_keys, sorted_data
 
 
+def apply_filter_func(consolidated_stats, outer_keys, traverse_keys, filter_func):
+
+    sorted_data = []
+
+    # note: traverse_keys used differently than in sort_filter_fit_stats_for_grouped_bar_chart()
+    for i, traverse_key in enumerate(traverse_keys):
+        target_data = []
+        composite_key = None
+        for outer_key in outer_keys:
+            sub_dict = consolidated_stats[outer_key]
+
+            sub_sub_dict = sub_dict[traverse_key]
+
+            target_key_stand_in, target_key, target_val = filter_func(sub_sub_dict)
+            if not composite_key:
+                composite_key = f'{traverse_key}_{target_key_stand_in}'
+
+            target_data.append(target_val)
+
+        sorted_data.append(
+            [composite_key, target_data]
+        )
+
+    return sorted_data
+
+
 def min_value(data):
 
     keys = tuple(data.keys())
@@ -187,11 +218,23 @@ def min_value(data):
     min_val_idx = values.index(min_val)
     min_val_key = keys[min_val_idx]
 
-    return min_val, min_val_key
+    return 'min', min_val_key, min_val
+
+
+def mean(data):
+
+    # keys = tuple(data.keys())
+    values = tuple(data.values())
+    mean_val = np.mean(values)
+    # min_val_idx = values.index(min_val)
+    # min_val_key = keys[min_val_idx]
+
+    return 'mean', None, mean_val
 
 
 sub_dict_filter_functions = {
-    'min_value': min_value
+    'min_value': min_value,
+    'mean': mean,
 }
 
 
@@ -267,7 +310,7 @@ def main(run_config):
 
 if __name__ == '__main__':
 
-    config_filename = 'pl_all_dw_2d.yml'
+    config_filename = 'pl_exp_dw_1d_res.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_filename, help='config filename to be used')
