@@ -11,6 +11,7 @@ from src.d04_analysis.analysis_functions import conditional_mean_accuracy, get_s
 from pathlib import Path
 from src.d04_analysis.distortion_performance import analyze_perf_1d, analyze_perf_2d, analyze_perf_3d, \
     performance_fit_summary_text_dump
+from src.d04_analysis.fit_functions import generate_fit_keys
 from hashlib import blake2b
 import copy
 
@@ -605,8 +606,8 @@ def log_uid(directory, uid):
 
 if __name__ == '__main__':
 
-    # config_filename = 's6_oct_fr90_composite_config.yml'
-    config_filename = 'pl_oct_composite_fr90_mega1_mega2.yml'
+    config_filename = 's6_oct_fr90_composite_config.yml'
+    # config_filename = 'pl_oct_composite_fr90_mega1_mega2.yml'
 
     analyze_1d = False
     analyze_2d = False
@@ -619,76 +620,85 @@ if __name__ == '__main__':
     make_isosurf_plots = False
 
     show_plots = False
-    show_1d_plots = False
+    show_1d_plots = True
     show_scatter_plots = False
 
     print_summary_to_console = False
 
-    fit_keys = [
-        'exp_b0n0',
-        'exp_b0n1',
-        'exp_b0n2',
+    functional_forms = ['exp', 'pl', 'giqe3', 'giqe5']
+    blur_maps = ['b0', 'b2', 'b3', 'b4']
+    noise_maps = ['n0', 'n1', 'n2']
 
-        'exp_b2n0',
-        'exp_b2n1',
+    _fit_keys = generate_fit_keys(functional_forms, blur_maps, noise_maps)
+
+    fit_keys = [
+        # 'exp_b0n0',
+        # 'exp_b0n1',
+        # 'exp_b0n2',
+        #
+        # 'exp_b2n0',
+        # 'exp_b2n1',
         'exp_b2n2',
 
         'exp_b3n0',
-        'exp_b3n1',
-        'exp_b3n2',
-
-        'exp_b4n0',
+        # 'exp_b3n1',
+        # 'exp_b3n2',
+        #
+        # 'exp_b4n0',
         'exp_b4n1',
-        'exp_b4n2',
+        # 'exp_b4n2',
 
-        'pl_b0n0',  # simplest / naive mapping
-        'pl_b0n1',
-        'pl_b0n2',
-
-        'pl_b2n0',
-        'pl_b2n1',
-        'pl_b2n2',
-
-        'pl_b3n0',
-        'pl_b3n1',
-        'pl_b3n2',  # total noise estimated in quadrature, discrete sampling rer
-
-        'pl_b4n0',
-        'pl_b4n1',
-        'pl_b4n2',
-
-        'giqe3_b0n0',
-        'giqe3_b0n1',
-        'giqe3_b0n2',
-
-        'giqe3_b2n0',
-        'giqe3_b2n1',
-        'giqe3_b2n2',
-
-        'giqe3_b3n0',
-        'giqe3_b3n1',
-        'giqe3_b3n2',
-
-        'giqe3_b4n0',
-        'giqe3_b4n1',
-        'giqe3_b4n2',
-
-        'giqe5_b0n0',
-        'giqe5_b0n1',
-        'giqe5_b0n2',
-
-        'giqe5_b2n0',
-        'giqe5_b2n1',
-        'giqe5_b2n2',
-
-        'giqe5_b3n0',
-        'giqe5_b3n1',
-        'giqe5_b3n2',
-
-        'giqe5_b4n0',
-        'giqe5_b4n1',
-        'giqe5_b4n2',
+        # 'pl_b0n0',  # simplest / naive mapping
+        # 'pl_b0n1',
+        # 'pl_b0n2',
+        #
+        # 'pl_b2n0',
+        # 'pl_b2n1',
+        # 'pl_b2n2',
+        #
+        # 'pl_b3n0',
+        # 'pl_b3n1',
+        # 'pl_b3n2',  # total noise estimated in quadrature, discrete sampling rer
+        #
+        # 'pl_b4n0',
+        # 'pl_b4n1',
+        # 'pl_b4n2',
+        #
+        # 'giqe3_b0n0',
+        # 'giqe3_b0n1',
+        # 'giqe3_b0n2',
+        #
+        # 'giqe3_b2n0',
+        # 'giqe3_b2n1',
+        # 'giqe3_b2n2',
+        #
+        # 'giqe3_b3n0',
+        # 'giqe3_b3n1',
+        # 'giqe3_b3n2',
+        #
+        # 'giqe3_b4n0',
+        # 'giqe3_b4n1',
+        # 'giqe3_b4n2',
+        #
+        # 'giqe5_b0n0',
+        # 'giqe5_b0n1',
+        # 'giqe5_b0n2',
+        #
+        # 'giqe5_b2n0',
+        # 'giqe5_b2n1',
+        # 'giqe5_b2n2',
+        #
+        # 'giqe5_b3n0',
+        # 'giqe5_b3n1',
+        # 'giqe5_b3n2',
+        #
+        # 'giqe5_b4n0',
+        # 'giqe5_b4n1',
+        # 'giqe5_b4n2',
         ]
+
+    if len(fit_keys) == 0:
+        fit_keys = _fit_keys
 
     performance_fit_summary = {}
 

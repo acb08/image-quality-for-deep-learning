@@ -7,6 +7,7 @@ import argparse
 from pathlib import Path
 from src.d00_utils.definitions import ROOT_DIR, REL_PATHS
 from src.d00_utils.functions import increment_suffix, log_config
+from src.d04_analysis.fit_functions import generate_fit_keys
 
 
 def grouped_bar_chart(data, group_labels, ylabel='mean accuracy', xlabel=None, group_width=0.7, padding=3, bar_width_frac=0.85,
@@ -246,7 +247,14 @@ def main(run_config):
     """
     if 'data' not in run_config.keys():
 
-        fit_keys = run_config['fit_keys']
+        if 'fit_keys' in run_config.keys():
+            fit_keys = run_config['fit_keys']
+        else:
+            functional_forms = run_config['functional_forms']
+            blur_mappings = run_config['blur_mappings']
+            noise_mappings = run_config['noise_mappings']
+            fit_keys = generate_fit_keys(functional_forms, blur_mappings, noise_mappings)
+
         composite_result_id = run_config['composite_result_id']
         analysis_type = run_config['analysis_type']
         target_keys = run_config['target_keys']
@@ -310,7 +318,7 @@ def main(run_config):
 
 if __name__ == '__main__':
 
-    config_filename = 'pl_all_fit_corr.yml'
+    config_filename = 's6_giqe_dw_1d.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_filename, help='config filename to be used')

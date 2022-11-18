@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.special import erf
-
+from src.d00_utils.definitions import PROJECT_ID
 from src.d04_analysis.fit_functions_rer import rer_0, rer_1, rer_2, rer_3, rer_4
 
 
@@ -977,6 +977,21 @@ def giqe5_b4n2(params, distortion_vector):
     return _giqe5(res, rer, noise, params)
 
 
+def fit_key(functional_form, blur_map, noise_map):
+    return f'{functional_form}_{blur_map}{noise_map}'
+
+
+def generate_fit_keys(functional_forms, blur_maps, noise_maps):
+
+    fit_keys = []
+    for functional_form in functional_forms:
+        for blur_map in blur_maps:
+            for noise_map in noise_maps:
+                key = fit_key(functional_form, blur_map, noise_map)
+                fit_keys.append(key)
+
+    return fit_keys
+
 # giqe5_2 initials
 _c0 = 0.5
 _c1 = 0.3
@@ -987,6 +1002,13 @@ _c5 = 5
 _c6 = 0.5
 _c7 = -0.01
 
+_fit_funcs_sat6_start_params = {
+    'exp_b3n0': (exp_b3n0, (0.7, -0.4, -1.8, -0.2, 1, -3, 0.3, -0.01)),
+    'exp_b2n2': (exp_b2n2, (0.7, -0.4, -1.8, -0.2, 1, -3, 0.3, -0.01)),
+    'exp_b4n1': (exp_b4n1, (0.7, -0.4, -1.8, -0.2, 1, -3, 0.3, -0.01)),
+}  # not some fits that convert for Places365 do not converge for SAT6, so using SAT6-specific starting parameters
+# where needed.
+
 fit_functions = {
     'exp_b4n2': (exp_b4n2, (_c0, -0.1, -1, -0.1, 1, -1, 0.1, -0.01)),
     'exp_b4n1': (exp_b4n1, (_c0, -0.1, -1, -0.1, 1, -1, 0.1, -0.01)),
@@ -996,7 +1018,7 @@ fit_functions = {
     'exp_b3n1': (exp_b3n1, (_c0, -0.1, -1, -0.1, 1, -1, 0.1, -0.01)),
     'exp_b3n0': (exp_b3n0, (_c0, -0.1, -1, -0.1, 1, -1, 0.1, -0.01)),
 
-    'exp_b2n2': (exp_b2n2, (_c0, -0.1, -1, -0.1, 1, -1, 0.1, -0.01)),
+    'exp_b2n2': (exp_b2n2, (_c0, -0.1, -1, -0.1, 1, -2, 0.1, -0.01)),
     'exp_b2n1': (exp_b2n1, (_c0, -0.1, -1, -0.1, 1, -1, 0.1, -0.01)),
     'exp_b2n0': (exp_b2n0, (_c0, -0.1, -1, -0.1, 1, -1, 0.1, -0.01)),
 
@@ -1074,6 +1096,10 @@ fit_functions = {
     'rer_3': (rer_3, (1,)),
     'rer_4': (rer_4, (1,))
 }
+
+if PROJECT_ID[:4] == 'sat6':
+    fit_functions.update(_fit_funcs_sat6_start_params)
+
 
 if __name__ == '__main__':
 
