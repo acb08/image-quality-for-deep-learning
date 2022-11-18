@@ -589,6 +589,39 @@ def giqe35_b0n0(params, distortion_vector):
 #
 #     return y
 
+def giqe3_b0n0(params, distortion_vector):
+
+    c0, c1, c5, c6 = params  # keeping parameter names consistent with v6
+    c4 = None  # by convention, I have used c4 to represent native blur in RER functions (not used here)
+    params = (c0, c1, c4, c5, c6)
+    res, blur, noise = distortion_vector[:, 0], distortion_vector[:, 1], distortion_vector[:, 2]
+
+    return _giqe3(res, blur, noise, params)
+
+
+def giqe3_b0n1(params, distortion_vector):
+
+    c0, c1, c5, c6 = params  # keeping parameter names consistent with v6
+    c4 = None  # by convention, I have used c4 to represent native blur in RER functions (not used here)
+    params = (c0, c1, c4, c5, c6)
+    res, blur, noise = distortion_vector[:, 0], distortion_vector[:, 1], distortion_vector[:, 2]
+
+    noise = _n1(noise)
+
+    return _giqe3(res, blur, noise, params)
+
+
+def giqe3_b0n2(params, distortion_vector):
+
+    c0, c1, c5, c6 = params  # keeping parameter names consistent with v6
+    c4 = None  # by convention, I have used c4 to represent native blur in RER functions (not used here)
+    params = (c0, c1, c4, c5, c6)
+    res, blur, noise = distortion_vector[:, 0], distortion_vector[:, 1], distortion_vector[:, 2]
+
+    noise = _n2(noise)
+
+    return _giqe3(res, blur, noise, params)
+
 
 def giqe3_b2n0(params, distortion_vector):
 
@@ -822,6 +855,38 @@ def giqe5_b3n2_nct(params, distortion_vector):
 #
 #     return y
 
+
+def giqe5_b0n0(params, distortion_vector):
+    c0, c1, c2, c3, c5, c6 = params  # keeping parameter names consistent with v6
+    c4 = None
+    params = (c0, c1, c2, c3, c4, c5, c6)
+    res, blur, noise = distortion_vector[:, 0], distortion_vector[:, 1], distortion_vector[:, 2]
+
+    return _giqe5(res, blur, noise, params)
+
+
+def giqe5_b0n1(params, distortion_vector):
+    c0, c1, c2, c3, c5, c6 = params  # keeping parameter names consistent with v6
+    c4 = None
+    params = (c0, c1, c2, c3, c4, c5, c6)
+    res, blur, noise = distortion_vector[:, 0], distortion_vector[:, 1], distortion_vector[:, 2]
+
+    noise = _n1(noise)
+
+    return _giqe5(res, blur, noise, params)
+
+
+def giqe5_b0n2(params, distortion_vector):
+    c0, c1, c2, c3, c5, c6 = params  # keeping parameter names consistent with v6
+    c4 = None
+    params = (c0, c1, c2, c3, c4, c5, c6)
+    res, blur, noise = distortion_vector[:, 0], distortion_vector[:, 1], distortion_vector[:, 2]
+
+    noise = _n2(noise)
+
+    return _giqe5(res, blur, noise, params)
+
+
 def giqe5_b2n0(params, distortion_vector):
     c0, c1, c2, c3, c4, c5, c6 = params  # keeping parameter names consistent with v6
     res, blur, noise = distortion_vector[:, 0], distortion_vector[:, 1], distortion_vector[:, 2]
@@ -955,6 +1020,9 @@ fit_functions = {
     'pl_b4n1': (pl_b4n1, (0.5, 0.5, 0.5, 1, 2, 0.5, -2, 1)),
     'pl_b4n2': (pl_b4n2, (0.5, 0.5, 0.5, 1, 2, 0.5, -2, 1)),  # (0.5, 0.5, 0.5, -0.1, 0.5, 2, -0.05, 0.5)
 
+    'giqe3_b0n0': (giqe3_b0n0, (_c0, _c1, 0.5, -0.01)),
+    'giqe3_b0n1': (giqe3_b0n1, (_c0, _c1, -0.5, -0.01)),
+    'giqe3_b0n2': (giqe3_b0n2, (_c0, _c1, -0.5, -0.01)),
 
     'giqe3_b2n0': (giqe3_b2n0, (_c0, _c1, 1, 0.5, -0.01)),
     'giqe3_b2n1': (giqe3_b2n1, (_c0, _c1, 1, 0.5, -0.01)),
@@ -968,6 +1036,9 @@ fit_functions = {
     'giqe3_b4n1': (giqe3_b4n1, (_c0, _c1, 1, 0.5, -0.01)),
     'giqe3_b4n2': (giqe3_b4n2, (_c0, _c1, 1, 0.5, -0.01)),
 
+    'giqe5_b0n0': (giqe5_b0n0, (-0.5, 0.3, 0.1, -0.1, -0.1, -0.01)),
+    'giqe5_b0n1': (giqe5_b0n1, (-0.5, 0.3, 0.1, -0.1, -0.1, -0.01)),
+    'giqe5_b0n2': (giqe5_b0n2, (-0.5, 0.3, 0.1, -0.1, -0.1, -0.01)),
 
     'giqe5_b2n0': (giqe5_b2n0, (-0.5, 0.3, 0.1, -0.1, 2, -0.1, -0.01)),
     'giqe5_b2n1': (giqe5_b2n1, (-0.5, 0.3, 0.1, -0.1, 2, -0.1, -0.01)),

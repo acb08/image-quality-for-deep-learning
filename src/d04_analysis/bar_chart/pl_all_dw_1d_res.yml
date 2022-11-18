@@ -61,13 +61,13 @@ fit_keys: [
 
 composite_result_id: 'oct-models-fr90-mega-1-mega-2'
 analysis_type: '3d'
-target_keys: ['res', 'blur', 'noise']
+target_keys: ['res']
 traverse_keys: ['1d']
 group_labels: null
 
 ylabel: 'Durbin-Watson Test Value'
 xlabel: null
-manual_name: 'dw_1d_all'
+manual_name: 'dw_1d_all_res'
 
 group_width: 0.7
 padding: 3

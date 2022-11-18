@@ -612,17 +612,17 @@ if __name__ == '__main__':
     analyze_2d = False
     analyze_3d = True
 
-    make_standard_plots = True
+    make_standard_plots = False
 
     make_simulation_plots_1d = False
     make_simulation_plots_2d = False
     make_isosurf_plots = False
 
     show_plots = False
-    show_1d_plots = True
+    show_1d_plots = False
     show_scatter_plots = False
 
-    print_summary_to_console = True
+    print_summary_to_console = False
 
     fit_keys = [
         'exp_b0n0',
@@ -657,6 +657,10 @@ if __name__ == '__main__':
         'pl_b4n1',
         'pl_b4n2',
 
+        'giqe3_b0n0',
+        'giqe3_b0n1',
+        'giqe3_b0n2',
+
         'giqe3_b2n0',
         'giqe3_b2n1',
         'giqe3_b2n2',
@@ -669,6 +673,10 @@ if __name__ == '__main__':
         'giqe3_b4n1',
         'giqe3_b4n2',
 
+        'giqe5_b0n0',
+        'giqe5_b0n1',
+        'giqe5_b0n2',
+
         'giqe5_b2n0',
         'giqe5_b2n1',
         'giqe5_b2n2',
@@ -680,17 +688,6 @@ if __name__ == '__main__':
         'giqe5_b4n0',
         'giqe5_b4n1',
         'giqe5_b4n2',
-
-        #
-        # 'giqe3_b2n1',   # no cross-term, noise linearly, pure slope rer, c4 * res squared
-        # 'giqe3_b2n2',  # no cross-term, noise in quadrature, pure slope rer, c4 * res squared
-        # 'giqe5_b2b2_nct',  # no cross-term, noise in quadrature, pure slope rer, c4 * res squared
-        # 'giqe5_b2n2',  # cross-term, noise in quadrature, pure slope rer, c4 * res squared
-        # 'giqe5_b3n2_nct',  # no cross-term, noise in quadrature, discrete sampling rer, c4 * res squared
-        # 'giqe5_b3n2',  # cross-term, noise in quadrature, discrete sampling rer, c4 * res squared
-        # 'giqe3_b3n2',  # no cross-term, noise in quadrature, discrete sampling rer, c4 * res squared
-        # 'giqe3_b4n2',  # no cross-term, noise in quadrature, discrete sampling rer/blur corrected, c4 * res squared
-        # 'giqe5_b4n2',  # cross-term, noise in quadrature, discrete sampling rer/blur corrected, c4 * res squared
         ]
 
     performance_fit_summary = {}

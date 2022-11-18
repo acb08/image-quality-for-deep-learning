@@ -310,7 +310,7 @@ def main(run_config):
 
 if __name__ == '__main__':
 
-    config_filename = 'pl_exp_dw_1d_res.yml'
+    config_filename = 'pl_all_fit_corr.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_filename, help='config filename to be used')
