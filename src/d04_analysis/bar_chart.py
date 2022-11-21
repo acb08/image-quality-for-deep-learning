@@ -318,7 +318,7 @@ def main(run_config):
 
 if __name__ == '__main__':
 
-    config_filename = 's6_giqe_dw_1d.yml'
+    config_filename = 'pl_all_dw_3d.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_filename, help='config filename to be used')
