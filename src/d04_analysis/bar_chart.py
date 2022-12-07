@@ -9,11 +9,36 @@ from src.d00_utils.definitions import ROOT_DIR, REL_PATHS
 from src.d00_utils.functions import increment_suffix, log_config
 from src.d04_analysis.fit_functions import generate_fit_keys
 
+BAR_HATCHES = [
+    '////',
+    '+++',
+    'xxxx',
+    '...',
+    '***',
+    'ooo'
+]
+
+
+BAR_COLORS = [
+    'tab:blue',
+    'tab:cyan',
+    'tab:olive',
+    'tab:orange',
+    'tab:gray',
+    'tab:green',
+    'tab:purple',
+    'tab:pink',
+    'tab:red',
+    'tab:brown',
+]
+
+FONT_SIZE = 11
+
 
 def grouped_bar_chart(data, group_labels, ylabel='mean accuracy', xlabel=None, group_width=0.7, padding=3, bar_width_frac=0.85,
                       edge_color='black', line_width=1, output_dir=None, x_scale=1,
                       figsize=(8, 8 / 1.33), label_threshold=None, include_bar_labels=True, rotation=45,
-                      include_legend=True):
+                      include_legend=True, bar_hatching=True):
 
     x = np.arange(len(group_labels)) * x_scale
     num_items = len(data)
@@ -24,8 +49,20 @@ def grouped_bar_chart(data, group_labels, ylabel='mean accuracy', xlabel=None, g
     fig, ax = plt.subplots(figsize=figsize)
 
     for i, (label, item_data) in enumerate(data):
+
+        if bar_hatching and len(data) <= len(BAR_HATCHES):
+            hatch = BAR_HATCHES[i]
+        else:
+            hatch = None
+
+        if len(data) <= len(BAR_COLORS):
+            color = BAR_COLORS[i]
+        else:
+            color = None
+
         left_edge = bar_offset + (i + 0.5) * bar_space
-        rect = ax.bar(x + left_edge, item_data, bar_width, label=label, edgecolor=edge_color, linewidth=line_width)
+        rect = ax.bar(x + left_edge, item_data, bar_width, label=label, edgecolor=edge_color, linewidth=line_width,
+                      hatch=hatch, color=color)
 
         if include_bar_labels:
             labels = [round(item, 2) for item in item_data]
@@ -35,9 +72,9 @@ def grouped_bar_chart(data, group_labels, ylabel='mean accuracy', xlabel=None, g
                 labels = [f'<{str(label_threshold)[1:]}' if float(item) < label_threshold else item for item in labels]
             ax.bar_label(rect, labels=labels, padding=padding)
 
-    ax.set_ylabel(ylabel)
-    ax.set_xlabel(xlabel)
-    ax.set_xticks(x, group_labels, rotation=rotation)
+    ax.set_ylabel(ylabel, size=FONT_SIZE)
+    ax.set_xlabel(xlabel, size=FONT_SIZE)
+    ax.set_xticks(x, group_labels, rotation=rotation, size=FONT_SIZE)
 
     if include_legend:
         ax.legend(loc='upper right')
@@ -293,6 +330,10 @@ def main(run_config):
     include_bar_labels = run_config['include_bar_labels']
     rotation = run_config['rotation']
     include_legend = run_config['include_legend']
+    if 'bar_hatching' in run_config.keys():
+        bar_hatching = run_config['bar_hatching']
+    else:
+        bar_hatching = False
 
     output_dir = get_output_dir(data, overwrite=overwrite,
                                 manual_name=manual_name)
@@ -311,6 +352,7 @@ def main(run_config):
                       include_bar_labels=include_bar_labels,
                       rotation=rotation,
                       include_legend=include_legend,
+                      bar_hatching=bar_hatching
                       )
 
     log_config(output_dir, run_config)
@@ -318,7 +360,7 @@ def main(run_config):
 
 if __name__ == '__main__':
 
-    config_filename = 'pl_all_dw_3d.yml'
+    config_filename = 'places_summary_threshold.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_filename, help='config filename to be used')
