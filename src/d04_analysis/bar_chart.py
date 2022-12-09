@@ -35,7 +35,8 @@ BAR_COLORS = [
 FONT_SIZE = 11
 
 
-def grouped_bar_chart(data, group_labels, ylabel='mean accuracy', xlabel=None, group_width=0.7, padding=3, bar_width_frac=0.85,
+def grouped_bar_chart(data, group_labels, ylabel='mean accuracy', xlabel=None, group_width=0.7, padding=3,
+                      bar_width_frac=0.85,
                       edge_color='black', line_width=1, output_dir=None, x_scale=1,
                       figsize=(8, 8 / 1.33), label_threshold=None, include_bar_labels=True, rotation=45,
                       include_legend=True, bar_hatching=True):
