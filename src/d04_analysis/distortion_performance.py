@@ -8,7 +8,7 @@ from src.d04_analysis.analysis_functions import conditional_mean_accuracy, extra
     get_class_accuracies, build_3d_field, get_distortion_perf_2d, get_distortion_perf_1d, check_durbin_watson_statistics
 from src.d04_analysis.fit import fit, evaluate_fit, apply_fit
 from src.d04_analysis.plot import plot_1d_linear_fit, plot_2d, plot_2d_linear_fit, plot_isosurf, compare_2d_views, \
-    residual_color_plot, sorted_linear_scatter, compare_1d_views
+    residual_color_plot, sorted_linear_scatter, compare_1d_views, dual_sorted_linear_scatter
 from src.d04_analysis.binomial_simulation import get_ideal_correlation, run_binomial_accuracy_experiment
 import numpy as np
 from pathlib import Path
@@ -354,6 +354,11 @@ def analyze_perf_3d(model_performance,
                           filename='predict_simulated_result_scatter.png', best_fit=True,
                           xlabel='predicted accuracy (binomial simulation p-success)', ylabel='accuracy (simulated)',
                           show_plots=show_scatter_plots)
+
+    dual_sorted_linear_scatter(fit_3d, perf_3d_eval, fit_3d, perf_3d_simulated, directory=directory,
+                               filename='predict_result_eval_sim_scatter.png', xlabel_0='predicted accuracy',
+                               xlabel_1='predicted accuracy (binomial simulation p-success)',
+                               show_plots=show_scatter_plots)
 
     if standard_plots:
         compare_2d_views(perf_3d, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,

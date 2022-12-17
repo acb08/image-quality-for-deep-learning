@@ -685,7 +685,7 @@ def _heat_plot(arr, xlabel, ylabel, ax=None, vmin=None, vmax=None, extent=None):
 
 
 def sorted_linear_scatter(prediction, result, directory=None, filename='predict_result_scatter.png', best_fit=True,
-                          xlabel='predicted accuracy', ylabel='accuracy', show_plots=True):
+                          xlabel='predicted accuracy', ylabel='accuracy', show_plots=True, ax=None):
 
     prediction, result = sort_parallel(prediction, result)
 
@@ -701,18 +701,47 @@ def sorted_linear_scatter(prediction, result, directory=None, filename='predict_
         y = x
         label = '1-to-1'
 
-    plt.figure()
-    plt.scatter(prediction, result, marker=".", s=0.5)
-    plt.plot(x, y, linestyle='--', color='k', label=label)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.legend()
-    if directory:
-        plt.savefig(Path(directory, filename))
+    if ax is None:
+        plt.figure()
+        plt.scatter(prediction, result, marker=".", s=0.5)
+        plt.plot(x, y, linestyle='--', color='k', label=label)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.legend()
+        if directory:
+            plt.savefig(Path(directory, filename))
+
+        if show_plots:
+            plt.show()
+        plt.close()
+
+    else:
+        ax.scatter(prediction, result, marker=".", s=0.5)
+        ax.plot(x, y, linestyle='--', color='k', label=label)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.legend()
+        ax.label_outer()
+
+
+def dual_sorted_linear_scatter(prediction_0, result_0, prediction_1, result_1, directory=None,
+                               filename='predict_result_scatter_combined.png', best_fit=True,
+                               xlabel_0='predicted accuracy', xlabel_1='predicted accuracy',
+                               ylabel='accuracy', show_plots=True):
+
+    fig, (ax0, ax1) = plt.subplots(nrows=1, ncols=2, figsize=(12.8, 4.8), sharey=True)
+
+    sorted_linear_scatter(prediction_0, result_0, directory=None, filename=None, best_fit=best_fit,
+                          xlabel=xlabel_0, ylabel=ylabel, show_plots=False, ax=ax0)
+    sorted_linear_scatter(prediction_1, result_1, directory=None, filename=None, best_fit=best_fit,
+                          xlabel=xlabel_1, ylabel=ylabel, show_plots=False, ax=ax1)
+    fig.tight_layout()
 
     if show_plots:
-        plt.show()
-    plt.close()
+        fig.show()
+
+    if directory:
+        plt.savefig(Path(directory, filename))
 
 
 if __name__ == '__main__':
