@@ -124,6 +124,8 @@ def plot_1d_linear_fit(x_data, y_data, fit_coefficients, distortion_id,
         save_name = save_name + '.png'
         plt.savefig(Path(directory, save_name))
 
+    plt.tight_layout()
+
     if show_plots:
         plt.show()
     plt.close()
@@ -154,6 +156,9 @@ def plot_1d_fit(x, y_data, y_fit, distortion_id, measured_label='measured', fit_
 
     if legend:
         ax.legend()
+
+    if close_plot_here:
+        plt.tight_layout()
 
     if directory:
         if result_identifier:
@@ -254,6 +259,9 @@ def wire_plot(x, y, z,
         ax.set_zlabel(zlabel)
     if title:
         ax.set_title(title)
+
+    fig.tight_layout()
+
     if save_name:
         if az != AZ_EL_DEFAULTS['az'] or el != AZ_EL_DEFAULTS['el']:
             seed = save_name.split('.')[0]
@@ -435,6 +443,7 @@ def conditional_multi_plot_3d(blur_sigmas, noise_means, z_dict,
         ax.set_zlabel(zlabel)
     ax.set_title(title)
     # ax.view_init(ax, el)
+    fig.tight_layout()
 
     if save_name:
         if az != AZ_EL_DEFAULTS['az'] or el != AZ_EL_DEFAULTS['el']:
@@ -579,6 +588,7 @@ def plot_1d_performance(x, performance_dict, distortion_id,
     plt.ylabel(ylabel)
     if legend:
         plt.legend(loc=legend_loc)
+    plt.tight_layout()
     if directory:
         plt.savefig(Path(directory, save_name))
     if show_plots:
@@ -741,7 +751,7 @@ def sorted_linear_scatter(prediction, result, directory=None, filename='predict_
         plt.legend()
         if directory:
             plt.savefig(Path(directory, filename))
-
+        plt.tight_layout()
         if show_plots:
             plt.show()
         plt.close()

@@ -601,8 +601,8 @@ def log_uid(directory, uid):
 
 if __name__ == '__main__':
 
-    # config_filename = 's6_oct_fr90_composite_config.yml'
-    config_filename = 'pl_oct_composite_fr90_mega1_mega2.yml'
+    config_filename = 's6_oct_fr90_composite_config.yml'
+    # config_filename = 'pl_oct_composite_fr90_mega1_mega2.yml'
 
     analyze_1d = False
     analyze_2d = False
@@ -629,68 +629,68 @@ if __name__ == '__main__':
 
     fit_keys = [
         'exp_b0n0',
-        'exp_b0n1',
-        'exp_b0n2',
-
-        'exp_b2n0',
-        'exp_b2n1',
-        'exp_b2n2',
-
-        'exp_b3n0',
-        'exp_b3n1',
-        'exp_b3n2',
-
-        'exp_b4n0',
-        'exp_b4n1',
-        'exp_b4n2',
+        # 'exp_b0n1',
+        # 'exp_b0n2',
+        #
+        # 'exp_b2n0',
+        # 'exp_b2n1',
+        # 'exp_b2n2',
+        #
+        # 'exp_b3n0',
+        # 'exp_b3n1',
+        # 'exp_b3n2',
+        #
+        # 'exp_b4n0',
+        # 'exp_b4n1',
+        # 'exp_b4n2',
 
         'pl_b0n0',  # simplest / naive mapping
-        'pl_b0n1',
-        'pl_b0n2',
+        # 'pl_b0n1',
+        # 'pl_b0n2',
+        #
+        # 'pl_b2n0',
+        # 'pl_b2n1',
+        # 'pl_b2n2',
+        #
+        # 'pl_b3n0',
+        # 'pl_b3n1',
+        # 'pl_b3n2',  # total noise estimated in quadrature, discrete sampling rer
+        #
+        # 'pl_b4n0',
+        # 'pl_b4n1',
+        # 'pl_b4n2',
 
-        'pl_b2n0',
-        'pl_b2n1',
-        'pl_b2n2',
-
-        'pl_b3n0',
-        'pl_b3n1',
-        'pl_b3n2',  # total noise estimated in quadrature, discrete sampling rer
-
-        'pl_b4n0',
-        'pl_b4n1',
-        'pl_b4n2',
-
-        'giqe3_b0n0',
-        'giqe3_b0n1',
-        'giqe3_b0n2',
-
-        'giqe3_b2n0',
-        'giqe3_b2n1',
+        # 'giqe3_b0n0',
+        # 'giqe3_b0n1',
+        # 'giqe3_b0n2',
+        #
+        # 'giqe3_b2n0',
+        # 'giqe3_b2n1',
         'giqe3_b2n2',
 
-        'giqe3_b3n0',
-        'giqe3_b3n1',
-        'giqe3_b3n2',
+        # 'giqe3_b3n0',
+        # 'giqe3_b3n1',
+        # 'giqe3_b3n2',
+        #
+        # 'giqe3_b4n0',
+        # 'giqe3_b4n1',
+        # 'giqe3_b4n2',
+        #
+        # 'giqe5_b0n0',
+        # 'giqe5_b0n1',
+        # 'giqe5_b0n2',
 
-        'giqe3_b4n0',
-        'giqe3_b4n1',
-        'giqe3_b4n2',
-
-        'giqe5_b0n0',
-        'giqe5_b0n1',
-        'giqe5_b0n2',
-
-        'giqe5_b2n0',
-        'giqe5_b2n1',
+        # 'giqe5_b2n0',
+        # 'giqe5_b2n1',
         'giqe5_b2n2',
 
-        'giqe5_b3n0',
-        'giqe5_b3n1',
-        'giqe5_b3n2',
-
-        'giqe5_b4n0',
-        'giqe5_b4n1',
-        'giqe5_b4n2',
+        # 'giqe5_b3n0',
+        # 'giqe5_b3n1',
+        # 'giqe5_b3n2',
+        #
+        # 'giqe5_b4n0',
+        # 'giqe5_b4n1',
+        # 'giqe5_b4n2',
         ]
 
     if len(fit_keys) == 0:
