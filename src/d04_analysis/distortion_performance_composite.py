@@ -430,10 +430,6 @@ class CompositePerformanceResult(object):
 
         return top_1_vec, predict_vec
 
-    def eval_performance_cheating(self):
-
-        pass
-
     def compare_predict_eval(self, distortion_ids=('res', 'blur', 'noise')):
         __, __, __, perf_3d_predict, __, perf_array_predict, __ = self.get_3d_distortion_perf_props(
             distortion_ids=distortion_ids, predict_eval_flag='predict')
@@ -495,7 +491,6 @@ def get_composite_performance_result(performance_prediction_result_ids=None, per
             assign_by_octant_only = config['assign_by_octant_only']
         except KeyError:
             pass
-        # overwrite_extracted_props = config['overwrite_extracted_props']
 
     composite_performance_result = CompositePerformanceResult(
         performance_prediction_result_ids, assign_by_octant_only=assign_by_octant_only,
@@ -606,8 +601,8 @@ def log_uid(directory, uid):
 
 if __name__ == '__main__':
 
-    config_filename = 's6_oct_fr90_composite_config.yml'
-    # config_filename = 'pl_oct_composite_fr90_mega1_mega2.yml'
+    # config_filename = 's6_oct_fr90_composite_config.yml'
+    config_filename = 'pl_oct_composite_fr90_mega1_mega2.yml'
 
     analyze_1d = False
     analyze_2d = False
@@ -617,6 +612,7 @@ if __name__ == '__main__':
 
     make_simulation_plots_1d = False
     make_simulation_plots_2d = False
+
     make_isosurf_plots = False
 
     show_plots = False
@@ -633,68 +629,68 @@ if __name__ == '__main__':
 
     fit_keys = [
         'exp_b0n0',
-        # 'exp_b0n1',
-        # 'exp_b0n2',
-        #
-        # 'exp_b2n0',
-        # 'exp_b2n1',
-        # 'exp_b2n2',
+        'exp_b0n1',
+        'exp_b0n2',
 
-        # 'exp_b3n0',
-        # 'exp_b3n1',
-        # 'exp_b3n2',
-        #
-        # 'exp_b4n0',
-        # 'exp_b4n1',
-        # 'exp_b4n2',
+        'exp_b2n0',
+        'exp_b2n1',
+        'exp_b2n2',
+
+        'exp_b3n0',
+        'exp_b3n1',
+        'exp_b3n2',
+
+        'exp_b4n0',
+        'exp_b4n1',
+        'exp_b4n2',
 
         'pl_b0n0',  # simplest / naive mapping
-        # 'pl_b0n1',
-        # 'pl_b0n2',
-        #
+        'pl_b0n1',
+        'pl_b0n2',
+
         'pl_b2n0',
-        # 'pl_b2n1',
-        # 'pl_b2n2',
-        #
-        # 'pl_b3n0',
-        # 'pl_b3n1',
-        # 'pl_b3n2',  # total noise estimated in quadrature, discrete sampling rer
-        #
-        # 'pl_b4n0',
-        # 'pl_b4n1',
-        # 'pl_b4n2',
-        #
-        # 'giqe3_b0n0',
-        # 'giqe3_b0n1',
-        # 'giqe3_b0n2',
-        #
-        # 'giqe3_b2n0',
-        # 'giqe3_b2n1',
+        'pl_b2n1',
+        'pl_b2n2',
+
+        'pl_b3n0',
+        'pl_b3n1',
+        'pl_b3n2',  # total noise estimated in quadrature, discrete sampling rer
+
+        'pl_b4n0',
+        'pl_b4n1',
+        'pl_b4n2',
+
+        'giqe3_b0n0',
+        'giqe3_b0n1',
+        'giqe3_b0n2',
+
+        'giqe3_b2n0',
+        'giqe3_b2n1',
         'giqe3_b2n2',
-        #
-        # 'giqe3_b3n0',
-        # 'giqe3_b3n1',
-        # 'giqe3_b3n2',
-        #
-        # 'giqe3_b4n0',
-        # 'giqe3_b4n1',
-        # 'giqe3_b4n2',
-        #
-        # 'giqe5_b0n0',
-        # 'giqe5_b0n1',
-        # 'giqe5_b0n2',
-        #
-        # 'giqe5_b2n0',
-        # 'giqe5_b2n1',
+
+        'giqe3_b3n0',
+        'giqe3_b3n1',
+        'giqe3_b3n2',
+
+        'giqe3_b4n0',
+        'giqe3_b4n1',
+        'giqe3_b4n2',
+
+        'giqe5_b0n0',
+        'giqe5_b0n1',
+        'giqe5_b0n2',
+
+        'giqe5_b2n0',
+        'giqe5_b2n1',
         'giqe5_b2n2',
-        #
-        # 'giqe5_b3n0',
-        # 'giqe5_b3n1',
-        # 'giqe5_b3n2',
-        #
-        # 'giqe5_b4n0',
-        # 'giqe5_b4n1',
-        # 'giqe5_b4n2',
+
+        'giqe5_b3n0',
+        'giqe5_b3n1',
+        'giqe5_b3n2',
+
+        'giqe5_b4n0',
+        'giqe5_b4n1',
+        'giqe5_b4n2',
         ]
 
     if len(fit_keys) == 0:

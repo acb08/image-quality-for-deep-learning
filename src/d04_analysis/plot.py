@@ -130,11 +130,16 @@ def plot_1d_linear_fit(x_data, y_data, fit_coefficients, distortion_id,
 
 
 def plot_1d_fit(x, y_data, y_fit, distortion_id, measured_label='measured', fit_label='fit',
-                result_identifier=None, ylabel=None, directory=None, legend=True, show_plots=True):
+                result_identifier=None, ylabel=None, directory=None, legend=True, show_plots=True,
+                ax=None):
 
     xlabel = AXIS_LABELS[distortion_id]
 
-    ax = plt.figure().gca()
+    if ax is None:
+        ax = plt.figure().gca()
+        close_plot_here = False
+    else:
+        close_plot_here = True
 
     ax.plot(x, y_fit, label=fit_label, linestyle='dashed', lw=0.8, color='k')
     ax.scatter(x, y_data, color='k', marker='+', label=measured_label)
@@ -145,6 +150,7 @@ def plot_1d_fit(x, y_data, y_fit, distortion_id, measured_label='measured', fit_
     if not ylabel:
         ylabel = AXIS_LABELS['y']
     ax.set_ylabel(ylabel)
+    ax.label_outer()
 
     if legend:
         ax.legend()
@@ -157,14 +163,11 @@ def plot_1d_fit(x, y_data, y_fit, distortion_id, measured_label='measured', fit_
         save_name = save_name + '.png'
         plt.savefig(Path(directory, save_name))
 
-        print(f'saved {save_name} in {directory}')
-
-    else:
-        print(f'figure not save in {directory}, fit label: {fit_label}, measured label {measured_label}')
-
     if show_plots:
         plt.show()
-    plt.close()
+
+    if close_plot_here:
+        plt.close()
 
 
 def plot_2d(x_values, y_values, accuracy_means, x_id, y_id,
@@ -607,10 +610,21 @@ def compare_2d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blu
 
 
 def compare_1d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),
-                     flatten_axis_combinations=((0, 1), (0, 2), (1, 2)), data_labels=('measured', 'fit'),
-                     result_id='3d_1d_projection', directory=None, include_fit_stats=True, show_plots=True):
+                     flatten_axis_combinations=((1, 2), (0, 2), (0, 1)), data_labels=('measured', 'fit'),
+                     result_id='3d_1d_projection', directory=None, include_fit_stats=True, include_dw=False,
+                     show_plots=True, plot_together=True):
 
-    for flatten_axes in flatten_axis_combinations:
+    if plot_together:
+        fig, axes = plt.subplots(nrows=1, ncols=3, sharey=True, figsize=(12, 4))
+        save_dir_individual = None
+        show_plots_individual = False
+    else:
+        axes = None, None, None
+        fig = None
+        save_dir_individual = directory
+        show_plots_individual = show_plots
+
+    for i, flatten_axes in enumerate(flatten_axis_combinations):
         f0_1d, axis = flatten_2x(f0, x_vals, y_vals, z_vals, flatten_axes=flatten_axes)
         f1_1d, __ = flatten_2x(f1, x_vals, y_vals, z_vals, flatten_axes=flatten_axes)
         axis_label = keep_1_of_3(a=distortion_ids, discard_indices=flatten_axes)
@@ -618,16 +632,33 @@ def compare_1d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blu
         assert np.array_equal(axis, axis_check)
 
         if include_fit_stats:
-            dw = durbin_watson(prediction=f0_1d, measurement=f1_1d)
-            dw = round(dw, 3)
             rho = np.corrcoef(f0_1d, f1_1d)[0, 1]
             rho = round(rho, 3)
-            fit_label = f'{data_labels[1]}, correlation = {rho}, Durbin-Watson = {dw}'
+            if include_dw:
+                dw = durbin_watson(prediction=f0_1d, measurement=f1_1d)
+                dw = round(dw, 3)
+                fit_label = f'{data_labels[1]}, correlation = {rho}, Durbin-Watson = {dw}'
+            else:
+                fit_label = f'{data_labels[1]}, correlation = {rho}'
         else:
             fit_label = data_labels[1]
 
         plot_1d_fit(axis, f0_1d, f1_1d, axis_label, measured_label=data_labels[0], fit_label=fit_label,
-                    result_identifier=result_id, directory=directory, show_plots=show_plots)
+                    result_identifier=result_id, directory=save_dir_individual, show_plots=show_plots_individual,
+                    ax=axes[i])
+
+    if plot_together:
+        fig.tight_layout()
+
+        if directory:
+            save_name = result_id
+            for distortion_id in distortion_ids:
+                save_name = f'{save_name}_{distortion_id}'
+            save_name = save_name + '.png'
+            fig.savefig(Path(directory, save_name))
+
+    if show_plots:
+        plt.show()
 
 
 def residual_color_plot(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),
@@ -720,7 +751,7 @@ def sorted_linear_scatter(prediction, result, directory=None, filename='predict_
         ax.plot(x, y, linestyle='--', color='k', label=label)
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
-        ax.legend()
+        ax.legend(loc='upper left')
         ax.label_outer()
 
 
@@ -737,11 +768,11 @@ def dual_sorted_linear_scatter(prediction_0, result_0, prediction_1, result_1, d
                           xlabel=xlabel_1, ylabel=ylabel, show_plots=False, ax=ax1)
     fig.tight_layout()
 
-    if show_plots:
-        fig.show()
-
     if directory:
         plt.savefig(Path(directory, filename))
+
+    if show_plots:
+        fig.show()
 
 
 if __name__ == '__main__':

@@ -50,13 +50,13 @@ def _combined_blur_res_squared(blur, res, c):
 
 def _giqe5(res, rer, noise, params):
     c0, c1, c2, c3, c4, c5, c6 = params
-    return (c0 + c1 * np.log10(res) + c2 * (1 - np.exp(c3 * noise)) * np.log10(rer) + c5 * np.log10(rer) ** 4 +
+    return (c0 + c1 * np.log10(1 / res) + c2 * (1 - np.exp(c3 * noise)) * np.log10(rer) + c5 * np.log10(rer) ** 4 +
             c6 * noise)
 
 
 def _giqe3(res, rer, noise, params):
     c0, c1, c4, c5, c6 = params  # trying to match coefficient names between giqe3 and giqe5
-    return c0 + c1 * np.log10(res) + c5 * np.log10(rer) + c6 * noise
+    return c0 + c1 * np.log10(1 / res) + c5 * np.log10(rer) + c6 * noise
 
 
 def discrete_sampling_rer_model(sigma_blur, apply_blur_correction=False):
@@ -992,9 +992,10 @@ def generate_fit_keys(functional_forms, blur_maps, noise_maps):
 
     return fit_keys
 
+
 # giqe5_2 initials
 _c0 = 0.5
-_c1 = 0.3
+_c1 = - 0.3
 _c2 = 0.2
 _c3 = -0.1
 _c4 = 2
@@ -1058,17 +1059,29 @@ fit_functions = {
     'giqe3_b4n1': (giqe3_b4n1, (_c0, _c1, 1, 0.5, -0.01)),
     'giqe3_b4n2': (giqe3_b4n2, (_c0, _c1, 1, 0.5, -0.01)),
 
-    'giqe5_b0n0': (giqe5_b0n0, (-0.5, 0.3, 0.1, -0.1, -0.1, -0.01)),
-    'giqe5_b0n1': (giqe5_b0n1, (-0.5, 0.3, 0.1, -0.1, -0.1, -0.01)),
-    'giqe5_b0n2': (giqe5_b0n2, (-0.5, 0.3, 0.1, -0.1, -0.1, -0.01)),
+    # 'giqe5_b0n0': (giqe5_b0n0, (-0.5, 0.3, 0.1, -0.1, -0.1, -0.01)),  # before the log(1/r) update
+    # 'giqe5_b0n1': (giqe5_b0n1, (-0.5, 0.3, 0.1, -0.1, -0.1, -0.01)),
+    # 'giqe5_b0n2': (giqe5_b0n2, (-0.5, 0.3, 0.1, -0.1, -0.1, -0.01)),
 
-    'giqe5_b2n0': (giqe5_b2n0, (-0.5, 0.3, 0.1, -0.1, 2, -0.1, -0.01)),
-    'giqe5_b2n1': (giqe5_b2n1, (-0.5, 0.3, 0.1, -0.1, 2, -0.1, -0.01)),
-    'giqe5_b2n2': (giqe5_b2n2, (-0.5, 0.3, 0.1, -0.1, 2, -0.1, -0.01)),
+    'giqe5_b0n0': (giqe5_b0n0, (_c0, _c1, 0.1, -0.1, -0.1, -0.01)),
+    'giqe5_b0n1': (giqe5_b0n1, (_c0, _c1, 0.1, -0.1, -0.1, -0.01)),
+    'giqe5_b0n2': (giqe5_b0n2, (_c0, _c1, 0.1, -0.1, -0.1, -0.01)),
 
-    'giqe5_b3n0': (giqe5_b3n2, (-0.5, 0.3, 0.1, -0.1, 2, -0.1, -0.01)),
-    'giqe5_b3n1': (giqe5_b3n1, (-0.5, 0.3, 0.1, -0.1, 2, -0.1, -0.01)),
-    'giqe5_b3n2': (giqe5_b3n2, (-0.5, 0.3, 0.1, -0.1, 2, -0.1, -0.01)),
+    # 'giqe5_b2n0': (giqe5_b2n0, (-0.5, 0.3, 0.1, -0.1, 2, -0.1, -0.01)),  # before the log(1/r) update
+    # 'giqe5_b2n1': (giqe5_b2n1, (-0.5, 0.3, 0.1, -0.1, 2, -0.1, -0.01)),
+    # 'giqe5_b2n2': (giqe5_b2n2, (-0.5, 0.3, 0.1, -0.1, 2, -0.1, -0.01)),
+
+    'giqe5_b2n0': (giqe5_b2n0, (_c0, _c1, 0.1, -0.1, 2, -0.1, -0.01)),
+    'giqe5_b2n1': (giqe5_b2n1, (_c0, _c1, 0.1, -0.1, 2, -0.1, -0.01)),
+    'giqe5_b2n2': (giqe5_b2n2, (_c0, _c1, 0.1, -0.1, 2, -0.1, -0.01)),
+
+    # 'giqe5_b3n0': (giqe5_b3n2, (-0.5, 0.3, 0.1, -0.1, 2, -0.1, -0.01)), # before the log(1/r) update
+    # 'giqe5_b3n1': (giqe5_b3n1, (-0.5, 0.3, 0.1, -0.1, 2, -0.1, -0.01)),
+    # 'giqe5_b3n2': (giqe5_b3n2, (-0.5, 0.3, 0.1, -0.1, 2, -0.1, -0.01)),
+
+    'giqe5_b3n0': (giqe5_b3n2, (_c0, _c1, 0.1, -0.1, 2, -0.1, -0.01)),
+    'giqe5_b3n1': (giqe5_b3n1, (_c0, _c1, 0.1, -0.1, 2, -0.1, -0.01)),
+    'giqe5_b3n2': (giqe5_b3n2, (_c0, _c1, 0.1, -0.1, 2, -0.1, -0.01)),
 
     'giqe5_b4n0': (giqe5_b4n0, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
     'giqe5_b4n1': (giqe5_b4n1, (_c0, _c1, _c2, _c3, 1, 0.5, -0.01)),
