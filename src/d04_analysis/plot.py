@@ -133,7 +133,7 @@ def plot_1d_linear_fit(x_data, y_data, fit_coefficients, distortion_id,
 
 def plot_1d_fit(x, y_data, y_fit, distortion_id, measured_label='measured', fit_label='fit',
                 result_identifier=None, ylabel=None, directory=None, legend=True, show_plots=True,
-                ax=None):
+                ax=None, axis_fontsize=14, legend_fontsize=12):
 
     xlabel = AXIS_LABELS[distortion_id]
 
@@ -145,17 +145,17 @@ def plot_1d_fit(x, y_data, y_fit, distortion_id, measured_label='measured', fit_
 
     ax.plot(x, y_fit, label=fit_label, linestyle='dashed', lw=0.8, color='k')
     ax.scatter(x, y_data, color='k', marker='+', label=measured_label)
-    ax.set_xlabel(xlabel)
+    ax.set_xlabel(xlabel, fontsize=axis_fontsize)
     if 'noise' in xlabel or np.max(x) > 5:
         ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
     if not ylabel:
         ylabel = AXIS_LABELS['y']
-    ax.set_ylabel(ylabel)
+    ax.set_ylabel(ylabel, fontsize=axis_fontsize)
     ax.label_outer()
 
     if legend:
-        ax.legend()
+        ax.legend(fontsize=legend_fontsize)
 
     if close_plot_here:
         plt.tight_layout()
@@ -625,7 +625,7 @@ def compare_1d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blu
                      show_plots=True, plot_together=True):
 
     if plot_together:
-        fig, axes = plt.subplots(nrows=1, ncols=3, sharey=True, figsize=(12, 4))
+        fig, axes = plt.subplots(nrows=1, ncols=3, sharey=True, figsize=(12, 3.4))
         save_dir_individual = None
         show_plots_individual = False
     else:
@@ -644,12 +644,13 @@ def compare_1d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blu
         if include_fit_stats:
             rho = np.corrcoef(f0_1d, f1_1d)[0, 1]
             rho = round(rho, 3)
+            corr_str = r'$\rho = $'
             if include_dw:
                 dw = durbin_watson(prediction=f0_1d, measurement=f1_1d)
                 dw = round(dw, 3)
-                fit_label = f'{data_labels[1]}, correlation = {rho}, Durbin-Watson = {dw}'
+                fit_label = f'{data_labels[1]}, {corr_str} {rho}, Durbin-Watson = {dw}'
             else:
-                fit_label = f'{data_labels[1]}, correlation = {rho}'
+                fit_label = f'{data_labels[1]}, {corr_str} {rho}'
         else:
             fit_label = data_labels[1]
 

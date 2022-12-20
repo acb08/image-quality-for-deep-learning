@@ -360,30 +360,31 @@ def analyze_perf_3d(model_performance,
                                xlabel_1='predicted accuracy (binomial simulation p-success)',
                                show_plots=show_scatter_plots)
 
+    compare_1d_views(perf_3d, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
+                     data_labels=('measured (predict)', 'fit'), directory=directory,
+                     result_id='mean_1d_predict',
+                     show_plots=show_1d_plots)
+
+    if not np.array_equal(perf_3d, perf_3d_eval):
+        compare_1d_views(perf_3d_eval, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
+                         data_labels=('measured (eval)', 'fit'), directory=directory,
+                         result_id='mean_1d_eval',
+                         show_plots=show_1d_plots)
+
+    else:
+        print('per_3d = perf_3d_eval for ', str(model_performance))
+
     if standard_plots:
         compare_2d_views(perf_3d, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
                          data_labels=('measured (predict)', 'fit'), az_el_combinations='all', directory=directory,
                          residual_plot=False, result_id='predict_fit_3d_proj',
                          show_plots=show_plots)
 
-        compare_1d_views(perf_3d, fit_3d,  x_values, y_values, z_values, distortion_ids=distortion_ids,
-                         data_labels=('measured (predict)', 'fit'), directory=directory,
-                         result_id='mean_1d_predict',
-                         show_plots=show_1d_plots)
-
         if not np.array_equal(perf_3d, perf_3d_eval):
             compare_2d_views(perf_3d_eval, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
                              data_labels=('measured (eval)', 'fit'), az_el_combinations='all', directory=directory,
                              residual_plot=False, result_id='eval_fit_3d_proj',
                              show_plots=show_plots)
-
-            compare_1d_views(perf_3d_eval, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
-                             data_labels=('measured (eval)', 'fit'), directory=directory,
-                             result_id='mean_1d_eval',
-                             show_plots=show_1d_plots)
-
-        else:
-            print('per_3d = perf_3d_eval for ', str(model_performance))
 
     if make_simulation_plots_1d:
         compare_1d_views(perf_3d_simulated, fit_3d,  x_values, y_values, z_values, distortion_ids=distortion_ids,
