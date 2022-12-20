@@ -154,8 +154,17 @@ def plot_1d_fit(x, y_data, y_fit, distortion_id, measured_label='measured', fit_
     ax.set_ylabel(ylabel, fontsize=axis_fontsize)
     ax.label_outer()
 
+    if xlabel == 'resolution':
+        legend_loc = 'lower right'
+    elif xlabel[-4:] == 'blur':
+        legend_loc = 'upper right'
+    elif xlabel[-5:] == 'noise':
+        legend_loc = 'upper right'
+    else:
+        legend_loc = 'best'
+
     if legend:
-        ax.legend(fontsize=legend_fontsize)
+        ax.legend(fontsize=legend_fontsize, loc=legend_loc)
 
     if close_plot_here:
         plt.tight_layout()
