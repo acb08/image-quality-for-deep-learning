@@ -798,7 +798,8 @@ def _heat_plot(arr, xlabel, ylabel, ax=None, vmin=None, vmax=None, extent=None):
 
 
 def sorted_linear_scatter(prediction, result, directory=None, filename='predict_result_scatter.png', best_fit=True,
-                          xlabel='predicted accuracy', ylabel='accuracy', show_plots=True, ax=None):
+                          xlabel='predicted accuracy', ylabel='accuracy', show_plots=True, ax=None,
+                          legend_fontsize=LEGEND_FONTSIZE, axis_fontsize=AXIS_FONTSIZE):
 
     prediction, result = sort_parallel(prediction, result)
 
@@ -818,9 +819,9 @@ def sorted_linear_scatter(prediction, result, directory=None, filename='predict_
         plt.figure()
         plt.scatter(prediction, result, marker=".", s=0.5)
         plt.plot(x, y, linestyle='--', color='k', label=label)
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
-        plt.legend()
+        plt.xlabel(xlabel, fontsize=axis_fontsize)
+        plt.ylabel(ylabel, fontsize=axis_fontsize)
+        plt.legend(fontsize=legend_fontsize)
         if directory:
             plt.savefig(Path(directory, filename))
         plt.tight_layout()
@@ -831,23 +832,26 @@ def sorted_linear_scatter(prediction, result, directory=None, filename='predict_
     else:
         ax.scatter(prediction, result, marker=".", s=0.5)
         ax.plot(x, y, linestyle='--', color='k', label=label)
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-        ax.legend(loc='upper left')
+        ax.set_xlabel(xlabel, fontsize=axis_fontsize)
+        ax.set_ylabel(ylabel, fontsize=axis_fontsize)
+        ax.legend(loc='upper left', fontsize=legend_fontsize)
         ax.label_outer()
 
 
 def dual_sorted_linear_scatter(prediction_0, result_0, prediction_1, result_1, directory=None,
                                filename='predict_result_scatter_combined.png', best_fit=True,
                                xlabel_0='predicted accuracy', xlabel_1='predicted accuracy',
-                               ylabel='accuracy', show_plots=True):
+                               ylabel='accuracy', show_plots=True,
+                               legend_fontsize=LEGEND_FONTSIZE, axis_fontsize=AXIS_FONTSIZE):
 
     fig, (ax0, ax1) = plt.subplots(nrows=1, ncols=2, figsize=(12.8, 4.8), sharey=True)
 
     sorted_linear_scatter(prediction_0, result_0, directory=None, filename=None, best_fit=best_fit,
-                          xlabel=xlabel_0, ylabel=ylabel, show_plots=False, ax=ax0)
+                          xlabel=xlabel_0, ylabel=ylabel, show_plots=False, ax=ax0,
+                          legend_fontsize=legend_fontsize, axis_fontsize=axis_fontsize)
     sorted_linear_scatter(prediction_1, result_1, directory=None, filename=None, best_fit=best_fit,
-                          xlabel=xlabel_1, ylabel=ylabel, show_plots=False, ax=ax1)
+                          xlabel=xlabel_1, ylabel=ylabel, show_plots=False, ax=ax1,
+                          legend_fontsize=legend_fontsize, axis_fontsize=axis_fontsize)
     fig.tight_layout()
 
     if directory:
