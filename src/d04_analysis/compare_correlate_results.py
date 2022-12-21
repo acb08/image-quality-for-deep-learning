@@ -222,10 +222,13 @@ def compare_correlate(config):
         log_config(output_dir, composite_performance_result_config,
                    config_used_filename='composite_performance_result_config_used.yml')
 
-    performance_results = get_multiple_model_distortion_performance_results(test_result_identifiers)
+    performance_results = []
 
     if composite_performance_result is not None:
         performance_results.append(composite_performance_result)
+
+    addition_performance_results = get_multiple_model_distortion_performance_results(test_result_identifiers)
+    performance_results.extend(addition_performance_results)
 
     different_performance_results = None
     if different_result_identifiers:
@@ -304,7 +307,7 @@ def analyze_pairwise_1d_2d(model_results, directory='default', make_subdirectori
 
 if __name__ == '__main__':
 
-    config_filename = 'pl_fr_models_fr90_megaset_1.yml'
+    config_filename = 'pl_fr_pt_mp_ep_fr90_mega1.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_filename, help='config filename to be used')

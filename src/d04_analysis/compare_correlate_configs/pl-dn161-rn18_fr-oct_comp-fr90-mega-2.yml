@@ -1,10 +1,10 @@
 ---
 
 test_result_identifiers:
+  - [ '0103-rlt-0020-densenet161-full_range_best_loss-0012-tst-full_range_90_mega_set_2_noise:v0',
+      'DN-161 full-range' ]
   - [ '0106-rlt-0020-resnet18-full_range_best_loss-0012-tst-full_range_90_mega_set_2_noise:v0',
         'RN-18 full-range' ]
-  - ['0103-rlt-0020-densenet161-full_range_best_loss-0012-tst-full_range_90_mega_set_2_noise:v0',
-     'DN-161 full-range' ]
 
 # if a second set of test result identifiers is included here, inter-set results are cross correlated, whereas passing
 # only a single set of identifiers results in intra-set correlations being calculated.  In other words, passing a single

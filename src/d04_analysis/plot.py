@@ -638,6 +638,14 @@ def plot_1d_performance(x, performance_dict, distortion_id,
         close_plot_here = False
     else:
         close_plot_here = True
+        if xlabel == 'resolution':
+            legend_loc = 'lower right'
+        elif xlabel[-4:] == 'blur':
+            legend_loc = 'upper right'
+        elif xlabel[-5:] == 'noise':
+            legend_loc = 'upper right'
+        else:
+            legend_loc = 'best'
 
     for i, key in enumerate(performance_dict):
         ax.plot(x, performance_dict[key], color=COLORS[i])
