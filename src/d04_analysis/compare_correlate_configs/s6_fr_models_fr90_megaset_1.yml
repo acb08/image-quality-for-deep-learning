@@ -1,13 +1,12 @@
 ---
 
 test_result_identifiers:
+  - [ '0082-rlt-0010-densenet161_sat6-full_range_best_loss-0012-tst-full_range_90_mega_set_1_noise',
+        'DenseNet-161' ]
+  - [ '0093-rlt-0008-resnet50_sat6-full_range_v2_best_loss-0012-tst-full_range_90_mega_set_1_noise',
+      'ResNet-50' ]
   - ['0087-rlt-0011-resnet18_sat6-full_range_best_loss-0012-tst-full_range_90_mega_set_1_noise',
       'ResNet-18' ]
-  - ['0093-rlt-0008-resnet50_sat6-full_range_v2_best_loss-0012-tst-full_range_90_mega_set_1_noise',
-     'ResNet-50']
-  - ['0082-rlt-0010-densenet161_sat6-full_range_best_loss-0012-tst-full_range_90_mega_set_1_noise',
-     'DenseNet-161']
-
 
 # if a second set of test result identifiers is included here, inter-set results are cross correlated, whereas passing
 # only a single set of identifiers results in intra-set correlations being calculated.  In other words, passing a single
@@ -16,8 +15,10 @@ different_test_result_identifiers: null
 
 overwrite: False
 manual_name: s6_fr-models_fr90-mega-1
-analyze_3d: True
-analyze_pairwise: True
+#analyze_3d: True
+analyze_3d: False
+#analyze_pairwise: True
+analyze_pairwise: False
 plot_together_2d: True
 plot_together_1d: True
 
