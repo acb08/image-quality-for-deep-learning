@@ -224,7 +224,8 @@ def compare_correlate(config):
 
     performance_results = get_multiple_model_distortion_performance_results(test_result_identifiers)
 
-    performance_results.append(composite_performance_result)
+    if composite_performance_result is not None:
+        performance_results.append(composite_performance_result)
 
     different_performance_results = None
     if different_result_identifiers:
@@ -251,6 +252,8 @@ def compare_correlate(config):
     if plot_together_1d:
         analyze_plot_results_together(performance_results, directory=output_dir, make_subdir=True, dim_tag='1d',
                                       identifier='1d')
+
+    print('Results saved here:', str(output_dir))
 
 
 def log_accuracies(performance_results, output_dir):
@@ -301,7 +304,7 @@ def analyze_pairwise_1d_2d(model_results, directory='default', make_subdirectori
 
 if __name__ == '__main__':
 
-    config_filename = 's6-dn161-rn18-rn50_fr-oct_comp-fr90-mega-2.yml'
+    config_filename = 's6_fr_models_fr90_megaset_1.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_filename, help='config filename to be used')

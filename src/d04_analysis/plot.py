@@ -91,6 +91,9 @@ AXIS_LABELS = {
 SCATTER_PLOT_MARKERS = ['.', 'v', '2', 'P', 's', 'd', 'X', 'h']
 COLORS = ['b', 'g', 'c', 'm', 'y', 'r', 'k']
 
+AXIS_FONTSIZE = 14
+LEGEND_FONTSIZE = 12
+
 
 def plot_1d_linear_fit(x_data, y_data, fit_coefficients, distortion_id,
                        result_identifier=None, ylabel=None, title=None, directory=None,
@@ -133,7 +136,7 @@ def plot_1d_linear_fit(x_data, y_data, fit_coefficients, distortion_id,
 
 def plot_1d_fit(x, y_data, y_fit, distortion_id, measured_label='measured', fit_label='fit',
                 result_identifier=None, ylabel=None, directory=None, legend=True, show_plots=True,
-                ax=None, axis_fontsize=14, legend_fontsize=12):
+                ax=None, axis_fontsize=AXIS_FONTSIZE, legend_fontsize=LEGEND_FONTSIZE):
 
     xlabel = AXIS_LABELS[distortion_id]
 
@@ -304,7 +307,7 @@ def plot_2d_linear_fit(distortion_array, accuracy_means, fit, x_id, y_id,
 
 def analyze_plot_results_together(model_results, identifier=None, directory=None, make_subdir=False, dim_tag='2d',
                                   legend_loc='best', pairwise_analysis=False, log_file=None, create_log_file=False,
-                                  show_plots=False):
+                                  show_plots=False, single_legend=True):
     """
     Plots performance of multiple models together. If pairwise_analysis is True and len(model_results) is 2, measures
     the correlation coefficients between mean performances as a function of distortion combinations.
@@ -335,7 +338,8 @@ def analyze_plot_results_together(model_results, identifier=None, directory=None
         analyze_plot_perf_1d_multi_result(model_results, directory=directory, identifier=identifier,
                                           legend_loc=legend_loc,
                                           pairwise_analysis=pairwise_analysis, log_file=log_file,
-                                          show_plots=show_plots)
+                                          show_plots=show_plots,
+                                          single_legend=single_legend)
     if log_file is not None:
         log_file.close()
 
@@ -347,19 +351,40 @@ def analyze_plot_perf_1d_multi_result(model_performances,
                                       legend_loc='best',
                                       pairwise_analysis=False,
                                       log_file=None,
-                                      show_plots=False):
+                                      show_plots=False,
+                                      plot_together=True,
+                                      single_legend=True):
     """
     :param model_performances: list of model performance class instances
     :param distortion_ids: distortion type tags to be analyzed
-    :param directory: output derectory
+    :param directory: output directory
     :param identifier: str for use as a filename seed
     :param legend_loc: str to specify plot legend location
     :param pairwise_analysis: bool, correlations between performance results measured if True
     :param log_file: text fle for logging analysis results
-    :param show_plots: determines whether plots are displayed
+    :param show_plots: bool, determines whether plots are displayed
+    :param plot_together: bool, determines whether to use subplots sharing y-axis
+    :param single_legend: bool, determines whether all subplots have a legend or only right-most subplot
     """
+    if plot_together:
+        fig, axes = plt.subplots(nrows=1, ncols=3, sharey=True, figsize=(12, 3.4))
+        save_dir_individual = None
+        show_plots_individual = False
+        if single_legend:
+            legends = len(distortion_ids) * [False]
+            legends[-1] = True
+        else:
+            legends = len(distortion_ids) * [True]
+
+    else:
+        axes = None, None, None
+        fig = None
+        save_dir_individual = directory
+        show_plots_individual = show_plots
+        legends = len(distortion_ids) * [True]
 
     for i, distortion_id in enumerate(distortion_ids):
+        ax = axes[i]
         mean_performances = {}
         for model_performance in model_performances:
             performance_key = str(model_performance)
@@ -372,8 +397,23 @@ def analyze_plot_perf_1d_multi_result(model_performances,
 
             measure_log_perf_correlation(mean_performances, distortion_ids=distortion_id, log_file=log_file)
 
-        plot_1d_performance(x, mean_performances, distortion_id, result_identifier=identifier, directory=directory,
-                            legend_loc=legend_loc, show_plot=show_plots)
+        plot_1d_performance(x, mean_performances, distortion_id, result_identifier=identifier,
+                            directory=save_dir_individual,
+                            legend_loc=legend_loc, show_plots=show_plots_individual,
+                            ax=ax, legend=legends[i])
+
+    if plot_together:
+        fig.tight_layout()
+
+        if directory:
+            save_name = identifier
+            for distortion_id in distortion_ids:
+                save_name = f'{save_name}_{distortion_id}'
+            save_name = save_name + '.png'
+            fig.savefig(Path(directory, save_name))
+
+    if show_plots:
+        plt.show()
 
 
 def analyze_plot_perf_2d_multi_result(model_performances,
@@ -572,7 +612,11 @@ def plot_1d_performance(x, performance_dict, distortion_id,
                         directory=None,
                         legend_loc='best',
                         legend=True,
-                        show_plots=False):
+                        show_plots=False,
+                        ax=None,
+                        axis_fontsize=AXIS_FONTSIZE,
+                        legend_fontsize=LEGEND_FONTSIZE,
+                        ):
 
     if xlabel == 'default':
         xlabel = AXIS_LABELS[distortion_id]
@@ -589,20 +633,30 @@ def plot_1d_performance(x, performance_dict, distortion_id,
 
     save_name = f"{save_name}.png"
 
-    plt.figure()
+    if ax is None:
+        fig, ax = plt.subplots(nrows=1, ncols=1)
+        close_plot_here = False
+    else:
+        close_plot_here = True
+
     for i, key in enumerate(performance_dict):
-        plt.plot(x, performance_dict[key], color=COLORS[i])
-        plt.scatter(x, performance_dict[key], label=key, c=COLORS[i], marker=SCATTER_PLOT_MARKERS[i])
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+        ax.plot(x, performance_dict[key], color=COLORS[i])
+        ax.scatter(x, performance_dict[key], label=key, c=COLORS[i], marker=SCATTER_PLOT_MARKERS[i])
+    ax.set_xlabel(xlabel, fontsize=axis_fontsize)
+    ax.set_ylabel(ylabel, fontsize=axis_fontsize)
+    ax.label_outer()
+
     if legend:
-        plt.legend(loc=legend_loc)
+        ax.legend(loc=legend_loc, fontsize=legend_fontsize)
     plt.tight_layout()
+
     if directory:
         plt.savefig(Path(directory, save_name))
     if show_plots:
         plt.show()
-    plt.close()
+
+    if close_plot_here:
+        plt.close()
 
 
 def compare_2d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),
