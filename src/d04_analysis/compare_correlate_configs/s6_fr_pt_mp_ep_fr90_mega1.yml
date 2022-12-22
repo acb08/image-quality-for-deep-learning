@@ -2,13 +2,13 @@
 
 test_result_identifiers:
   - ['0098-rlt-0008-resnet18_sat6-full_range_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0',
-     'full-range' ]
+     'full range trained' ]
   - ['0095-rlt-0005-resnet18_sat6-pretrain_lower_lr_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0',
      'pre-trained']
   - ['0110-rlt-0022-resnet18_sat6-midpoint-90_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0',
-     'midpoint']
+     'midpoint trained']
   - ['0090-rlt-0020-resnet18_sat6-endpoint_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0',
-     'endpoint']
+     'endpoint trained']
 
 
 # if a second set of test result identifiers is included here, inter-set results are cross correlated, whereas passing
@@ -17,7 +17,7 @@ test_result_identifiers:
 different_test_result_identifiers: null
 
 overwrite: False
-manual_name: pt-mp-ep-fr-fr90-mega-1
+manual_name: pt-mp-ep-fr-fr90-mega-1-legend-update
 analyze_3d: False
 analyze_pairwise: False
 plot_together_2d: True
