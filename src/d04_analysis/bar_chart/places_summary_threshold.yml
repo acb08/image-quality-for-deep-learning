@@ -16,7 +16,7 @@ data:
       0.03, # ep90 model, undistorted test
       0.03, # ep90 model, mp90 test
       0.06]] # ep90 model, ep90 test
-  - [ 'full-range trained', # model label
+  - [ 'full range trained', # model label
     [ 0.28, # ep90 model, full-range test
       0.37, # ep90 model, undistorted test
       0.31, # ep90 model, mp90 test
