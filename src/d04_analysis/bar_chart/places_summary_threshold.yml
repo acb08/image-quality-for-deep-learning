@@ -6,17 +6,17 @@ data:
       0.42, # pre-trained model, undistorted test
       .005, # pre-trained model, mp90 test
       .004]] # pre-trained model, ep90 test (0201-rlt-resnet18_pretrained-0015-tst-endpoint90_noise)
-  - ['midpoint', # model label
+  - ['midpoint trained', # model label
      [0.14, # ep90 model, full-range test
       0.10, # mp90 model, undistorted test
       0.32, # mp90 model, mp90 test
       0.003]] # mp90 model, ep90 test
-  - ['endpoint', # model label
+  - ['endpoint trained', # model label
      [0.04, # ep90 model, full-range test
       0.03, # ep90 model, undistorted test
       0.03, # ep90 model, mp90 test
       0.06]] # ep90 model, ep90 test
-  - [ 'full-range', # model label
+  - [ 'full-range trained', # model label
     [ 0.28, # ep90 model, full-range test
       0.37, # ep90 model, undistorted test
       0.31, # ep90 model, mp90 test
