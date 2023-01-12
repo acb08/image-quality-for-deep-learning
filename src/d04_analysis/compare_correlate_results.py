@@ -307,7 +307,7 @@ def analyze_pairwise_1d_2d(model_results, directory='default', make_subdirectori
 
 if __name__ == '__main__':
 
-    config_filename = 's6_fr_pt_mp_ep_fr90_mega1.yml'
+    config_filename = 's6_fr_pt_fr90_mega1_legend_update.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_filename, help='config filename to be used')
