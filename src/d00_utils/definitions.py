@@ -218,5 +218,8 @@ elif WANDB_PID[:6] == 'places':
 
     NUM_CLASSES = 365
 
+elif WANDB_PID == 'coco':
+    pass
+
 else:
     raise Exception('Invalid WANDB_PID')
