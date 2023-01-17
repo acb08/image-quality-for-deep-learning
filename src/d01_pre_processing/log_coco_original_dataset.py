@@ -2,36 +2,13 @@ import wandb
 import json
 from pathlib import Path
 from src.d00_utils.definitions import ROOT_DIR, ORIGINAL_DATASETS, WANDB_PID, STANDARD_DATASET_FILENAME
+from src.d00_utils.functions import load_original_dataset
+
 """
 Logs undistorted datasets as a W&B artifact and puts metadata into .json format 
 """
 
 wandb.login()
-
-
-def load_sat6_original():
-
-    """
-    :param dataset_id: dictionary key for ORIGINAL_DATASETS defined in definitions.py
-    :return: dictionary with the relative path to dataset umbrella, relative path to from dataset to image directory,
-    and list of images names and labels  in format [(image_name.jpg, image_label), ...]
-    """
-
-    dataset_id = 'sat6_full'
-
-    path_info = ORIGINAL_DATASETS[dataset_id]
-    dataset_dir = path_info['rel_path']
-    if 'metadata_filename' in path_info.keys():
-        dataset_filename = path_info['metadata_filename']
-    else:
-        dataset_filename = path_info['names_labels_filename']
-
-    image_metadata = {
-        'dataset_rel_dir': dataset_dir,
-        'dataset_filename': dataset_filename
-    }
-
-    return image_metadata
 
 
 def main(dataset_id, description=None):
@@ -65,7 +42,7 @@ def main(dataset_id, description=None):
 
     with wandb.init(project=WANDB_PID, job_type='load_dataset') as run:
 
-        image_metadata = load_sat6_original()
+        image_metadata = load_original_dataset(dataset_id)
         image_metadata.update(run_metadata)
         dataset = wandb.Artifact(
             dataset_id,
@@ -84,6 +61,12 @@ def main(dataset_id, description=None):
 
 if __name__ == '__main__':
 
-    _description = 'logging original sat6 dataset. parent_dataset_id is ' \
-                   'identical to dataset_id when logging initial datasets'
-    main('sat6_full', description=_description)
+    # _description = 'Logging val_256 dataset as W&B artifact. parent_dataset_id is ' \
+    #                'identical to dataset_id when logging initial datasets'
+    # main('train_256_standard', description='logging train_256_standard dataset as W&B artifact')
+    # main('val_256', description=_description)
+    # main('train_256_challenge', description='logging train_256_standard dataset as W&B artifact')
+
+    _description = 'logging coco val2017 dataset as W&B artifact. parent_dataset_id is ' \
+                    'identical to dataset_id when logging initial datasets'
+    main('val2017', description=_description)

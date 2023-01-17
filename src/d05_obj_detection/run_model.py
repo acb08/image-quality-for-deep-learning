@@ -1,27 +1,30 @@
 from torchvision.models.detection import fasterrcnn_resnet50_fpn, FasterRCNN_ResNet50_FPN_Weights
 from torchvision import transforms
 import torch
-import json
 from pathlib import Path
 from torch.utils.data import Dataset
 from PIL import Image
 import torch.distributed as dist
 import math
 import sys
-
-import definitions
-
+import src.d00_utils.definitions as definitions
+from src.d00_utils import functions
 
 # import numpy as np
 
 
-def load_instances(directory=definitions.ANNOTATION_DIR, dataset_key='val2017'):
+def _load_instances_placeholder(dataset_id='val2017'):
 
-    path_data = definitions.DATASET_PATHS[dataset_key]
-    filename = path_data['instances']
+    original_dataset = functions.load_original_dataset(dataset_id)
+    #
+    #
+    # path_data = definitions.DATASET_PATHS[dataset_key]
+    # filename = path_data['instances']
+    #
+    # with open(Path(directory, filename), 'r') as file:
+    #     instances = json.load(file)
 
-    with open(Path(directory, filename), 'r') as file:
-        instances = json.load(file)
+    instances = original_dataset['instances']
 
     return instances
 
@@ -117,10 +120,10 @@ def collate_fn(batch):
 
 def get_dataset(cutoff=None, dataset_key='val2017'):
 
-    path_data = definitions.DATASET_PATHS[dataset_key]
-    image_dir = Path(definitions.ROOT_DIR, path_data['image_dir'])
+    path_data = definitions.ORIGINAL_DATASETS[dataset_key]
+    image_dir = Path(definitions.ROOT_DIR, path_data['rel_path'])
 
-    instances = load_instances(dataset_key=dataset_key)
+    instances = _load_instances_placeholder(dataset_id=dataset_key)
 
     coco = COCO(image_dir, instances, cutoff=cutoff)
 

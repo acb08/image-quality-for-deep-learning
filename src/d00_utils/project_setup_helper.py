@@ -26,7 +26,7 @@ def check_for_original_dataset():
     for key in ORIGINAL_DATASETS:
 
         dataset_info = ORIGINAL_DATASETS[key]
-        full_path = Path(ROOT_DIR, dataset_info['rel_path'], dataset_info['names_labels_filename'])
+        full_path = Path(ROOT_DIR, dataset_info['rel_path'], dataset_info['metadata_filename'])
 
         if not full_path.is_file():
             all_datasets_found = False

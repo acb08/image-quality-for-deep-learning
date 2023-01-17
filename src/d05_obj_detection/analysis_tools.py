@@ -4,7 +4,7 @@ import matplotlib.patches as patches
 import scipy.optimize
 import random
 from pathlib import Path
-import definitions
+import src.d00_utils.definitions as definitions
 
 # TODO: for images with no bounding boxes, my custom COCO(dataset) class adds a background annotation in the
 #  __get_item__() method. If left unchanged, need to filter out background detections here

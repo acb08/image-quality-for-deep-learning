@@ -1,7 +1,7 @@
 import run_model as run
 import json
 import torch
-import definitions
+import src.d00_utils.definitions as definitions
 from pathlib import Path
 
 
@@ -56,4 +56,7 @@ def main(cutoff=None, batch_size=2, output_dir='test_result', output_filename='r
 
 if __name__ == '__main__':
 
-    main()
+    _cutoff = 4
+    _output_dir = f'test_result_{_cutoff}-img'
+    main(cutoff=_cutoff,
+         output_dir=_output_dir)

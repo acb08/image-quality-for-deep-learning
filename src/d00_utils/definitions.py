@@ -127,7 +127,7 @@ if WANDB_PID[:4] == 'sat6':
     ORIGINAL_DATASETS = {
         'sat6_full': {
             'rel_path': r'datasets/original',
-            'names_labels_filename': 'sat-6-full.mat',
+            'metadata_filename': 'sat-6-full.mat',
             'artifact_type': 'full_dataset'
         },
     }
@@ -169,22 +169,22 @@ elif WANDB_PID[:6] == 'places':
     ORIGINAL_DATASETS = {
         'val_256': {
             'rel_path': r'datasets/test/val_256',
-            'names_labels_filename': 'places365_val.txt',
+            'metadata_filename': 'places365_val.txt',
             'artifact_type': 'test_dataset'
         },
         'train_256_standard': {
             'rel_path': r'datasets/train/data_256',
-            'names_labels_filename': 'places365_train_standard.txt',
+            'metadata_filename': 'places365_train_standard.txt',
             'artifact_type': 'train_dataset'
         },
         'train_256_challenge': {
             'rel_path': r'datasets/train/challenge/data_256',
-            'names_labels_filename': 'places365_train_challenge.txt',
+            'metadata_filename': 'places365_train_challenge.txt',
             'artifact_type': 'train_dataset'
         },
         'upsplash_demo': {
             'rel_path': r'datasets/demo/upsplash_256',
-            'names_labels_filename': 'upsplash_demo_256.txt',
+            'metadata_filename': 'upsplash_demo_256.txt',
             'artifact_type': 'demo_dataset'
         }
     }
@@ -219,7 +219,41 @@ elif WANDB_PID[:6] == 'places':
     NUM_CLASSES = 365
 
 elif WANDB_PID == 'coco':
-    pass
+
+    PROJECT_ID = 'coco'
+
+    ORIGINAL_DATASETS = {
+        'val2017': {
+            'rel_path': r'datasets/test/val2017',
+            'metadata_filename': 'instances_val2017.json',  # need to deal with conversion to "instances" nomenclature
+            # 'instances_filename': 'instances_val2017.json',
+            'artifact_type': 'test_dataset'
+        },
+
+    }
+
+    ORIGINAL_PRETRAINED_MODELS = {
+        'fasterrcnn_resnet50_fpn': {
+            'model_file_config': {
+                'model_rel_dir': None,
+                'model_filename': None,  # FasterRCNN_ResNet50_FPN_Weights
+            },
+            'arch': 'fasterrcnn',
+            'artifact_type': 'model'
+        },
+        # 'resnet50_places365_as_downloaded': {
+        #     'model_file_config': {
+        #         'model_rel_dir': r'models/resnet50',
+        #         'model_filename': 'resnet50_places365.pth.tar',
+        #     },
+        #     'arch': 'resnet50',
+        #     'artifact_type': 'model'
+        # },
+
+    }
+
+    NUM_CLASSES = None
+
 
 else:
     raise Exception('Invalid WANDB_PID')

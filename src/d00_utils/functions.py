@@ -22,21 +22,32 @@ def load_original_dataset(dataset_id):
     path_info = ORIGINAL_DATASETS[dataset_id]
     dataset_dir = path_info['rel_path']
     # img_dir = REL_PATHS['images']
-    label_filename = path_info['names_labels_filename']
-    names_labels = []
-
-    with open(Path(ROOT_DIR, dataset_dir, label_filename)) as f:
-        for i, line in enumerate(f):
-            img_name, img_label = line.split()
-            if img_name[0] == '/':
-                img_name = img_name[1:]
-            names_labels.append((img_name, img_label))
+    metadata_filename = path_info['metadata_filename']
 
     image_metadata = {
         'dataset_dir': dataset_dir,
         # 'img_dir': img_dir,
-        'names_labels': names_labels
     }
+
+    if metadata_filename[-4:] != 'json':
+
+        names_labels = []
+
+        with open(Path(ROOT_DIR, dataset_dir, metadata_filename)) as f:
+            for i, line in enumerate(f):
+                img_name, img_label = line.split()
+                if img_name[0] == '/':
+                    img_name = img_name[1:]
+                names_labels.append((img_name, img_label))
+
+        image_metadata['names_labels'] = names_labels
+
+    else:
+
+        with open(Path(ROOT_DIR, dataset_dir, metadata_filename), 'r') as f:
+            instances = json.load(f)
+
+        image_metadata['instances'] = instances
 
     return image_metadata
 
