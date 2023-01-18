@@ -229,7 +229,7 @@ elif WANDB_PID == 'coco':
             'artifact_type': 'test_dataset'
         },
         'train2017': {
-            'rel_path': r'datasets/train/train017',
+            'rel_path': r'datasets/train/train2017',
             'metadata_filename': 'instances_train2017.json',  # need to deal with conversion to "instances" nomenclature
             'artifact_type': 'test_dataset'
         },
