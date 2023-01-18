@@ -226,10 +226,13 @@ elif WANDB_PID == 'coco':
         'val2017': {
             'rel_path': r'datasets/test/val2017',
             'metadata_filename': 'instances_val2017.json',  # need to deal with conversion to "instances" nomenclature
-            # 'instances_filename': 'instances_val2017.json',
             'artifact_type': 'test_dataset'
         },
-
+        'train2017': {
+            'rel_path': r'datasets/train/train017',
+            'metadata_filename': 'instances_train2017.json',  # need to deal with conversion to "instances" nomenclature
+            'artifact_type': 'test_dataset'
+        },
     }
 
     ORIGINAL_PRETRAINED_MODELS = {

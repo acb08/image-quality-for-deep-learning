@@ -69,4 +69,4 @@ if __name__ == '__main__':
 
     _description = 'logging coco val2017 dataset as W&B artifact. parent_dataset_id is ' \
                     'identical to dataset_id when logging initial datasets'
-    main('val2017', description=_description)
+    main('train2017', description=_description)
