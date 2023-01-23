@@ -1,28 +1,13 @@
-import run_model as run
+import src.d02_train.train_detection
+from src.d02_train import train_detection as run
 import json
 import torch
 import src.d00_utils.definitions as definitions
 from pathlib import Path
 
-
-def listify(torch_data_dict):
-
-    listed_data_dict = {}
-
-    for image_id, torch_image_data in torch_data_dict.items():
-
-        image_data = {}
-
-        for key, torch_data in torch_image_data.items():
-            if type(torch_data) == torch.Tensor:
-                list_data = torch_data.tolist()
-            else:
-                list_data = torch_data
-            image_data[key] = list_data
-
-        listed_data_dict[image_id] = image_data
-
-    return listed_data_dict
+import src.d03_test.eval_detection_model
+import src.d03_test.test_model
+from src.d00_utils.detection_functions import listify
 
 
 def main(cutoff=None, batch_size=2, output_dir='test_result', output_filename='result.json'):
@@ -37,9 +22,9 @@ def main(cutoff=None, batch_size=2, output_dir='test_result', output_filename='r
         device = 'cpu'
     model.to(device)
 
-    outputs, targets = run.evaluate(model=model,
-                                    data_loader=loader,
-                                    device=device)
+    outputs, targets = src.d02_train.train_detection.evaluate(model=model,
+                                                              data_loader=loader,
+                                                              device=device)
 
     outputs = listify(outputs)
     targets = listify(targets)

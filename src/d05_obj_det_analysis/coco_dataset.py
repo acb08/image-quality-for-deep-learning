@@ -2,7 +2,7 @@ from pathlib import Path
 import json
 # from src.d00_utils.classes import COCO
 # from src.d00_utils import definitions
-import run_model as run
+from src.d02_train import train_detection as run
 
 
 def load_instances(directory, filename):

@@ -69,6 +69,10 @@ def load_pretrained_model(model_id):
         model = Sat6DenseNet161()
         return model
 
+    if model_id == 'fasterrcnn_resnet50_fpn':
+        weights = models.detection.FasterRCNN_ResNet50_FPN_Weights.DEFAULT
+        return models.detection.fasterrcnn_resnet50_fpn(weights=weights)
+
 
 def load_log_original_model(config):
 
@@ -117,8 +121,10 @@ def load_log_original_model(config):
 
 if __name__ == '__main__':
 
+    config_name = 'fasterrcnn_rnm50_coco.yml'
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_name', default='artifact_log_config.yml', help='config filename to be used')
+    parser.add_argument('--config_name', default=config_name, help='config filename to be used')
     parser.add_argument('--config_dir',
                         default=Path(Path(__file__).parents[0], 'artifact_log_configs'),
                         help="configuration file directory")

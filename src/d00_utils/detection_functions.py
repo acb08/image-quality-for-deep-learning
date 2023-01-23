@@ -47,3 +47,24 @@ def background_annotation(image):
 
     return annotation
 
+
+def listify(torch_data_dict):
+
+    listed_data_dict = {}
+
+    for image_id, torch_image_data in torch_data_dict.items():
+
+        image_data = {}
+
+        for key, torch_data in torch_image_data.items():
+            if type(torch_data) == torch.Tensor:
+                list_data = torch_data.tolist()
+            else:
+                list_data = torch_data
+            image_data[key] = list_data
+
+        listed_data_dict[image_id] = image_data
+
+    return listed_data_dict
+
+

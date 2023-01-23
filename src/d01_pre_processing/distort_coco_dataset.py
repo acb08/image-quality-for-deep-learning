@@ -13,7 +13,7 @@ import argparse
 from pathlib import Path
 import scipy.io
 import wandb
-from src.d00_utils import coco_functions
+from src.d00_utils import detection_functions
 import random
 wandb.login()
 

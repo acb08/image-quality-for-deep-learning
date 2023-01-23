@@ -247,3 +247,10 @@ if __name__ == '__main__':
     # _predicts = _model(_images)
 
 
+def wandb_to_detection_dataset(dataset):
+
+    instances = dataset['instances']
+    image_dir = dataset['image_dir']
+    coco = COCO(image_dir, instances)
+
+    return coco

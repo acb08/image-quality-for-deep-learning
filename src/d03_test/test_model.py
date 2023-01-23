@@ -9,7 +9,6 @@ from src.d02_train.train import get_shard, run_shard, get_mean_accuracy, get_tra
 from pathlib import Path
 import argparse
 import json
-
 wandb.login()
 
 
@@ -72,7 +71,7 @@ def execute_test(model,
 
 def test_model(config):
 
-    with wandb.init(project=WANDB_PID, job_type='test_model', notes=config['description'], config=config) as run:
+    with wandb.init(project=WANDB_PID, job_type='test_detection_model', notes=config['description'], config=config) as run:
 
         # config = wandb.config
 
@@ -176,4 +175,5 @@ if __name__ == '__main__':
     run_config = get_config(args_passed)
 
     test_model(run_config)
+
 

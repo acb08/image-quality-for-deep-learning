@@ -238,8 +238,8 @@ elif WANDB_PID == 'coco':
     ORIGINAL_PRETRAINED_MODELS = {
         'fasterrcnn_resnet50_fpn': {
             'model_file_config': {
-                'model_rel_dir': None,
-                'model_filename': None,  # FasterRCNN_ResNet50_FPN_Weights
+                'model_rel_dir': '',  # in torchvsion.models.detection library
+                'model_filename': '',  # blank string to avoid throwing off path handling functions downstream
             },
             'arch': 'fasterrcnn',
             'artifact_type': 'model'

@@ -1,0 +1,22 @@
+---
+
+description: test of pre-trained model on val2017 dataset
+descriptive_tags: ['pre-trained-model', 'undistorted-dataset']
+
+test_dataset_id: 'val2017'
+test_dataset_artifact_alias: null
+
+model_artifact_id:
+model_artifact_alias: latest
+
+batch_size: 2
+num_workers: 0
+pin_memory: True
+
+status_interval: 1000  # images
+
+
+#rgb_flag: False
+#dataset_split_key: test  # used to get to correct level of dataset dict (to mirror 'train'/'val' splits)
+#last_distortion_type_flag: noise  # normally should be 'noise'
+#loss_func: CrossEntropyLoss

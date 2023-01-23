@@ -7,7 +7,7 @@ import torchvision.models as models
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
-from src.d00_utils import coco_functions
+from src.d00_utils import detection_functions
 # from src.d00_utils.coco_functions import xywh_to_xyxy
 
 
@@ -258,7 +258,7 @@ class COCO(Dataset):
         if cutoff is not None:
             self.images = self.images[:cutoff]
         self.annotations = self.instances['annotations']
-        self.image_ids = coco_functions.get_image_ids(self.images)
+        self.image_ids = detection_functions.get_image_ids(self.images)
         # self.mapped_annotations = self.map_boxes_labels()
         self.mapped_boxes_labels = self.map_boxes_labels()  # self.annotations, self.image_ids
         self.transform = transform
@@ -303,7 +303,7 @@ class COCO(Dataset):
         #     mapped_annotation = {'boxes': bboxes, 'labels': object_ids}
         #     mapped_filtered_annotations[image_id] = mapped_annotation
 
-        mapped_annotations = coco_functions.map_annotations(self.annotations, self.image_ids)
+        mapped_annotations = detection_functions.map_annotations(self.annotations, self.image_ids)
 
         for image_id, annotations in mapped_annotations.items():
 
@@ -313,7 +313,7 @@ class COCO(Dataset):
             for image_annotation in annotations:
 
                 x, y, width, height = image_annotation['bbox']
-                bbox = coco_functions.xywh_to_xyxy(x, y, width, height)
+                bbox = detection_functions.xywh_to_xyxy(x, y, width, height)
                 object_id = image_annotation['category_id']
                 bboxes.append(bbox)
                 object_ids.append(object_id)
@@ -351,7 +351,7 @@ class COCO(Dataset):
         image_annotations = self.mapped_boxes_labels[image_id]
 
         if len(image_annotations['boxes']) == 0:
-            image_annotations = coco_functions.background_annotation(image)
+            image_annotations = detection_functions.background_annotation(image)
 
         image_annotations['image_id'] = torch.tensor(image_id)
         image = self.transform(image)
