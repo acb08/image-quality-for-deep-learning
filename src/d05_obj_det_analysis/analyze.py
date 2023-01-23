@@ -2,8 +2,7 @@ import analysis_tools as tools
 import json
 from pathlib import Path
 import matplotlib.pyplot as plt
-import definitions as obj_defs
-import src.d00_utils.definitions as proj_defs
+import src.d00_utils.definitions as definitions
 from PIL import Image
 
 
@@ -15,7 +14,7 @@ def load_image(directory, image_id):
 
 def load_test_result(dir_name, filename):
 
-    with open(Path(proj_defs.ROOT_DIR, dir_name, filename), 'r') as f:
+    with open(Path(definitions.ROOT_DIR, dir_name, filename), 'r') as f:
         data = json.load(f)
 
     outputs = data['outputs']
@@ -24,18 +23,18 @@ def load_test_result(dir_name, filename):
     return outputs, targets
 
 
-def main(dir_name, filename, dataset_key, num_view_images=5, output_dir=None):
+def main(dir_name, filename, num_view_images=5, output_dir=None, image_directory=None):
 
     if output_dir is not None:
-        output_dir_abs = Path(proj_defs.ROOT_DIR, output_dir, )
+        output_dir_abs = Path(definitions.ROOT_DIR, output_dir, )
         if not output_dir_abs.is_dir():
             output_dir_abs.mkdir(parents=True, exist_ok=True)
     else:
         output_dir_abs = None
 
     outputs, targets = load_test_result(dir_name=dir_name, filename=filename)
-    image_directory = obj_defs.DATASET_PATHS[dataset_key]['image_dir']
-    image_directory = Path(proj_defs.ROOT_DIR, image_directory)
+
+    image_directory = Path(definitions.ROOT_DIR, image_directory)
     single_image_results = {}
 
     for i, (image_id, target) in enumerate(targets.items()):
@@ -73,10 +72,11 @@ def main(dir_name, filename, dataset_key, num_view_images=5, output_dir=None):
 
 if __name__ == '__main__':
 
-    _dir_name = 'test_result'
+    _dir_name = 'test_result_check2_4-img'
     _filename = 'result.json'
     _dataset_key = 'val2017'
-    _output_dir = 'analysis_demo'
+    _output_dir = 'analysis_demo_check2_4_img'
+    _image_directory = definitions.ORIGINAL_DATASETS[_dataset_key]['rel_path']
 
-    main(_dir_name, _filename, _dataset_key, output_dir=_output_dir)
+    main(_dir_name, _filename, output_dir=_output_dir, image_directory=_image_directory)
 

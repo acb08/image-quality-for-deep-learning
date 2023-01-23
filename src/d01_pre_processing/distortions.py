@@ -335,6 +335,15 @@ def b_mp90_pl(img):
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
 
 
+def b_test_coco(img):
+
+    kernel_size, sigma_min, sigma_max = 15, 0.5, 4
+    sigma_range = np.linspace(sigma_min, sigma_max, num=15, endpoint=True)
+    std = np.random.choice(sigma_range)
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'std', std
+
+
 def r_scan():
     """
     Initializes and returns a VariableImageResize instance designed to re-size SAT6 images
@@ -537,6 +546,10 @@ def r_mp90_pl():
     return transform
 
 
+coco_tag_to_image_distortions = {
+    'b_test_coco': b_test_coco
+}
+
 tag_to_image_distortion = {
 
     # _scan transforms intended for finding the point along each distortion axis at which performance of a
@@ -586,3 +599,5 @@ tag_to_image_distortion = {
     'n_mp_pl': n_mp_pl,
     'n_mp90_pl': n_mp90_pl
 }
+
+tag_to_image_distortion.update(coco_tag_to_image_distortions)

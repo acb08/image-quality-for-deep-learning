@@ -1,14 +1,14 @@
 from torchvision.models.detection import fasterrcnn_resnet50_fpn, FasterRCNN_ResNet50_FPN_Weights
-from torchvision import transforms
 import torch
 from pathlib import Path
 from torch.utils.data import Dataset
-from PIL import Image
 import torch.distributed as dist
 import math
 import sys
 import src.d00_utils.definitions as definitions
 from src.d00_utils import functions
+from src.d00_utils.classes import COCO
+
 
 # import numpy as np
 
@@ -16,91 +16,9 @@ from src.d00_utils import functions
 def _load_instances_placeholder(dataset_id='val2017'):
 
     original_dataset = functions.load_original_dataset(dataset_id)
-    #
-    #
-    # path_data = definitions.DATASET_PATHS[dataset_key]
-    # filename = path_data['instances']
-    #
-    # with open(Path(directory, filename), 'r') as file:
-    #     instances = json.load(file)
-
     instances = original_dataset['instances']
 
     return instances
-
-
-def xywh_to_xyxy(x, y, width, height):
-    x_min = x
-    x_max = x + width
-    y_min = y
-    y_max = y + height
-    new_bbox = [x_min, y_min, x_max, y_max]
-    return new_bbox
-
-
-class COCO(Dataset):
-
-    def __init__(self, image_directory, instances,
-                 transform=transforms.Compose([transforms.ToTensor()]),
-                 cutoff=None):
-        self.image_directory = Path(image_directory)
-        self.instances = instances
-        self.images = self.instances['images']
-        if cutoff is not None:
-            self.images = self.images[:cutoff]
-        self.annotations = self.instances['annotations']
-        self.image_ids = [x['id'] for x in self.images]
-        self.mapped_annotations = self.map_annotations()
-        self.transform = transform
-
-    def map_annotations(self):
-        mapped_annotations = {}
-        for image_id in self.image_ids:
-            image_annotations = [x for x in self.annotations if x['image_id'] == image_id]
-            bboxes = []
-            object_ids = []
-            for image_annotation in image_annotations:
-                x, y, width, height = image_annotation['bbox']
-                bbox = xywh_to_xyxy(x, y, width, height)
-                object_id = image_annotation['category_id']
-                bboxes.append(bbox)
-                object_ids.append(object_id)
-            bboxes = torch.tensor(bboxes, dtype=torch.float32)
-            object_ids = torch.tensor(object_ids, dtype=torch.int64)
-            mapped_annotations[image_id] = {'boxes': bboxes, 'labels': object_ids}
-        return mapped_annotations
-
-    def __len__(self):
-        return len(self.images)
-
-    @staticmethod
-    def background_annotation(image):
-        """
-        Returns an annotation labeling entire image as background
-        """
-        w, h = image.size
-        bbox = xywh_to_xyxy(0, 0, w, h)
-        object_id = 0
-        bboxes = [bbox]
-        object_ids = [object_id]
-        bboxes = torch.tensor(bboxes, dtype=torch.float32)
-        object_ids = torch.tensor(object_ids, dtype=torch.int64)
-        annotation = {'boxes': bboxes, 'labels': object_ids}
-        return annotation
-
-    def __getitem__(self, idx):
-        image_data = self.images[idx]
-        file_name = image_data['file_name']
-        image_id = image_data['id']
-        image = Image.open(Path(self.image_directory, file_name))
-        image_annotations = self.mapped_annotations[image_id]
-
-        if len(image_annotations['boxes']) == 0:
-            image_annotations = self.background_annotation(image)
-
-        image_annotations['image_id'] = torch.tensor(image_id)
-        image = self.transform(image)
-        return image, image_annotations
 
 
 def get_model():

@@ -170,6 +170,10 @@ def convert_predict_labels_str(predict_labels):
 
 def iou(b0, b1, verbose=False):
 
+    """
+    Calculates intersection of union for bounding boxes b0 and b1, where boxes are specified in xyxy format.
+    """
+
     h0, w0 = b0[2] - b0[0], b0[3] - b0[1]
     h1, w1 = b1[2] - b1[0], b1[3] - b1[1]
     assert min(h0, w0, h1, w1) >= 0
