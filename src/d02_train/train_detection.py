@@ -171,7 +171,7 @@ def validate(model, data_loader, device, print_freq=10, scaler=None):
 
 
 @torch.inference_mode()
-def evaluate(model, data_loader, device):
+def evaluate(model, data_loader, device, status_interval=500):
     n_threads = torch.get_num_threads()
     # FIXME remove this and make paste_masks_in_image run on the GPU
     torch.set_num_threads(1)
@@ -181,9 +181,11 @@ def evaluate(model, data_loader, device):
     all_targets = {}
     all_results = {}
 
-    for i, (images, targets) in enumerate(data_loader):
-        images = list(img.to(device) for img in images)
+    status_interval_crossing = 0
 
+    for i, (images, targets) in enumerate(data_loader):
+
+        images = list(img.to(device) for img in images)
         if torch.cuda.is_available():
             torch.cuda.synchronize()
 
@@ -197,6 +199,12 @@ def evaluate(model, data_loader, device):
         tgt = {target["image_id"].item(): target for target in targets}
         all_results.update(res)
         all_targets.update(tgt)
+
+        total_images = (i + 1) * len(images)
+        total_status_intervals = divmod(total_images, status_interval)[0]
+        if total_status_intervals > status_interval_crossing:
+            status_interval_crossing = total_status_intervals
+            print(f'{total_images} images complete')
 
     torch.set_num_threads(n_threads)
     return all_results, all_targets
@@ -250,7 +258,7 @@ if __name__ == '__main__':
 def wandb_to_detection_dataset(dataset):
 
     instances = dataset['instances']
-    image_dir = dataset['image_dir']
+    image_dir = Path(definitions.ROOT_DIR, dataset['dataset_rel_dir'])
     coco = COCO(image_dir, instances)
 
     return coco

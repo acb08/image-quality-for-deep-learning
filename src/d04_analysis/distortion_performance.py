@@ -171,7 +171,9 @@ def load_dataset_and_result(run, result_id,
 
     dataset_id = result[test_dataset_id_key]
     dataset_artifact_alias = result[test_dataset_alias_key]
-    dataset_id = f'{dataset_id}:{dataset_artifact_alias}'
+    if ':' not in dataset_id:
+        dataset_id = f'{dataset_id}:{dataset_artifact_alias}'
+    # dataset_id = f'{dataset_id}:{dataset_artifact_alias}'
     dataset_dir, dataset = load_wandb_data_artifact(run, dataset_id, dataset_filename)
 
     return dataset, result, dataset_id

@@ -44,20 +44,20 @@ def test_detection_model(config):
 
         # crop_flag = config['crop_flag']
         # last_distortion_type_flag = config['last_distortion_type_flag']
-        last_distortion_type_flag = dataset['last_distortion_type_flag']
-        dataset_split_key = config['dataset_split_key']
+        # last_distortion_type_flag = dataset['last_distortion_type_flag']
+        # dataset_split_key = config['dataset_split_key']
         # transform = get_transform(distortion_tags=[], crop=crop_flag)
         # loss_function = getattr(nn, config['loss_func'])()
         status_interval = config['status_interval']
         artifact_type = 'test_result'
 
-        if not dataset_split_key:
-            dataset_split_key = 'test'
+        # if not dataset_split_key:
+        #     dataset_split_key = 'test'
 
         dataset_rel_dir = dataset['dataset_rel_dir']
 
-        if last_distortion_type_flag:
-            dataset_rel_dir = Path(dataset_rel_dir, REL_PATHS[last_distortion_type_flag])
+        # if last_distortion_type_flag:
+        #     dataset_rel_dir = Path(dataset_rel_dir, REL_PATHS[last_distortion_type_flag])
         dataset_abs_dir = Path(ROOT_DIR, dataset_rel_dir)
 
         outputs, targets = evaluate(model=model,

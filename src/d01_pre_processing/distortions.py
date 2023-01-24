@@ -344,6 +344,13 @@ def b_test_coco(img):
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'std', std
 
 
+def no_op_coco(img):
+    """
+    Debugging function to check out data pipeline
+    """
+    return img, None, 'no_dist', 0
+
+
 def r_scan():
     """
     Initializes and returns a VariableImageResize instance designed to re-size SAT6 images
@@ -547,7 +554,8 @@ def r_mp90_pl():
 
 
 coco_tag_to_image_distortions = {
-    'b_test_coco': b_test_coco
+    'b_test_coco': b_test_coco,
+    'no_op_coco': no_op_coco
 }
 
 tag_to_image_distortion = {

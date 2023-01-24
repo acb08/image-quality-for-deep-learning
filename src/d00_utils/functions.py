@@ -187,8 +187,11 @@ def id_from_tags(artifact_type, tags, return_dir=False):
 def string_from_tags(tags):
 
     tag_string = ""
-    for tag in tags:
-        tag_string = tag_string + f"-{tag}"
+    for i, tag in enumerate(tags):
+        if i == 0:
+            tag_string = tag_string + f'{tag}'
+        else:
+            tag_string = tag_string + f'-{tag}'
 
     return tag_string
 
@@ -335,7 +338,8 @@ def load_model(model_path, arch):
         model = Sat6ResNet50()
     elif arch == 'densenet161_sat6':
         model = Sat6DenseNet161()
-
+    elif arch == 'fasterrcnn':
+        model = models.detection.fasterrcnn_resnet50_fpn()
     else:
         model = models.__dict__[arch](num_classes=NUM_CLASSES)
 

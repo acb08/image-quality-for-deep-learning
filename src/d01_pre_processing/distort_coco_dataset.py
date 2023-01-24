@@ -21,7 +21,7 @@ wandb.login()
 FRAGILE_ANNOTATION_KEYS = ['area', 'segmentation']
 
 
-def apply_distortions(image, distortion_functions, mapped_annotations, remove_fragile_annotations=True):
+def apply_distortions(image, distortion_functions, mapped_annotations, updated_image_id, remove_fragile_annotations=True):
     """
 
     :param image: image, PIL or numpy array
@@ -33,6 +33,8 @@ def apply_distortions(image, distortion_functions, mapped_annotations, remove_fr
       'id': int, (unique id for the annotation itself)
       'category_id': int, (label for the object in bounding box)
       'image_id': int, (links annotation to associated image, coco_annotation['image_id'] <---> coco_img_data['id'])},
+    :param updated_image_id: int, updated id for distorted image, which must replace the image_id in the original
+    mapped_annotations
     :param remove_fragile_annotations: bool, if True all annotation fields that may be affected by bounding box
     adjustment are removed
     :return:
@@ -46,18 +48,20 @@ def apply_distortions(image, distortion_functions, mapped_annotations, remove_fr
 
     for distortion_func in distortion_functions:
         image, bbox_adjustment_func, distortion_type, distortion_value = distortion_func(image)
-        if bbox_adjustment_func is not None:
-            updated_mapped_annotations = adjust_bboxes(mapped_annotations, bbox_adjustment_func,
-                                                       remove_fragile_annotations=remove_fragile_annotations)
+
+        updated_mapped_annotations = update_annotations(mapped_annotations,
+                                                        bbox_adjustment_func=bbox_adjustment_func,
+                                                        updated_image_id=updated_image_id,
+                                                        remove_fragile_annotations=remove_fragile_annotations)
         distortion_data[distortion_type] = distortion_value
 
-    if updated_mapped_annotations is None:
-        updated_mapped_annotations = copy.deepcopy(mapped_annotations)
+    # if updated_mapped_annotations is None:
+    #     updated_mapped_annotations = copy.deepcopy(mapped_annotations)
 
     return image, updated_mapped_annotations, distortion_data
 
 
-def adjust_bboxes(annotations, bbox_adjustment_func, remove_fragile_annotations=True):
+def update_annotations(annotations, bbox_adjustment_func, updated_image_id, remove_fragile_annotations=True):
 
     updated_annotations = []
 
@@ -65,8 +69,10 @@ def adjust_bboxes(annotations, bbox_adjustment_func, remove_fragile_annotations=
 
         updated_annotation = copy.deepcopy(annotation)
         bbox = annotation['bbox']
-        bbox = bbox_adjustment_func(bbox)
+        if bbox_adjustment_func is not None:
+            bbox = bbox_adjustment_func(bbox)
         updated_annotation['bbox'] = bbox
+        updated_annotation['image_id'] = updated_image_id
 
         if remove_fragile_annotations:
             for key in FRAGILE_ANNOTATION_KEYS:
@@ -114,8 +120,8 @@ def distort_coco(image_directory, instances, iterations, distortion_tags, output
     if cutoff is not None:
         parent_images = parent_images[:cutoff]
     parent_annotations = instances['annotations']
-    parent_image_ids = coco_functions.get_image_ids(parent_images)
-    mapped_parent_annotations = coco_functions.map_annotations(parent_annotations, parent_image_ids)
+    parent_image_ids = detection_functions.get_image_ids(parent_images)
+    mapped_parent_annotations = detection_functions.map_annotations(parent_annotations, parent_image_ids)
 
     distortion_functions = []
     for tag in distortion_tags:
@@ -135,17 +141,21 @@ def distort_coco(image_directory, instances, iterations, distortion_tags, output
             parent_annotations = mapped_parent_annotations[parent_image_id]
             parent_image = Image.open(Path(image_directory, parent_file_name))
 
-            image, updated_annotations, distortion_data = apply_distortions(image=parent_image,
-                                                                            distortion_functions=distortion_functions,
-                                                                            mapped_annotations=parent_annotations)
             image_data = copy.deepcopy(parent_img_data)
             new_id = new_image_id(new_image_ids)
             new_image_ids.add(new_id)
             file_name = str(new_id).rjust(12, '0') + '.png'
 
-            if type(image) != Image.Image:
+            image, updated_annotations, distortion_data = apply_distortions(image=parent_image,
+                                                                            distortion_functions=distortion_functions,
+                                                                            mapped_annotations=parent_annotations,
+                                                                            updated_image_id=new_id)
+
+            try:
+                image.save(Path(output_dir, file_name))
+            except AttributeError:
                 image = Image.fromarray(image)
-            image.save(Path(output_dir, file_name))
+                image.save(Path(output_dir, file_name))
 
             height, width = np.shape(image)[:2]
 
@@ -223,7 +233,7 @@ def distort_log_coco(config):
                                      cutoff=num_images)
 
         new_dataset = {
-            'dataset_dir': str(new_dataset_rel_dir),
+            'dataset_rel_dir': str(new_dataset_rel_dir),
             'instances': new_instances,
             'parent_dataset_id': parent_dataset_id,
             'description': description,
@@ -254,7 +264,7 @@ def distort_log_coco(config):
 
 if __name__ == '__main__':
 
-    _distortion_config_filename = 'coco_test.yml'
+    _distortion_config_filename = 'coco_val2017_mini.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=_distortion_config_filename, help='config filename to be used')
