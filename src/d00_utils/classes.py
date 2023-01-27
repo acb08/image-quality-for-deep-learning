@@ -8,6 +8,7 @@ from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
 from src.d00_utils import detection_functions
+from src.d00_utils import definitions
 # from src.d00_utils.coco_functions import xywh_to_xyxy
 
 
@@ -163,6 +164,47 @@ class VariableImageResize:
         return image
 
 
+class VariableCOCOResize:
+    """
+    Builds a transform bank to re-size images and provides a method for randomly selecting the size of the
+    transform to be used before being called.
+    """
+
+    def __init__(self, interpolation_mode='bilinear', antialias=False):
+        # self.resolution_fractions = resolution_fractions
+        self.interpolation_mode = interpolation_mode
+        self.antialias = antialias
+
+    def __call__(self, image, res_frac, dtype=np.uint8):
+
+        if not isinstance(image, Image.Image):
+            image = Image.fromarray(image)
+
+        min_dimension = min(np.shape(image))
+        new_size = int(res_frac * min_dimension)
+
+        if self.interpolation_mode == 'bilinear':
+            transform = transforms.Compose(
+                        [transforms.ToTensor(),
+                         transforms.Resize(new_size, interpolation=transforms.InterpolationMode.BILINEAR,
+                                           antialias=self.antialias),
+                         transforms.ToPILImage()]
+                    )
+        elif self.interpolation_mode == 'bicubic':
+            transform = transforms.Compose(
+                [transforms.ToTensor(),
+                 transforms.Resize(new_size, interpolation=transforms.InterpolationMode.BICUBIC,
+                                   antialias=self.antialias),
+                 transforms.ToPILImage()]
+            )
+        else:
+            raise Exception('Invalid interpolation_mode')
+
+        image = transform(image)
+        image = np.asarray(image, dtype=dtype)
+        return image
+
+
 class VariableResolution:
 
     """
@@ -209,138 +251,27 @@ class PseudoArgs:
         self.config_name = config_name
 
 
-# class COCO(Dataset):
-#
-#     def __init__(self, image_directory, instances):
-#         self.image_directory = Path(image_directory)
-#         self.instances = instances
-#         self.images = self.instances['images']
-#         self.annotations = self.instances['annotations']
-#         self.image_ids = coco_functions.get_image_ids(self.images)
-#         # self.mapped_annotations = self.map_boxes_labels()
-#         self.mapped_annotations = coco_functions.map_boxes_labels(self.annotations, self.image_ids)
-#
-#     # def map_boxes_labels(self):
-#     #     mapped_annotations = {}
-#     #     for image_id in self.image_ids:
-#     #         image_annotations = [x for x in self.annotations if x['image_id'] == image_id]
-#     #         bboxes = []
-#     #         object_ids = []
-#     #         for image_annotation in image_annotations:
-#     #             bbox = image_annotation['bbox']
-#     #             object_id = image_annotation['id']
-#     #             bboxes.append(bbox)
-#     #             object_ids.append(object_id)
-#     #         mapped_annotations[image_id] = {'boxes': bboxes, 'labels': object_ids}
-#     #     return mapped_annotations
-#
-#     def __len__(self):
-#         return len(self.images)
-#
-#     def __getitem__(self, idx):
-#
-#         image_data = self.images[idx]
-#         file_name = image_data['filename']
-#         image_id = image_data['id']
-#         image = Image.open(Path(self.image_directory, file_name))
-#
-#         image_annotations = self.mapped_annotations[image_id]
-#
-#         return image, image_annotations
 class COCO(Dataset):
 
     def __init__(self, image_directory, instances,
                  transform=transforms.Compose([transforms.ToTensor()]),
                  cutoff=None):
+
         self.image_directory = Path(image_directory)
+        if not self.image_directory.is_absolute():
+            self.image_directory = Path(definitions.ROOT_DIR, self.image_directory)
         self.instances = instances
         self.images = self.instances['images']
         if cutoff is not None:
             self.images = self.images[:cutoff]
         self.annotations = self.instances['annotations']
         self.image_ids = detection_functions.get_image_ids(self.images)
-        # self.mapped_annotations = self.map_boxes_labels()
-        self.mapped_boxes_labels = self.map_boxes_labels()  # self.annotations, self.image_ids
+        self.mapped_boxes_labels = detection_functions.map_boxes_labels(self.annotations, self.image_ids)
         self.transform = transform
 
-    # def map_boxes_labels(self):
-    #     mapped_annotations = {}
-    #     for image_id in self.image_ids:
-    #         image_annotations = [x for x in self.annotations if x['image_id'] == image_id]
-    #         bboxes = []
-    #         object_ids = []
-    #         for image_annotation in image_annotations:
-    #             x, y, width, height = image_annotation['bbox']
-    #             bbox = xywh_to_xyxy(x, y, width, height)
-    #             object_id = image_annotation['category_id']
-    #             bboxes.append(bbox)
-    #             object_ids.append(object_id)
-    #         bboxes = torch.tensor(bboxes, dtype=torch.float32)
-    #         object_ids = torch.tensor(object_ids, dtype=torch.int64)
-    #         mapped_annotations[image_id] = {'boxes': bboxes, 'labels': object_ids}
-    #     return mapped_annotations
-
-    def map_boxes_labels(self):
-
-        mapped_filtered_annotations = {}
-
-        # for image_id in image_ids:
-        #
-        #     filtered_image_annotations = [x for x in coco_annotations if x['image_id'] == image_id]
-        #     bboxes = []
-        #     object_ids = []
-        #
-        #     for image_annotation in filtered_image_annotations:
-        #         bbox = image_annotation['bbox']
-        #         object_id = image_annotation['id']
-        #         bboxes.append(bbox)
-        #         object_ids.append(object_id)
-        #
-        #     if to_tensor:
-        #         bboxes = torch.tensor(bboxes)
-        #         object_ids = torch.tensor(object_ids)
-        #
-        #     mapped_annotation = {'boxes': bboxes, 'labels': object_ids}
-        #     mapped_filtered_annotations[image_id] = mapped_annotation
-
-        mapped_annotations = detection_functions.map_annotations(self.annotations, self.image_ids)
-
-        for image_id, annotations in mapped_annotations.items():
-
-            bboxes = []
-            object_ids = []
-
-            for image_annotation in annotations:
-
-                x, y, width, height = image_annotation['bbox']
-                bbox = detection_functions.xywh_to_xyxy(x, y, width, height)
-                object_id = image_annotation['category_id']
-                bboxes.append(bbox)
-                object_ids.append(object_id)
-
-            bboxes = torch.tensor(bboxes)
-            object_ids = torch.tensor(object_ids)
-            mapped_filtered_annotations[image_id] = {'boxes': bboxes, 'labels': object_ids}
-
-        return mapped_filtered_annotations
-
     def __len__(self):
+        print('COCO.__len__() called')
         return len(self.images)
-
-    # @staticmethod
-    # def background_annotation(image):
-    #     """
-    #     Returns an annotation labeling entire image as background
-    #     """
-    #     w, h = image.size
-    #     bbox = xywh_to_xyxy(0, 0, w, h)
-    #     object_id = 0
-    #     bboxes = [bbox]
-    #     object_ids = [object_id]
-    #     bboxes = torch.tensor(bboxes, dtype=torch.float32)
-    #     object_ids = torch.tensor(object_ids, dtype=torch.int64)
-    #     annotation = {'boxes': bboxes, 'labels': object_ids}
-    #     return annotation
 
     def __getitem__(self, idx):
 

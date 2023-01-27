@@ -1,7 +1,9 @@
+import random
+from PIL import Image
 import numpy as np
 from torchvision import transforms
 from src.d00_utils.definitions import DISTORTION_RANGE, NATIVE_RESOLUTION, DISTORTION_RANGE_90
-from src.d00_utils.classes import VariableImageResize
+from src.d00_utils.classes import VariableImageResize, VariableCOCOResize
 
 RNG = np.random.default_rng()
 
@@ -16,6 +18,18 @@ def _add_zero_centered_channel_replicated_poisson_noise(img, lambda_poisson):
     img_out = np.clip(img_out, 0, 255)
 
     return img_out
+
+
+def _add_zero_centered_poisson_noise(img, lambda_poisson):
+
+    img = np.asarray(img)
+
+    noise = RNG.poisson(lambda_poisson, size=img.shape) - lambda_poisson
+    img_out = img + noise
+    img_out = np.clip(img_out, 0, 255)
+
+    return img_out
+
 
 
 def n_scan_v2(img):
@@ -341,7 +355,17 @@ def b_test_coco(img):
     sigma_range = np.linspace(sigma_min, sigma_max, num=15, endpoint=True)
     std = np.random.choice(sigma_range)
 
-    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'std', std
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'blur', std
+
+
+def b0_coco(img):
+
+    kernel_size, sigma_min, sigma_max = 15, 0.5, 4
+    sigma_range = np.linspace(sigma_min, sigma_max, num=7, endpoint=True)
+    std = np.random.choice(sigma_range)
+    # img = transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img)
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'blur', std
 
 
 def no_op_coco(img):
@@ -350,6 +374,30 @@ def no_op_coco(img):
     """
     return img, None, 'no_dist', 0
 
+
+def n0_coco(img):
+    """
+    Debugging function to check out data pipeline
+    """
+
+    sigma_min, sigma_max = 0, 30
+    step = 5
+    sigma_vals = step * np.arange(int(sigma_max / step) + 1)
+    sigma_poisson = np.random.choice(sigma_vals)
+    lambda_poisson = int(sigma_poisson ** 2)  # convert from np.int64 to regular int for json serialization
+    img_out = _add_zero_centered_poisson_noise(img, lambda_poisson)
+
+    img_out = np.asarray(img_out, dtype=np.uint8)
+
+    return img_out, None, 'noise', lambda_poisson
+
+
+def r0_coco(img):
+
+    res_frac = random.choice([0.4, 0.6, 0.7, 0.8, 0.9, 1])
+    img_out = VariableCOCOResize()(img, res_frac)
+
+    return img_out, 'need_bbox_func', 'res', res_frac
 
 def r_scan():
     """
@@ -553,11 +601,6 @@ def r_mp90_pl():
     return transform
 
 
-coco_tag_to_image_distortions = {
-    'b_test_coco': b_test_coco,
-    'no_op_coco': no_op_coco
-}
-
 tag_to_image_distortion = {
 
     # _scan transforms intended for finding the point along each distortion axis at which performance of a
@@ -608,4 +651,11 @@ tag_to_image_distortion = {
     'n_mp90_pl': n_mp90_pl
 }
 
-tag_to_image_distortion.update(coco_tag_to_image_distortions)
+
+coco_tag_to_image_distortions = {  # coco distortion functions return distortion_type_flag
+    'b_test_coco': b_test_coco,
+    'no_op_coco': no_op_coco,
+
+    'b0_coco': b0_coco,
+    'n0_coco': n0_coco,
+}

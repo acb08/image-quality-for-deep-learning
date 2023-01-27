@@ -1,4 +1,4 @@
 ---
 
-result_id: 0003rlt-fasterrcnn_resnet50_fpn-0012tst-val2017-mini-no_dist:v0
-identifier: fasterrcnn-val2017-mini
+result_id: 0007rlt-fasterrcnn_resnet50_fpn-0038tst-coco_blur_noise_basic-blur-noise:v0
+identifier: fasterrcnn-blur-noise-basic

@@ -5,7 +5,7 @@ from src.d00_utils.functions import load_wandb_data_artifact, id_from_tags, get_
     log_config, string_from_tags
 from src.d00_utils.definitions import REL_PATHS, DATATYPE_MAP, STANDARD_DATASET_FILENAME, WANDB_PID, ROOT_DIR, \
     NATIVE_RESOLUTION
-from src.d01_pre_processing.distortions import tag_to_image_distortion
+from src.d01_pre_processing.distortions import coco_tag_to_image_distortions
 from src.d00_utils.functions import load_data_vectors
 import numpy as np
 from PIL import Image
@@ -21,7 +21,8 @@ wandb.login()
 FRAGILE_ANNOTATION_KEYS = ['area', 'segmentation']
 
 
-def apply_distortions(image, distortion_functions, mapped_annotations, updated_image_id, remove_fragile_annotations=True):
+def apply_distortions(image, distortion_functions, mapped_annotations, updated_image_id,
+                      remove_fragile_annotations=True):
     """
 
     :param image: image, PIL or numpy array
@@ -47,13 +48,13 @@ def apply_distortions(image, distortion_functions, mapped_annotations, updated_i
     updated_mapped_annotations = None
 
     for distortion_func in distortion_functions:
-        image, bbox_adjustment_func, distortion_type, distortion_value = distortion_func(image)
+        image, bbox_adjustment_func, distortion_type_flag, distortion_value = distortion_func(image)
 
         updated_mapped_annotations = update_annotations(mapped_annotations,
                                                         bbox_adjustment_func=bbox_adjustment_func,
                                                         updated_image_id=updated_image_id,
                                                         remove_fragile_annotations=remove_fragile_annotations)
-        distortion_data[distortion_type] = distortion_value
+        distortion_data[distortion_type_flag] = distortion_value
 
     # if updated_mapped_annotations is None:
     #     updated_mapped_annotations = copy.deepcopy(mapped_annotations)
@@ -117,6 +118,10 @@ def distort_coco(image_directory, instances, iterations, distortion_tags, output
     """
 
     parent_images = instances['images']
+
+    if cutoff == 'all':
+        cutoff = None
+
     if cutoff is not None:
         parent_images = parent_images[:cutoff]
     parent_annotations = instances['annotations']
@@ -125,7 +130,7 @@ def distort_coco(image_directory, instances, iterations, distortion_tags, output
 
     distortion_functions = []
     for tag in distortion_tags:
-        distortion_function = tag_to_image_distortion[tag]
+        distortion_function = coco_tag_to_image_distortions[tag]
         distortion_functions.append(distortion_function)
 
     new_image_ids = set()
@@ -151,11 +156,13 @@ def distort_coco(image_directory, instances, iterations, distortion_tags, output
                                                                             mapped_annotations=parent_annotations,
                                                                             updated_image_id=new_id)
 
-            try:
-                image.save(Path(output_dir, file_name))
-            except AttributeError:
+            if type(image) != Image.Image:
                 image = Image.fromarray(image)
-                image.save(Path(output_dir, file_name))
+            # try:
+            #     image.save(Path(output_dir, file_name))
+            # except AttributeError:
+            #     image = Image.fromarray(image)
+            image.save(Path(output_dir, file_name))
 
             height, width = np.shape(image)[:2]
 
@@ -239,6 +246,7 @@ def distort_log_coco(config):
             'description': description,
             'artifact_filename': artifact_filename,
             'distortion_tags': distortion_tags,
+            'distortion_type_flags': distortion_type_flags,
             'distortion_iterations': iterations,
             'ROOT_DIR_at_run': ROOT_DIR
         }
@@ -264,7 +272,7 @@ def distort_log_coco(config):
 
 if __name__ == '__main__':
 
-    _distortion_config_filename = 'coco_val2017_mini.yml'
+    _distortion_config_filename = 'coco_basic.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=_distortion_config_filename, help='config filename to be used')

@@ -1,11 +1,11 @@
-import src.d02_train.train_detection
-from src.d02_train import train_detection as run
+import src.d02_train.train_obj_det
+from src.d02_train import train_obj_det as run
 import json
 import torch
 import src.d00_utils.definitions as definitions
 from pathlib import Path
 
-import src.d03_test.eval_detection_model
+import src.d03_test.test_obj_det
 import src.d03_test.test_model
 from src.d00_utils.detection_functions import listify
 

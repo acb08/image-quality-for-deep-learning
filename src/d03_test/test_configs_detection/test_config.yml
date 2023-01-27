@@ -1,9 +1,9 @@
 ---
 
-description: test of pre-trained model on val2017 dataset
-descriptive_tags: ['pre-trained-model', 'undistorted-dataset']
+description: test of pre-trained model on blurred, noised dataset
+descriptive_tags: ['pre-trained-model', 'blur-noise-dataset']
 
-test_dataset_id: '0012tst-val2017-mini-no_dist:v0'
+test_dataset_id: 0038tst-coco_blur_noise_basic-blur-noise:v0
 test_dataset_artifact_alias: latest
 
 model_artifact_id:  'fasterrcnn_resnet50_fpn'

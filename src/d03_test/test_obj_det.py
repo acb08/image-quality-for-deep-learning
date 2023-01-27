@@ -3,7 +3,7 @@ import argparse
 import json
 import wandb
 
-import src.d02_train.train_detection
+import src.d02_train.train_obj_det
 # import src.d02_train.train_detection
 from src.d00_utils.definitions import WANDB_PID, STANDARD_DATASET_FILENAME, ROOT_DIR, STANDARD_TEST_RESULT_FILENAME, \
     REL_PATHS
@@ -11,7 +11,7 @@ from src.d00_utils.functions import load_wandb_model_artifact, load_wandb_data_a
     log_config, construct_artifact_id
 from pathlib import Path
 import src.d00_utils.detection_functions as coco_functions
-from src.d02_train.train_detection import get_loader, evaluate
+from src.d02_train.train_obj_det import get_loader, evaluate
 
 
 def test_detection_model(config):
@@ -29,7 +29,7 @@ def test_detection_model(config):
             config['model_artifact_id'], artifact_alias=config['model_artifact_alias'])
 
         __, dataset = load_wandb_data_artifact(run, dataset_artifact_id, STANDARD_DATASET_FILENAME)
-        detection_dataset = src.d02_train.train_detection.wandb_to_detection_dataset(dataset)
+        detection_dataset = src.d02_train.train_obj_det.wandb_to_detection_dataset(dataset)
 
         model = load_wandb_model_artifact(run, model_artifact_id)
         torch.no_grad()

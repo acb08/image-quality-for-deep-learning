@@ -17,6 +17,32 @@ def map_annotations(coco_annotations, image_ids):
     return mapped_annotations
 
 
+def map_boxes_labels(annotations, image_ids):
+
+    mapped_filtered_annotations = {}
+
+    mapped_annotations = map_annotations(annotations, image_ids)
+
+    for image_id, annotations in mapped_annotations.items():
+
+        bboxes = []
+        object_ids = []
+
+        for image_annotation in annotations:
+
+            x, y, width, height = image_annotation['bbox']
+            bbox = xywh_to_xyxy(x, y, width, height)
+            object_id = image_annotation['category_id']
+            bboxes.append(bbox)
+            object_ids.append(object_id)
+
+        bboxes = torch.tensor(bboxes)
+        object_ids = torch.tensor(object_ids)
+        mapped_filtered_annotations[image_id] = {'boxes': bboxes, 'labels': object_ids}
+
+    return mapped_filtered_annotations
+
+
 def assign_new_image_id():
     pass
 

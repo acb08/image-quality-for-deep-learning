@@ -1,16 +1,16 @@
 ---
 
-description: another test of distort/test/analyze portion of pipeline
+description: another test of distort/test/analyze portion of pipeline with blur and noise distortions
 
 parent_dataset_id: val2017
 parent_artifact_alias: latest
 parent_artifact_filename: standard  # standard functions as a flag to use definitions.STANDARD_ARTIFACT_FILENAME
 
-num_images: 200
+num_images: all
 
-distortion_tags: ['b_test_coco']
-distortion_type_flags: ['blur']  # specifies distortion_tags associated distortion types
-iterations: 2
+distortion_tags: ['b0_coco', 'n0_coco']
+distortion_type_flags: ['blur', 'noise']  # specifies distortion_tags associated distortion types
+iterations: 1
 artifact_type: test_dataset
 dataset_split_key: test  # used to mirror 'train'/'val' split in data structure
 artifact_filename: standard
@@ -18,4 +18,4 @@ datatype_key: np.uint8
 
 image_shape: null
 
-name_string: coco_test
+name_string: coco_blur_noise_basic

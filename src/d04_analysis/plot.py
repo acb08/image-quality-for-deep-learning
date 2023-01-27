@@ -193,7 +193,8 @@ def plot_2d(x_values, y_values, accuracy_means, x_id, y_id,
             axis_labels=None,
             az_el_combinations='all',
             directory=None,
-            show_plots=False):
+            show_plots=False,
+            perf_metric='acc'):
 
     if not axis_labels or axis_labels == 'default':
         xlabel, ylabel, zlabel = AXIS_LABELS[x_id], AXIS_LABELS[y_id], AXIS_LABELS['z']
@@ -203,9 +204,9 @@ def plot_2d(x_values, y_values, accuracy_means, x_id, y_id,
         xlabel, ylabel = axis_labels[x_id], axis_labels[x_id]
 
     if result_identifier:
-        save_name = f'{x_id}_{y_id}_{str(result_identifier)}_acc.png'
+        save_name = f'{x_id}_{y_id}_{str(result_identifier)}_{perf_metric}.png'
     else:
-        save_name = f'{x_id}_{y_id}_acc.png'
+        save_name = f'{x_id}_{y_id}_{perf_metric}.png'
 
     if az_el_combinations == 'all':
 
@@ -669,7 +670,8 @@ def plot_1d_performance(x, performance_dict, distortion_id,
 
 def compare_2d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),
                      flatten_axes=(0, 1, 2), data_labels=('f0', 'f1'), result_id='3d_projection',
-                     az_el_combinations='default', directory=None, residual_plot=False, show_plots=False):
+                     az_el_combinations='default', directory=None, residual_plot=False, show_plots=False,
+                     perf_metric='acc'):
 
     for flatten_axis in flatten_axes:
         f0_2d, axis0, axis1 = flatten(f0, x_vals, y_vals, z_vals, flatten_axis=flatten_axis)
@@ -687,7 +689,8 @@ def compare_2d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blu
             result_id = f'{result_id}_rdl'
 
         plot_2d(axis0, axis1, views_2d, x_id=xlabel, y_id=ylabel, result_identifier=result_id,
-                az_el_combinations=az_el_combinations, directory=directory, show_plots=show_plots)
+                az_el_combinations=az_el_combinations, directory=directory, show_plots=show_plots,
+                perf_metric=perf_metric)
 
 
 def compare_1d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),
