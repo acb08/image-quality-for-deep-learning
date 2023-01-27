@@ -40,7 +40,7 @@ def test_detection_model(config):
         num_workers = config['num_workers']
         pin_memory = config['pin_memory']
         
-        loader = get_loader(detection_dataset, batch_size=batch_size)
+        loader = get_loader(detection_dataset, batch_size=batch_size, num_workers=num_workers)
 
         # crop_flag = config['crop_flag']
         # last_distortion_type_flag = config['last_distortion_type_flag']
@@ -108,7 +108,7 @@ def test_detection_model(config):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_name', default='test_config.yml', help='config filename to be used')
+    parser.add_argument('--config_name', default='rbn_checkout.yml', help='config filename to be used')
     parser.add_argument('--config_dir',
                         default=Path(Path(__file__).parents[0], 'test_configs_detection'),
                         help="configuration file directory")

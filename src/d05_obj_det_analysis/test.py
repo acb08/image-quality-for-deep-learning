@@ -1,3 +1,5 @@
+from torchvision.models.detection import fasterrcnn_resnet50_fpn, FasterRCNN_ResNet50_FPN_Weights
+
 import src.d02_train.train_obj_det
 from src.d02_train import train_obj_det as run
 import json
@@ -15,7 +17,7 @@ def main(cutoff=None, batch_size=2, output_dir='test_result', output_filename='r
     dataset = run.get_dataset(cutoff=cutoff)
     loader = run.get_loader(dataset=dataset,
                             batch_size=batch_size)
-    model = run.get_model()
+    model = get_model()
     if torch.cuda.is_available():
         device = 'cuda'
     else:
@@ -45,3 +47,7 @@ if __name__ == '__main__':
     _output_dir = f'test_result_check2_{_cutoff}-img'
     main(cutoff=_cutoff,
          output_dir=_output_dir)
+
+
+def get_model():
+    return fasterrcnn_resnet50_fpn(weights=FasterRCNN_ResNet50_FPN_Weights.DEFAULT)

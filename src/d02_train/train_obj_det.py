@@ -1,4 +1,3 @@
-from torchvision.models.detection import fasterrcnn_resnet50_fpn, FasterRCNN_ResNet50_FPN_Weights
 import torch
 from pathlib import Path
 from torch.utils.data import Dataset
@@ -21,13 +20,9 @@ def _load_instances_placeholder(dataset_id='val2017'):
     return instances
 
 
-def get_model():
-    return fasterrcnn_resnet50_fpn(weights=FasterRCNN_ResNet50_FPN_Weights.DEFAULT)
-
-
-def get_loader(dataset, batch_size=1):
+def get_loader(dataset, batch_size=1, num_workers=0):
     loader = torch.utils.data.DataLoader(
-        dataset, batch_size=batch_size, shuffle=False, collate_fn=collate_fn
+        dataset, batch_size=batch_size, shuffle=False, collate_fn=collate_fn, num_workers=num_workers
     )
     return loader
 
@@ -210,6 +205,16 @@ def evaluate(model, data_loader, device, status_interval=500):
     return all_results, all_targets
 
 
+def wandb_to_detection_dataset(dataset):
+
+    instances = dataset['instances']
+    image_dir = Path(definitions.ROOT_DIR, dataset['dataset_rel_dir'])
+    coco = COCO(image_dir, instances)
+
+    return coco
+
+
+
 if __name__ == '__main__':
 
     if torch.cuda.is_available():
@@ -223,31 +228,31 @@ if __name__ == '__main__':
     _loader = get_loader(_dataset, batch_size=1)
     _test_loader = get_loader(_test_dataset, batch_size=1)
 
-    _model = get_model()
-    _model.to(_device)
+    # _model = get_model()
+    # _model.to(_device)
 
-    _params = [p for p in _model.parameters() if p.requires_grad]
-    _optimizer = torch.optim.SGD(_params, lr=0.005,
-                                 momentum=0.9, weight_decay=0.0005)
-    _lr_scheduler = torch.optim.lr_scheduler.StepLR(_optimizer,
-                                                    step_size=3,
-                                                    gamma=0.1)
-
-    _epochs = 1
-    _outer_results = []
-
-    for _epoch in range(_epochs):
-        # _train_loss_dict, _mean_train_loss = train_one_epoch(model=_model,
-        #                                                      optimizer=_optimizer,
-        #                                                      data_loader=_loader,
-        #                                                      device=_device,
-        #                                                      epoch=_epoch,
-        #                                                      print_freq=10,
-        #                                                      scaler=None)
-
-        _all_outputs, _all_targets = evaluate(model=_model,
-                                              data_loader=_test_loader,
-                                              device=_device)
+    # _params = [p for p in _model.parameters() if p.requires_grad]
+    # _optimizer = torch.optim.SGD(_params, lr=0.005,
+    #                              momentum=0.9, weight_decay=0.0005)
+    # _lr_scheduler = torch.optim.lr_scheduler.StepLR(_optimizer,
+    #                                                 step_size=3,
+    #                                                 gamma=0.1)
+    #
+    # _epochs = 1
+    # _outer_results = []
+    #
+    # for _epoch in range(_epochs):
+    #     # _train_loss_dict, _mean_train_loss = train_one_epoch(model=_model,
+    #     #                                                      optimizer=_optimizer,
+    #     #                                                      data_loader=_loader,
+    #     #                                                      device=_device,
+    #     #                                                      epoch=_epoch,
+    #     #                                                      print_freq=10,
+    #     #                                                      scaler=None)
+    #
+    #     _all_outputs, _all_targets = evaluate(model=_model,
+    #                                           data_loader=_test_loader,
+    #                                           device=_device)
 
 
     # _model.eval()
@@ -255,10 +260,3 @@ if __name__ == '__main__':
     # _predicts = _model(_images)
 
 
-def wandb_to_detection_dataset(dataset):
-
-    instances = dataset['instances']
-    image_dir = Path(definitions.ROOT_DIR, dataset['dataset_rel_dir'])
-    coco = COCO(image_dir, instances)
-
-    return coco

@@ -7,9 +7,9 @@ from PIL import Image
 import numpy as np
 
 
-def load_image(directory, image_id):
+def load_image(directory, image_id, extension='png'):
     padded_image_id = str(image_id).rjust(12, '0')
-    img = Image.open(Path(directory, f'{padded_image_id}.jpg'))
+    img = Image.open(Path(directory, f'{padded_image_id}.{extension}'))
     return img
 
 
@@ -144,11 +144,11 @@ def main(dir_name, filename, num_view_images=5, output_dir=None, image_directory
 
 if __name__ == '__main__':
 
-    _dir_name = 'test_result'
-    _filename = 'result.json'
-    _dataset_key = 'val2017'
-    _output_dir = 'analysis_demo_refactor'
-    _image_directory = definitions.ORIGINAL_DATASETS[_dataset_key]['rel_path']
+    _dir_name = 'test_results/0008rlt-fasterrcnn_resnet50_fpn-0041tst-coco_rbn_checkout-res-blur-noise'
+    _filename = 'test_result.json'
+    _dataset_key = '0041tst-coco_rbn_checkout'
+    _output_dir = 'quick_look_rbn_initial_checkout'
+    _image_directory = Path(definitions.ROOT_DIR, 'datasets/test', _dataset_key)
 
-    main(_dir_name, _filename, output_dir=_output_dir, image_directory=_image_directory)
+    main(_dir_name, _filename, num_view_images=64, output_dir=_output_dir, image_directory=_image_directory)
 

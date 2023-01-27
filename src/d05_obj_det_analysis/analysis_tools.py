@@ -514,7 +514,7 @@ def pad_predict_boxes(predict_boxes, pad_length):
 
     predict_boxes = list(predict_boxes)
     pad_box = np.array([None, None, None, None])
-    predict_boxes.extend(pad_length * pad_box)
+    predict_boxes.extend(pad_length * [pad_box])
 
     return np.asarray(predict_boxes)
 
