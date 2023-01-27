@@ -370,7 +370,7 @@ def b0_coco(img):
 def b_scan_coco(img):
 
     sigma_min, sigma_max = 0.5, 5
-    sigma_range = np.linspace(sigma_min, sigma_max, num=7, endpoint=True)
+    sigma_range = np.linspace(sigma_min, sigma_max, num=11, endpoint=True)
     std = np.random.choice(sigma_range)
 
     kernel_size = int(5 * std)
@@ -697,4 +697,8 @@ coco_tag_to_image_distortions = {  # coco distortion functions return distortion
     'b0_coco': b0_coco,
     'n0_coco': n0_coco,
     'r0_coco': r0_coco,
+
+    'r_scan_coco': r_scan_coco,
+    'b_scan_coco': b_scan_coco,
+    'n_scan_coco': n_scan_coco,
 }
