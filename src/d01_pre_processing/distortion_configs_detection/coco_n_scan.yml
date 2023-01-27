@@ -1,6 +1,6 @@
 ---
 
-description: resolution scan dataset
+description: noise scan dataset
 
 parent_dataset_id: val2017
 parent_artifact_alias: latest
@@ -8,8 +8,8 @@ parent_artifact_filename: standard  # standard functions as a flag to use defini
 
 num_images: all
 
-distortion_tags: ['b_scan_coco']
-distortion_type_flags: ['res']  # specifies distortion_tags associated distortion types
+distortion_tags: ['n_scan_coco']
+distortion_type_flags: ['noise']  # specifies distortion_tags associated distortion types
 iterations: 1
 artifact_type: test_dataset
 dataset_split_key: test  # used to mirror 'train'/'val' split in data structure
@@ -18,4 +18,4 @@ datatype_key: np.uint8
 
 image_shape: null
 
-name_string: coco_r_scan
+name_string: coco_n_scan
