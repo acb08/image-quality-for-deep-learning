@@ -180,7 +180,7 @@ class VariableCOCOResize:
         if not isinstance(image, Image.Image):
             image = Image.fromarray(image)
 
-        min_dimension = min(np.shape(image))
+        min_dimension = min(np.shape(image)[:2])
         new_size = int(res_frac * min_dimension)
 
         if self.interpolation_mode == 'bilinear':
@@ -201,7 +201,7 @@ class VariableCOCOResize:
             raise Exception('Invalid interpolation_mode')
 
         image = transform(image)
-        image = np.asarray(image, dtype=dtype)
+
         return image
 
 

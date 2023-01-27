@@ -21,6 +21,15 @@ wandb.login()
 FRAGILE_ANNOTATION_KEYS = ['area', 'segmentation']
 
 
+def resize_bbox(res_frac, bbox):
+
+    bbox = np.asarray(bbox)
+    bbox = res_frac * bbox
+    bbox = list(bbox)
+
+    return bbox
+
+
 def apply_distortions(image, distortion_functions, mapped_annotations, updated_image_id,
                       remove_fragile_annotations=True):
     """
@@ -48,31 +57,40 @@ def apply_distortions(image, distortion_functions, mapped_annotations, updated_i
     updated_mapped_annotations = None
 
     for distortion_func in distortion_functions:
-        image, bbox_adjustment_func, distortion_type_flag, distortion_value = distortion_func(image)
 
-        updated_mapped_annotations = update_annotations(mapped_annotations,
-                                                        bbox_adjustment_func=bbox_adjustment_func,
-                                                        updated_image_id=updated_image_id,
-                                                        remove_fragile_annotations=remove_fragile_annotations)
+        image, __, distortion_type_flag, distortion_value = distortion_func(image)
+
+        if distortion_type_flag == 'res':
+            res = distortion_value
+            updated_mapped_annotations = update_annotations(mapped_annotations,
+                                                            res=res,
+                                                            updated_image_id=updated_image_id,
+                                                            remove_fragile_annotations=remove_fragile_annotations)
+
         distortion_data[distortion_type_flag] = distortion_value
 
-    # if updated_mapped_annotations is None:
-    #     updated_mapped_annotations = copy.deepcopy(mapped_annotations)
+    if updated_mapped_annotations is None:  # inserts updated image id, leaves bounding boxes unchanged when res == 1
+        updated_mapped_annotations = update_annotations(mapped_annotations,
+                                                        res=1,
+                                                        updated_image_id=updated_image_id,
+                                                        remove_fragile_annotations=remove_fragile_annotations)
 
     return image, updated_mapped_annotations, distortion_data
 
 
-def update_annotations(annotations, bbox_adjustment_func, updated_image_id, remove_fragile_annotations=True):
+def update_annotations(annotations, res, updated_image_id, remove_fragile_annotations=True):
 
     updated_annotations = []
 
     for annotation in annotations:
 
         updated_annotation = copy.deepcopy(annotation)
-        bbox = annotation['bbox']
-        if bbox_adjustment_func is not None:
-            bbox = bbox_adjustment_func(bbox)
-        updated_annotation['bbox'] = bbox
+
+        if res != 1:
+            bbox = annotation['bbox']
+            bbox = resize_bbox(res, bbox)
+            updated_annotation['bbox'] = bbox
+
         updated_annotation['image_id'] = updated_image_id
 
         if remove_fragile_annotations:
@@ -158,10 +176,6 @@ def distort_coco(image_directory, instances, iterations, distortion_tags, output
 
             if type(image) != Image.Image:
                 image = Image.fromarray(image)
-            # try:
-            #     image.save(Path(output_dir, file_name))
-            # except AttributeError:
-            #     image = Image.fromarray(image)
             image.save(Path(output_dir, file_name))
 
             height, width = np.shape(image)[:2]
@@ -272,7 +286,7 @@ def distort_log_coco(config):
 
 if __name__ == '__main__':
 
-    _distortion_config_filename = 'coco_basic.yml'
+    _distortion_config_filename = 'coco_rbn_initial.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=_distortion_config_filename, help='config filename to be used')
@@ -283,3 +297,6 @@ if __name__ == '__main__':
     run_config = get_config(args_passed)
 
     distort_log_coco(run_config)
+
+
+

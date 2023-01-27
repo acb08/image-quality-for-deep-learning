@@ -31,7 +31,6 @@ def _add_zero_centered_poisson_noise(img, lambda_poisson):
     return img_out
 
 
-
 def n_scan_v2(img):
     """
     Adds zero-centered, channel-replicated Poisson noise up to 25 DN.
@@ -397,7 +396,8 @@ def r0_coco(img):
     res_frac = random.choice([0.4, 0.6, 0.7, 0.8, 0.9, 1])
     img_out = VariableCOCOResize()(img, res_frac)
 
-    return img_out, 'need_bbox_func', 'res', res_frac
+    return img_out, None, 'res', res_frac
+
 
 def r_scan():
     """
@@ -658,4 +658,5 @@ coco_tag_to_image_distortions = {  # coco distortion functions return distortion
 
     'b0_coco': b0_coco,
     'n0_coco': n0_coco,
+    'r0_coco': r0_coco,
 }
