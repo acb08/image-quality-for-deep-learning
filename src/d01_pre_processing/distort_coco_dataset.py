@@ -291,7 +291,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=_distortion_config_filename, help='config filename to be used')
     parser.add_argument('--config_dir',
-                        default=Path(Path(__file__).parents[0], 'distortion_configs'),
+                        default=Path(Path(__file__).parents[0], 'distortion_configs_detection'),
                         help="configuration file directory")
     args_passed = parser.parse_args()
     run_config = get_config(args_passed)

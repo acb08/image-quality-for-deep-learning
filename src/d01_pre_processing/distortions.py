@@ -367,6 +367,19 @@ def b0_coco(img):
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'blur', std
 
 
+def b_scan_coco(img):
+
+    sigma_min, sigma_max = 0.5, 5
+    sigma_range = np.linspace(sigma_min, sigma_max, num=7, endpoint=True)
+    std = np.random.choice(sigma_range)
+
+    kernel_size = int(5 * std)
+    if kernel_size % 2 == 0:
+        kernel_size += 1
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'blur', std
+
+
 def no_op_coco(img):
     """
     Debugging function to check out data pipeline
@@ -391,9 +404,34 @@ def n0_coco(img):
     return img_out, None, 'noise', lambda_poisson
 
 
+def n_scan_coco(img):
+    """
+    Debugging function to check out data pipeline
+    """
+
+    sigma_min, sigma_max = 0, 50
+    step = 5
+    sigma_vals = step * np.arange(int(sigma_max / step) + 1)
+    sigma_poisson = np.random.choice(sigma_vals)
+    lambda_poisson = int(sigma_poisson ** 2)  # convert from np.int64 to regular int for json serialization
+    img_out = _add_zero_centered_poisson_noise(img, lambda_poisson)
+
+    img_out = np.asarray(img_out, dtype=np.uint8)
+
+    return img_out, None, 'noise', lambda_poisson
+
+
 def r0_coco(img):
 
     res_frac = random.choice([0.4, 0.6, 0.7, 0.8, 0.9, 1])
+    img_out = VariableCOCOResize()(img, res_frac)
+
+    return img_out, None, 'res', res_frac
+
+
+def r_scan_coco(img):
+
+    res_frac = random.choice([0.2, 0.3, 0.4, 0.6, 0.7, 0.8, 0.9, 1])
     img_out = VariableCOCOResize()(img, res_frac)
 
     return img_out, None, 'res', res_frac
