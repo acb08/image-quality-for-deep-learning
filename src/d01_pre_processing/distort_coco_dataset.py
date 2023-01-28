@@ -15,8 +15,8 @@ import scipy.io
 import wandb
 from src.d00_utils import detection_functions
 import random
+import time
 wandb.login()
-
 
 FRAGILE_ANNOTATION_KEYS = ['area', 'segmentation']
 
@@ -286,6 +286,8 @@ def distort_log_coco(config):
 
 if __name__ == '__main__':
 
+    _t0 = time.time()
+
     _distortion_config_filename = 'coco_rbn_initial.yml'
 
     parser = argparse.ArgumentParser()
@@ -298,5 +300,6 @@ if __name__ == '__main__':
 
     distort_log_coco(run_config)
 
-
+    _t_f = time.time()
+    print(f'complete, total time = {_t0 - _t_f}')
 
