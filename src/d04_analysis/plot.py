@@ -85,7 +85,8 @@ AXIS_LABELS = {
     'z': 'accuracy',
     'y': 'accuracy',
     'mpc': 'mean per class accuracy',
-    'effective_entropy': 'effective entropy (bits)'
+    'effective_entropy': 'effective entropy (bits)',
+    'mAP': 'mAP'
 }
 
 SCATTER_PLOT_MARKERS = ['.', 'v', '2', 'P', 's', 'd', 'X', 'h']
@@ -617,7 +618,7 @@ def plot_1d_performance(x, performance_dict, distortion_id,
                         ax=None,
                         axis_fontsize=AXIS_FONTSIZE,
                         legend_fontsize=LEGEND_FONTSIZE,
-                        ):
+                        close_plot_here=False):
 
     if xlabel == 'default':
         xlabel = AXIS_LABELS[distortion_id]
@@ -636,9 +637,7 @@ def plot_1d_performance(x, performance_dict, distortion_id,
 
     if ax is None:
         fig, ax = plt.subplots(nrows=1, ncols=1)
-        close_plot_here = False
     else:
-        close_plot_here = True
         if xlabel == 'resolution':
             legend_loc = 'lower right'
         elif xlabel[-4:] == 'blur':
@@ -737,6 +736,64 @@ def compare_1d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blu
 
         if directory:
             save_name = result_id
+            for distortion_id in distortion_ids:
+                save_name = f'{save_name}_{distortion_id}'
+            save_name = save_name + '.png'
+            fig.savefig(Path(directory, save_name))
+
+    if show_plots:
+        plt.show()
+
+
+def plot_1d_from_3d(perf_3d, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),
+                    result_identifier='3d_1d_projection',
+                    flatten_axis_combinations=((1, 2), (0, 2), (0, 1)),
+                    directory=None,
+                    show_plots=True, plot_together=True,
+                    name_string=None,
+                    ylabel='mAP',
+                    legend=False):
+
+    num_combinations = len(flatten_axis_combinations)
+
+    if plot_together:
+        fig_width = 4 * num_combinations
+        fig, axes = plt.subplots(nrows=1, ncols=num_combinations, sharey=True, figsize=(fig_width, 3.4))
+        save_dir_individual = None
+        show_plots_individual = False
+    else:
+        axes = num_combinations * [None]
+        fig = None
+        save_dir_individual = directory
+        show_plots_individual = show_plots
+
+    for i, flatten_axes in enumerate(flatten_axis_combinations):
+        f0_1d, axis = flatten_2x(perf_3d, x_vals, y_vals, z_vals, flatten_axes=flatten_axes)
+        axis_label = keep_1_of_3(a=distortion_ids, discard_indices=flatten_axes)
+        axis_check = keep_1_of_3(a=x_vals, b=y_vals, c=z_vals, discard_indices=flatten_axes)
+        assert np.array_equal(axis, axis_check)
+
+        if name_string is not None:
+            performance_key = name_string
+        else:
+            performance_key = 'performance'
+        performance_dict = {performance_key: f0_1d}
+
+        plot_1d_performance(x=axis,
+                            performance_dict=performance_dict,
+                            distortion_id=axis_label,
+                            result_identifier=result_identifier,
+                            ylabel=ylabel,
+                            directory=save_dir_individual,
+                            show_plots=show_plots_individual,
+                            ax=axes[i],
+                            legend=legend)
+
+    if plot_together:
+        fig.tight_layout()
+
+        if directory:
+            save_name = result_identifier
             for distortion_id in distortion_ids:
                 save_name = f'{save_name}_{distortion_id}'
             save_name = save_name + '.png'
@@ -880,5 +937,5 @@ if __name__ == '__main__':
     _z = np.copy(_x)
 
     _xx, _yy, _zz = np.meshgrid(_x, _y, _z)
-    f = np.sqrt(_xx**2 + _yy + _zz)
-    plot_isosurf(f, _x, _y, _z, levels=[0.3, 0.5, 0.7], az_el_combinations='iso_default')
+    _f = np.sqrt(_xx**2 + _yy + _zz)
+    plot_isosurf(_f, _x, _y, _z, levels=[0.3, 0.5, 0.7], az_el_combinations='iso_default')

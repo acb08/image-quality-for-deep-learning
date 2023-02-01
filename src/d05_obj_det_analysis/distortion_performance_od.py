@@ -12,12 +12,13 @@ from src.d04_analysis import plot
 
 class ModelDistortionPerformanceResultOD:
 
-    def __init__(self, dataset, result, convert_to_std, identifier=None, load_local=False,
+    def __init__(self, dataset, result, convert_to_std, result_id, identifier=None, load_local=False,
                  manual_distortion_type_flags=None):
 
         self.result = result
         self.dataset = dataset
         self.convert_to_std = convert_to_std
+        self.result_id = result_id
         self.load_local = load_local
         self.manual_distortion_type_flags = manual_distortion_type_flags
         self.identifier = identifier
@@ -74,6 +75,15 @@ class ModelDistortionPerformanceResultOD:
 
     def __len__(self):
         return len(self.image_ids)
+
+    def __str__(self):
+        if self.identifier:
+            return str(self.identifier)
+        else:
+            return self.__repr__()
+
+    def __repr__(self):
+        return self.result_id
 
     def build_distortion_vectors(self):
         """
@@ -187,6 +197,7 @@ def get_obj_det_distortion_perf_result(result_id=None, identifier=None, config=N
         distortion_performance_result = ModelDistortionPerformanceResultOD(dataset=dataset,
                                                                            result=result,
                                                                            convert_to_std=True,
+                                                                           result_id=result_id,
                                                                            identifier=identifier,
                                                                            manual_distortion_type_flags=distortion_ids)
 
@@ -195,13 +206,28 @@ def get_obj_det_distortion_perf_result(result_id=None, identifier=None, config=N
 
 if __name__ == '__main__':
 
+    config_name = 'analyze_r_scan.yml'
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_name', default='distortion_analysis_config.yml', help='config filename to be used')
+    parser.add_argument('--config_name', default=config_name, help='config filename to be used')
     parser.add_argument('--config_dir',
                         default=Path(Path(__file__).parents[0], 'distortion_analysis_configs'),
                         help="configuration file directory")
     args_passed = parser.parse_args()
     run_config = get_config(args_passed)
+
+    if 'flatten_axes' in run_config.keys():
+        _flatten_axes = run_config['flatten_axes']
+        _flatten_axes = tuple(_flatten_axes)
+    else:
+        _flatten_axes = (0, 1, 2)
+
+    if 'flatten_axis_combinations' in run_config.keys():
+        _flatten_axis_combinations = run_config['flatten_axis_combinations']
+        _flatten_axis_combinations = [tuple(combination) for combination in _flatten_axis_combinations]
+        _flatten_axis_combinations = tuple(_flatten_axis_combinations)
+    else:
+        _flatten_axis_combinations = ((1, 2), (0, 2), (0, 1))
 
     _distortion_performance_result, _output_dir = get_obj_det_distortion_perf_result(config=run_config)
 
@@ -215,8 +241,21 @@ if __name__ == '__main__':
     _res_vals, _blur_vals, _noise_vals, _map3d, _parameter_array, _perf_array, _full_extract = (
         _distortion_performance_result.get_3d_distortion_perf_props(distortion_ids=('res', 'blur', 'noise')))
 
-    plot.compare_2d_views(f0=_map3d, f1=_map3d,
-                          x_vals=_res_vals, y_vals=_blur_vals, z_vals=_noise_vals,
-                          distortion_ids=('res', 'blur', 'noise'), flatten_axes=(0, ),
-                          directory=_output_dir,
-                          perf_metric='mAP')
+    # plot.compare_2d_views(f0=_map3d, f1=_map3d,
+    #                       x_vals=_res_vals, y_vals=_blur_vals, z_vals=_noise_vals,
+    #                       distortion_ids=('res', 'blur', 'noise'), flatten_axes=_flatten_axes,
+    #                       directory=_output_dir,
+    #                       perf_metric='mAP')
+
+    plot.plot_1d_from_3d(perf_3d=_map3d,
+                         x_vals=_res_vals,
+                         y_vals=_blur_vals,
+                         z_vals=_noise_vals,
+                         distortion_ids=('res', 'blur', 'noise'),
+                         result_identifier=str(_distortion_performance_result),
+                         flatten_axis_combinations=_flatten_axis_combinations,
+                         directory=_output_dir,
+                         show_plots=True,
+                         plot_together=False,
+                         ylabel='mAP',
+                         legend=False)
