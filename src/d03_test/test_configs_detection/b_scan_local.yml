@@ -1,9 +1,9 @@
 ---
 
-description: test of pre-trained model on first substantial world res/blur/noise dataset
-descriptive_tags: ['pre-trained-model', 'res-blur-noise-dataset']
+description: test of pre-trained model on blur scan dataset, run on local machine because of sporc env issues
+descriptive_tags: ['pre-trained-model', 'blur-scan-dataset']
 
-test_dataset_id: 0045tst-coco_rbn_checkout-res-blur-noise:v0
+test_dataset_id: 0043tst-coco_b_scan-blur:v0
 test_dataset_artifact_alias: latest
 
 model_artifact_id:  'fasterrcnn_resnet50_fpn'
@@ -13,7 +13,7 @@ batch_size: 2
 num_workers: 0
 pin_memory: True
 
-status_interval: 1000  # images
+status_interval: 500  # images
 
 
 #rgb_flag: False

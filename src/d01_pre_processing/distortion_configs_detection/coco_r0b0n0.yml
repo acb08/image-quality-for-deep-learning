@@ -1,6 +1,6 @@
 ---
 
-description: initial pipeline checkout with enough images to get
+description: initial pipeline checkout with enough images to see distortion trends in 3d
 parent_dataset_id: val2017
 parent_artifact_alias: latest
 parent_artifact_filename: standard  # standard functions as a flag to use definitions.STANDARD_ARTIFACT_FILENAME

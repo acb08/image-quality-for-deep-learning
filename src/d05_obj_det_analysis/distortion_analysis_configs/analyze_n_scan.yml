@@ -1,0 +1,6 @@
+---
+
+result_id: 0015rlt-fasterrcnn_resnet50_fpn-0044tst-coco_n_scan-noise:v0
+identifier: fasterrcnn-n-scan
+
+flatten_axis_combinations: [[0, 1]]

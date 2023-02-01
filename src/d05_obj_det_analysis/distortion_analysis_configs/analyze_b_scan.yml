@@ -1,0 +1,6 @@
+---
+
+result_id: 0014rlt-fasterrcnn_resnet50_fpn-0043tst-coco_b_scan-blur:v0
+identifier: fasterrcnn-b-scan
+
+flatten_axis_combinations: [[0, 2]]
