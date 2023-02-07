@@ -618,7 +618,9 @@ def plot_1d_performance(x, performance_dict, distortion_id,
                         ax=None,
                         axis_fontsize=AXIS_FONTSIZE,
                         legend_fontsize=LEGEND_FONTSIZE,
-                        close_plot_here=False):
+                        close_plot_here=False,
+                        y_lim_bottom=None,
+                        y_lim_top=None):
 
     if xlabel == 'default':
         xlabel = AXIS_LABELS[distortion_id]
@@ -652,6 +654,8 @@ def plot_1d_performance(x, performance_dict, distortion_id,
         ax.scatter(x, performance_dict[key], label=key, c=COLORS[i], marker=SCATTER_PLOT_MARKERS[i])
     ax.set_xlabel(xlabel, fontsize=axis_fontsize)
     ax.set_ylabel(ylabel, fontsize=axis_fontsize)
+    if y_lim_bottom is not None or y_lim_top is not None:
+        ax.set_ylim(bottom=y_lim_bottom, top=y_lim_top)
     ax.label_outer()
 
     if legend:
@@ -752,7 +756,9 @@ def plot_1d_from_3d(perf_3d, x_vals, y_vals, z_vals, distortion_ids=('res', 'blu
                     show_plots=True, plot_together=True,
                     name_string=None,
                     ylabel='mAP',
-                    legend=False):
+                    legend=False,
+                    y_lim_bottom=None,
+                    y_lim_top=None):
 
     num_combinations = len(flatten_axis_combinations)
 
@@ -787,7 +793,10 @@ def plot_1d_from_3d(perf_3d, x_vals, y_vals, z_vals, distortion_ids=('res', 'blu
                             directory=save_dir_individual,
                             show_plots=show_plots_individual,
                             ax=axes[i],
-                            legend=legend)
+                            legend=legend,
+                            y_lim_bottom=y_lim_bottom,
+                            y_lim_top=y_lim_top,
+                            )
 
     if plot_together:
         fig.tight_layout()

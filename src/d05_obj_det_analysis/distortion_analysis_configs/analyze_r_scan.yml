@@ -1,6 +1,6 @@
 ---
 
-result_id: 0013rlt-fasterrcnn_resnet50_fpn-0042tst-coco_r_scan-res:v0
+result_id: 0016rlt-fasterrcnn_resnet50_fpn-0045tst-coco_r_scan_v2-res:v0
 identifier: fasterrcnn-r-scan
 
 flatten_axis_combinations: [[1, 2]]

@@ -3,7 +3,7 @@
 description: test of pre-trained model on blur scan dataset, run on local machine because of sporc env issues
 descriptive_tags: ['pre-trained-model', 'blur-scan-dataset']
 
-test_dataset_id: 0043tst-coco_b_scan-blur:v0
+test_dataset_id: 0046tst-coco_b_scan_v2-blur:v0
 test_dataset_artifact_alias: latest
 
 model_artifact_id:  'fasterrcnn_resnet50_fpn'

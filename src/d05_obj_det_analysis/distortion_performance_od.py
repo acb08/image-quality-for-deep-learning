@@ -206,7 +206,7 @@ def get_obj_det_distortion_perf_result(result_id=None, identifier=None, config=N
 
 if __name__ == '__main__':
 
-    config_name = 'analyze_r_scan.yml'
+    config_name = 'analyze_b_scan.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_name, help='config filename to be used')
@@ -258,4 +258,6 @@ if __name__ == '__main__':
                          show_plots=True,
                          plot_together=False,
                          ylabel='mAP',
-                         legend=False)
+                         legend=False,
+                         y_lim_bottom=-0.03,
+                         y_lim_top=0.65)

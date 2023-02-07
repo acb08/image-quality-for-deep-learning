@@ -3,7 +3,7 @@
 description: test of pre-trained model on noise scan dataset, run on local machine because of sporc env issues
 descriptive_tags: ['pre-trained-model', 'noise-scan-dataset']
 
-test_dataset_id: 0044tst-coco_n_scan-noise:v0
+test_dataset_id: 0047tst-coco_n_scan_v2-noise:v0
 test_dataset_artifact_alias: latest
 
 model_artifact_id:  'fasterrcnn_resnet50_fpn'

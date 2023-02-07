@@ -3,7 +3,7 @@
 description: test of pre-trained model on resolution scan dataset, run on local machine because of sporc env issues
 descriptive_tags: ['pre-trained-model', 'res-scan-dataset']
 
-test_dataset_id: 0042tst-coco_r_scan-res:v0
+test_dataset_id: 0045tst-coco_r_scan_v2-res:v0
 test_dataset_artifact_alias: latest
 
 model_artifact_id:  'fasterrcnn_resnet50_fpn'
