@@ -5,7 +5,7 @@ from src.d00_utils.definitions import ROOT_DIR, ORIGINAL_PRETRAINED_MODELS, WAND
 from src.d00_utils.functions import get_model_path, save_model, get_config  # ,read_json_artifact, load_wandb_model
 from src.d00_utils.classes import Sat6ResNet, Sat6ResNet50, Sat6DenseNet161
 import argparse
-
+from ultralytics import YOLO
 import wandb
 wandb.login()
 
@@ -72,6 +72,10 @@ def load_pretrained_model(model_id):
     if model_id == 'fasterrcnn_resnet50_fpn':
         weights = models.detection.FasterRCNN_ResNet50_FPN_Weights.DEFAULT
         return models.detection.fasterrcnn_resnet50_fpn(weights=weights)
+
+    if model_id == 'yolov8n':
+        model = YOLO('yolov8n.pt')
+        return model
 
 
 def load_log_original_model(config):
