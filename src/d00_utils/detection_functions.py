@@ -1,5 +1,5 @@
 import torch
-
+from src.d00_utils.definitions import YOLO_TO_ORIGINAL_PAPER_KEY_MAPPING
 
 def get_image_ids(coco_instance_images):
     return [x['id'] for x in coco_instance_images]
@@ -94,3 +94,29 @@ def listify(torch_data_dict):
     return listed_data_dict
 
 
+def yolo_result_to_target_fmt(result):
+    # yolo_fmt_labels = result.boxes.cls.tolist()
+    # labels = map(yolo_fmt_labels, yolo_fmt_labels)
+    return dict(boxes = result.boxes.xyxy, scores = result.boxes.conf, yolo_fmt_labels=result.boxes.cls)
+
+
+def translate_yolo_to_original_label_fmt(output):
+
+    yolo_fmt_labels = output['yolo_fmt_labels']
+    labels = yolo_to_original_labels(yolo_fmt_labels)
+    output['labels'] = labels
+    output.pop('yolo_fmt_labels')
+
+    return output
+
+def yolo_to_original_labels(yolo_fmt_labels):
+    labels = list(map(_yolo_to_original_coco_label, yolo_fmt_labels))
+    return labels
+
+
+def _yolo_to_original_coco_label(label):
+    return YOLO_TO_ORIGINAL_PAPER_KEY_MAPPING[int(label)]
+
+
+def coco_standard_to_yolo_labels(labels: list):
+    pass

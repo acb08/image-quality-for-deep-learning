@@ -1,12 +1,12 @@
 ---
 
-description: test of pre-trained model val dataset
-descriptive_tags: ['pre-trained-model']
+description: test of pre-trained yolov8n model on resolution scan dataset, run locally because of sporc env issues
+descriptive_tags: ['pre-trained-model', 'res-scan-dataset']
 
-test_dataset_id: val2017
+test_dataset_id: 0045tst-coco_r_scan_v2-res:v0
 test_dataset_artifact_alias: latest
 
-model_artifact_id:  fasterrcnn_resnet50_fpn
+model_artifact_id: yolov8n
 model_artifact_alias: latest
 
 batch_size: 2

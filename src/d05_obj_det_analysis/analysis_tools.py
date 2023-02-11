@@ -4,6 +4,9 @@ import matplotlib.patches as patches
 import scipy.optimize
 import random
 from pathlib import Path
+
+from matplotlib import pyplot as plt
+
 import src.d00_utils.definitions as definitions
 
 # TODO: for images with no bounding boxes, my custom COCO(dataset) class adds a background annotation in the
@@ -865,6 +868,8 @@ def sort_by_label(data):
     return sorted_box_data
 
 
+
+
 if __name__ == '__main__':
 
     _output_dir = Path(definitions.ROOT_DIR, 'map_demo')
@@ -949,3 +954,57 @@ if __name__ == '__main__':
     # print('single image precision mean:', _mean_single_image_precision)
     # print('mAP:', _mean_avg_precision)
 
+
+def calculate_aggregate_results(outputs, targets,
+                                return_diagnostic_details=False, make_plots=True, output_dir_abs=None):
+
+    single_image_results = {}
+
+    for i, (image_id, target) in enumerate(targets.items()):
+        predict = outputs[image_id]
+        single_image_result, __, __, __ = process_single_image_result(target, predict)
+        single_image_results[image_id] = single_image_result
+
+    result, __ = combine_results(single_image_results)
+
+    class_avg_precision_vals = []
+    class_labels = []
+
+    if return_diagnostic_details:
+        recall_curves = []
+        precision_curves = []
+        precision_curves_smoothed = []
+
+    else:
+        recall_curves = None
+        precision_curves = None
+        precision_curves_smoothed = None
+
+    for class_label, data in result.items():
+
+        if class_label > 80:
+            print(class_label, data)
+
+        detections, gt_mapped_scores, gt = data
+        precision, recall = raw_pr_curves(detections, gt_mapped_scores, gt)
+        precision_smoothed = precision_cleanup(precision)
+        ap = get_average_precision(precision_smoothed, recall)
+
+        class_avg_precision_vals.append(ap)
+        class_labels.append(class_label)
+
+        if return_diagnostic_details:
+            recall_curves.append(recall)
+            precision_curves.append(precision)
+            precision_curves_smoothed.append(precision_smoothed)
+
+        if make_plots:
+            plt.figure()
+            plt.plot(recall, precision)
+            plt.plot(recall, precision_smoothed)
+            plt.title(f'{class_label}')
+            if output_dir_abs is not None:
+                plt.savefig(Path(output_dir_abs, f'{class_label}_pr.png'))
+            plt.show()
+
+    return class_labels, class_avg_precision_vals, recall_curves, precision_curves, precision_curves_smoothed

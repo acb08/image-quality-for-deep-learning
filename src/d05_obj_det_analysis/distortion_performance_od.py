@@ -6,7 +6,7 @@ from pathlib import Path
 from src.d00_utils.functions import get_config
 from src.d00_utils import definitions
 import wandb
-from src.d05_obj_det_analysis.analyze import calculate_aggregate_results
+from src.d05_obj_det_analysis.analysis_tools import calculate_aggregate_results
 from src.d04_analysis import plot
 
 
@@ -206,7 +206,7 @@ def get_obj_det_distortion_perf_result(result_id=None, identifier=None, config=N
 
 if __name__ == '__main__':
 
-    config_name = 'analyze_b_scan.yml'
+    config_name = 'analyze_yolov8n_r_scan.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_name, help='config filename to be used')

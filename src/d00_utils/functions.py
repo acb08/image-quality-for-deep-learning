@@ -10,6 +10,7 @@ from src.d00_utils.classes import Sat6ResNet, Sat6ResNet50, Sat6DenseNet161
 import copy
 import time
 from ultralytics import YOLO
+import shutil
 
 def load_original_dataset(dataset_id):
 
@@ -320,7 +321,12 @@ def save_model(model, model_metadata):
     if not model_dir.is_dir():
         Path.mkdir(model_dir, parents=True)
 
-    torch.save(model.state_dict(), model_path)
+    if type(model) == YOLO:
+        current_path = model.ckpt_path
+        shutil.copy(current_path, model_path)
+    else:
+        torch.save(model.state_dict(), model_path)
+
     helper_path = log_model_helper(model_dir, model_metadata)  # save model metadata in json file
 
     return model_path, helper_path  # paths returned for logging
@@ -340,10 +346,15 @@ def load_model(model_path, arch):
         model = Sat6DenseNet161()
     elif arch == 'fasterrcnn':
         model = models.detection.fasterrcnn_resnet50_fpn()
+    elif arch == 'yolo':
+        model = YOLO(model_path)  # state dict loaded here and model returned
+        return model
     else:
         model = models.__dict__[arch](num_classes=NUM_CLASSES)
 
     print(str(model_path))
+
+
     model.load_state_dict(torch.load(model_path))
 
     return model
@@ -409,3 +420,6 @@ if __name__ == '__main__':
 
     _name = id_from_tags('test_dataset', ['pan', 'r3', 'b3', 'n3'])
     print(_name)
+
+
+

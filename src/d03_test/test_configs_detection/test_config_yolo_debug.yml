@@ -1,12 +1,12 @@
 ---
 
-description: test of pre-trained model val dataset
+description: debugging yolo test script on mini dataset
 descriptive_tags: ['pre-trained-model']
 
-test_dataset_id: val2017
+test_dataset_id:  0012tst-val2017-mini-no_dist:v0
 test_dataset_artifact_alias: latest
 
-model_artifact_id:  fasterrcnn_resnet50_fpn
+model_artifact_id: yolov8n
 model_artifact_alias: latest
 
 batch_size: 2

@@ -28,6 +28,8 @@ STANDARD_PERFORMANCE_PREDICTION_FILENAME = 'performance_prediction_3d.npz'
 STANDARD_UID_FILENAME = 'uid.json'
 STANDARD_FIT_STATS_FILENAME = 'fit_stats.yml'
 KEY_LENGTH = 4
+STANDARD_TO_ORIGINAL_PAPER_LABEL_MAP_FILENAME = 'std_to_original_paper_coco_label_mappings.yml'
+YOLO_TO_ORIGINAL_PAPER_LABEL_MAP_FILENAME = 'yolo_to_original_paper_coco_label_mappings.yml'
 
 # defines standard paths in project structure for different artifact types
 REL_PATHS = {
@@ -61,7 +63,8 @@ REL_PATHS = {
     'mosaics': r'mosaics',
     'composite_performance_configs': r'image-quality-for-deep-learning/src/d04_analysis/composite_performance_configs',
     'noise_study': 'analysis/noise_study',
-    'perf_prediction': 'perf_prediction'
+    'perf_prediction': 'perf_prediction',
+    'utils':  r'image-quality-for-deep-learning/src/d00_utils',
 }
 
 _project_config_filename = 'project_config.yml'
@@ -244,18 +247,60 @@ elif WANDB_PID == 'coco':
             'arch': 'fasterrcnn',
             'artifact_type': 'model'
         },
-        # 'resnet50_places365_as_downloaded': {
-        #     'model_file_config': {
-        #         'model_rel_dir': r'models/resnet50',
-        #         'model_filename': 'resnet50_places365.pth.tar',
-        #     },
-        #     'arch': 'resnet50',
-        #     'artifact_type': 'model'
-        # },
+        'yolov8n': {
+            'model_file_config': {
+                'model_rel_dir': '',  # in ultralytics library
+                'model_filename': '',  # blank string to avoid throwing off path handling functions downstream
+            },
+            'arch': 'yolo',
+            'artifact_type': 'model'
+        },
+        'yolov8m': {
+            'model_file_config': {
+                'model_rel_dir': '',  # in ultralytics library
+                'model_filename': '',  # blank string to avoid throwing off path handling functions downstream
+            },
+            'arch': 'yolo',
+            'artifact_type': 'model'
+        },
 
     }
 
     NUM_CLASSES = None
+
+    OBSOLETE_CLASS_IDS = {  # class IDs used in the original COCO paper, not included in 2014/2017 datasets
+        12, # street sign
+        26, # hat
+        29, # shoe
+        30, # eye_glasses
+        45, # plate
+        66, # mirror
+        68, # window
+        69, # desk
+        71, # door
+        83, # blender
+        91, # hair brush
+    }
+
+    def get_yolo_to_original_key_mapping(call_count=0):
+
+        if call_count > 2:
+            raise Exception('Something has gone wrong with logging/accessing yolo_to_original_key_mapping')
+
+        try:
+            with open(Path(ROOT_DIR, REL_PATHS['project_config'], YOLO_TO_ORIGINAL_PAPER_LABEL_MAP_FILENAME), 'r') as f:
+                data = safe_load(f)
+            return data
+
+        except FileNotFoundError:
+            from src.d00_utils.label_conversion import log_yolo_to_original_mapping
+            log_yolo_to_original_mapping()
+
+            call_count += 1
+
+            return get_yolo_to_original_key_mapping(call_count=call_count)
+
+    YOLO_TO_ORIGINAL_PAPER_KEY_MAPPING = get_yolo_to_original_key_mapping()
 
 
 else:

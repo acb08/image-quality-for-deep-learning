@@ -5,6 +5,7 @@ import torch.distributed as dist
 import math
 import sys
 import src.d00_utils.definitions as definitions
+from src.d00_utils.detection_functions import yolo_result_to_target_fmt, translate_yolo_to_original_label_fmt
 from src.d00_utils import functions
 from src.d00_utils.classes import COCO
 
@@ -31,14 +32,14 @@ def collate_fn(batch):
     return tuple(zip(*batch))
 
 
-def get_dataset(cutoff=None, dataset_key='val2017'):
+def get_dataset(cutoff=None, dataset_key='val2017', yolo_fmt=False):
 
     path_data = definitions.ORIGINAL_DATASETS[dataset_key]
     image_dir = Path(definitions.ROOT_DIR, path_data['rel_path'])
 
     instances = _load_instances_placeholder(dataset_id=dataset_key)
 
-    coco = COCO(image_dir, instances, cutoff=cutoff)
+    coco = COCO(image_dir, instances, cutoff=cutoff, yolo_fmt=yolo_fmt)
 
     return coco
 
@@ -166,12 +167,15 @@ def validate(model, data_loader, device, print_freq=10, scaler=None):
 
 
 @torch.inference_mode()
-def evaluate(model, data_loader, device, status_interval=500):
+def evaluate(model, data_loader, device, status_interval=500, yolo_mode=False):
+
     n_threads = torch.get_num_threads()
     # FIXME remove this and make paste_masks_in_image run on the GPU
     torch.set_num_threads(1)
     cpu_device = torch.device("cpu")
-    model.eval()
+
+    if not yolo_mode:
+        model.eval()
 
     all_targets = {}
     all_results = {}
@@ -180,14 +184,27 @@ def evaluate(model, data_loader, device, status_interval=500):
 
     for i, (images, targets) in enumerate(data_loader):
 
-        images = list(img.to(device) for img in images)
+        if not yolo_mode:
+            images = list(img.to(device) for img in images)
+
         if torch.cuda.is_available():
             torch.cuda.synchronize()
 
-        outputs = model(images)
+        if yolo_mode:
 
-        outputs = [{k: v.to(cpu_device) for k, v in out.items()} for out in outputs]
-        targets = [{k: v.to(cpu_device) for k, v in t.items()} for t in targets]
+            results = model(images, verbose=False)
+
+            outputs = [yolo_result_to_target_fmt(result) for result in results]
+            outputs = [{k: v.to(cpu_device) for k, v in out.items()} for out in outputs]
+            outputs = [translate_yolo_to_original_label_fmt(out) for out in outputs]
+
+            targets = [{k: v.to(cpu_device) for k, v in t.items()} for t in targets]
+
+        else:
+            outputs = model(images)
+            outputs = [{k: v.to(cpu_device) for k, v in out.items()} for out in outputs]
+            targets = [{k: v.to(cpu_device) for k, v in t.items()} for t in targets]
+
 
         res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
         # tgt = {target["image_id"].item(): target for target, output in zip(targets, outputs)}
@@ -205,11 +222,11 @@ def evaluate(model, data_loader, device, status_interval=500):
     return all_results, all_targets
 
 
-def wandb_to_detection_dataset(dataset):
+def wandb_to_detection_dataset(dataset, yolo_fmt=False):
 
     instances = dataset['instances']
     image_dir = Path(definitions.ROOT_DIR, dataset['dataset_rel_dir'])
-    coco = COCO(image_dir, instances)
+    coco = COCO(image_dir, instances, yolo_fmt=yolo_fmt)
 
     return coco
 

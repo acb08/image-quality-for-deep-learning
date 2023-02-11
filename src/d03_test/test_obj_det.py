@@ -2,7 +2,7 @@ import torch
 import argparse
 import json
 import wandb
-
+from ultralytics import YOLO
 import src.d02_train.train_obj_det
 # import src.d02_train.train_detection
 from src.d00_utils.definitions import WANDB_PID, STANDARD_DATASET_FILENAME, ROOT_DIR, STANDARD_TEST_RESULT_FILENAME, \
@@ -12,6 +12,7 @@ from src.d00_utils.functions import load_wandb_model_artifact, load_wandb_data_a
 from pathlib import Path
 import src.d00_utils.detection_functions as coco_functions
 from src.d02_train.train_obj_det import get_loader, evaluate
+
 
 
 def test_detection_model(config):
@@ -28,10 +29,12 @@ def test_detection_model(config):
         model_artifact_id, model_artifact_stem = construct_artifact_id(
             config['model_artifact_id'], artifact_alias=config['model_artifact_alias'])
 
-        __, dataset = load_wandb_data_artifact(run, dataset_artifact_id, STANDARD_DATASET_FILENAME)
-        detection_dataset = src.d02_train.train_obj_det.wandb_to_detection_dataset(dataset)
-
         model = load_wandb_model_artifact(run, model_artifact_id)
+        yolo_mode = type(model) == YOLO
+
+        __, dataset = load_wandb_data_artifact(run, dataset_artifact_id, STANDARD_DATASET_FILENAME)
+        detection_dataset = src.d02_train.train_obj_det.wandb_to_detection_dataset(dataset, yolo_fmt=yolo_mode)
+
         torch.no_grad()
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         print('device: ', device)
@@ -60,9 +63,13 @@ def test_detection_model(config):
         #     dataset_rel_dir = Path(dataset_rel_dir, REL_PATHS[last_distortion_type_flag])
         dataset_abs_dir = Path(ROOT_DIR, dataset_rel_dir)
 
+
+
         outputs, targets = evaluate(model=model,
                                     data_loader=loader,
-                                    device=device)
+                                    device=device,
+                                    yolo_mode=yolo_mode)
+
         outputs = coco_functions.listify(outputs)
         targets = coco_functions.listify(targets)
 
@@ -108,7 +115,7 @@ def test_detection_model(config):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_name', default='rbn_checkout.yml', help='config filename to be used')
+    parser.add_argument('--config_name', default='r_scan_yolov8n_local.yml', help='config filename to be used')
     parser.add_argument('--config_dir',
                         default=Path(Path(__file__).parents[0], 'test_configs_detection'),
                         help="configuration file directory")

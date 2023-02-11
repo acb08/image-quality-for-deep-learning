@@ -255,7 +255,8 @@ class COCO(Dataset):
 
     def __init__(self, image_directory, instances,
                  transform=transforms.Compose([transforms.ToTensor()]),
-                 cutoff=None):
+                 cutoff=None,
+                 yolo_fmt=False):
 
         self.image_directory = Path(image_directory)
         if not self.image_directory.is_absolute():
@@ -268,9 +269,9 @@ class COCO(Dataset):
         self.image_ids = detection_functions.get_image_ids(self.images)
         self.mapped_boxes_labels = detection_functions.map_boxes_labels(self.annotations, self.image_ids)
         self.transform = transform
+        self.yolo_fmt = yolo_fmt
 
     def __len__(self):
-        print('COCO.__len__() called')
         return len(self.images)
 
     def __getitem__(self, idx):
@@ -278,13 +279,15 @@ class COCO(Dataset):
         image_data = self.images[idx]
         file_name = image_data['file_name']
         image_id = image_data['id']
-        image = Image.open(Path(self.image_directory, file_name))
+        image = Image.open(Path(self.image_directory, file_name)).convert('RGB')
         image_annotations = self.mapped_boxes_labels[image_id]
 
         if len(image_annotations['boxes']) == 0:
             image_annotations = detection_functions.background_annotation(image)
 
         image_annotations['image_id'] = torch.tensor(image_id)
-        image = self.transform(image)
+
+        if not self.yolo_fmt:
+            image = self.transform(image)
 
         return image, image_annotations
