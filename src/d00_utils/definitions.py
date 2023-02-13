@@ -263,6 +263,14 @@ elif WANDB_PID == 'coco':
             'arch': 'yolo',
             'artifact_type': 'model'
         },
+        'yolov8l': {
+            'model_file_config': {
+                'model_rel_dir': '',  # in ultralytics library
+                'model_filename': '',  # blank string to avoid throwing off path handling functions downstream
+            },
+            'arch': 'yolo',
+            'artifact_type': 'model'
+        },
 
     }
 

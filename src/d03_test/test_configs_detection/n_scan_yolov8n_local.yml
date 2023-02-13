@@ -1,0 +1,22 @@
+---
+
+description: test of pre-trained yolov8n model on blur scan dataset, run locally because of sporc env issues
+descriptive_tags: ['pre-trained-model', 'res-scan-dataset']
+
+test_dataset_id: 0047tst-coco_n_scan_v2-noise:v0
+test_dataset_artifact_alias: latest
+
+model_artifact_id: yolov8n
+model_artifact_alias: latest
+
+batch_size: 2
+num_workers: 0
+pin_memory: True
+
+status_interval: 500  # images
+
+
+#rgb_flag: False
+#dataset_split_key: test  # used to get to correct level of dataset dict (to mirror 'train'/'val' splits)
+#last_distortion_type_flag: noise  # normally should be 'noise'
+#loss_func: CrossEntropyLoss
