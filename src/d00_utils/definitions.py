@@ -64,7 +64,13 @@ REL_PATHS = {
     'composite_performance_configs': r'image-quality-for-deep-learning/src/d04_analysis/composite_performance_configs',
     'noise_study': 'analysis/noise_study',
     'perf_prediction': 'perf_prediction',
-    'utils':  r'image-quality-for-deep-learning/src/d00_utils',
+
+    'label_definition_files':  r'image-quality-for-deep-learning/src/d00_utils/label_definition_files',
+    'temp_yaml':  r'image-quality-for-deep-learning/src/d02_train/temp_yaml',
+    'yolo_train_default_subdir': 'train',
+    'yolo_val_default_subdir': 'val',
+    'yolo_best_weights': 'weights/best.pt',
+    'yolo_last_weights': 'weights/last.pt'
 }
 
 _project_config_filename = 'project_config.yml'
@@ -229,13 +235,29 @@ elif WANDB_PID == 'coco':
         'val2017': {
             'rel_path': r'datasets/test/val2017',
             'metadata_filename': 'instances_val2017.json',  # need to deal with conversion to "instances" nomenclature
-            'artifact_type': 'test_dataset'
+            'artifact_type': 'test_dataset',
         },
         'train2017': {
-            'rel_path': r'datasets/train/train2017',
+            'rel_path': r'datasets/train/coco/images/train2017',
             'metadata_filename': 'instances_train2017.json',  # need to deal with conversion to "instances" nomenclature
-            'artifact_type': 'test_dataset'
+            'artifact_type': 'test_dataset',
+
+            'yolo_cfg': {
+                'rel_path': r'datasets/train/coco/', # joined with ROOT_DIR for path in _data.yaml
+                'train': 'train2017.txt',
+                'val': 'val2017.txt',
+            }
         },
+        'coco128': {
+            'rel_path': r'datasets/train/coco128/images/train2017',  # image directory, standard form across project
+            'metadata_filename': 'dataset.json',
+            'artifact_type': 'train_dataset',
+            'yolo_cfg': {  # used to get data in the preferred yolo format
+                'rel_path': r'datasets/train/coco128',  # joined with ROOT_DIR for path in _data.yaml
+                'train': r'images/train2017',
+                'val': r'images/train2017'
+            }
+        }
     }
 
     ORIGINAL_PRETRAINED_MODELS = {
@@ -301,7 +323,7 @@ elif WANDB_PID == 'coco':
             return data
 
         except FileNotFoundError:
-            from src.d00_utils.label_conversion import log_yolo_to_original_mapping
+            from src.d00_utils.coco_label_functions import log_yolo_to_original_mapping
             log_yolo_to_original_mapping()
 
             call_count += 1

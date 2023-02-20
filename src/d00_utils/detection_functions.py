@@ -1,5 +1,7 @@
 import torch
+
 from src.d00_utils.definitions import YOLO_TO_ORIGINAL_PAPER_KEY_MAPPING
+
 
 def get_image_ids(coco_instance_images):
     return [x['id'] for x in coco_instance_images]
@@ -109,6 +111,7 @@ def translate_yolo_to_original_label_fmt(output):
 
     return output
 
+
 def yolo_to_original_labels(yolo_fmt_labels):
     labels = list(map(_yolo_to_original_coco_label, yolo_fmt_labels))
     return labels
@@ -120,3 +123,5 @@ def _yolo_to_original_coco_label(label):
 
 def coco_standard_to_yolo_labels(labels: list):
     pass
+
+

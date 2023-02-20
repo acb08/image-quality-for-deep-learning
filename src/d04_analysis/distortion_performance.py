@@ -7,8 +7,8 @@ from src.d04_analysis._shared_methods import _get_processed_instance_props_path,
 from src.d04_analysis.analysis_functions import conditional_mean_accuracy, extract_embedded_vectors, \
     get_class_accuracies, build_3d_field, get_distortion_perf_2d, get_distortion_perf_1d, check_durbin_watson_statistics
 from src.d04_analysis.fit import fit, evaluate_fit, apply_fit
-from src.d04_analysis.plot import plot_1d_linear_fit, plot_2d, plot_2d_linear_fit, plot_isosurf, compare_2d_views, \
-    residual_color_plot, sorted_linear_scatter, compare_1d_views, dual_sorted_linear_scatter
+from src.d04_analysis.plot import plot_1d_linear_fit, plot_2d, plot_2d_linear_fit, compare_2d_views, \
+    residual_color_plot, sorted_linear_scatter, compare_1d_views, dual_sorted_linear_scatter  # plot_isosurf
 from src.d04_analysis.binomial_simulation import get_ideal_correlation, run_binomial_accuracy_experiment
 import numpy as np
 from pathlib import Path
@@ -422,14 +422,15 @@ def analyze_perf_3d(model_performance,
                             directory=directory)
 
     if isosurf_plot:
-        save_name = f'{str(model_performance)}_fit_isosurf.png'
-        iso_save_dir = Path(directory, 'isosurf')
-        if not iso_save_dir.is_dir():
-            Path.mkdir(iso_save_dir)
-        plot_isosurf(fit_3d, x_values, y_values, z_values,
-                     levels=[-0.3, 0, 0.3], save_name=save_name, save_dir=iso_save_dir,
-                     az_el_combinations='all',
-                     show_plots=show_plots)
+        pass # did not work, and then the underlying marching cubes algorithm created issues
+        # save_name = f'{str(model_performance)}_fit_isosurf.png'
+        # iso_save_dir = Path(directory, 'isosurf')
+        # if not iso_save_dir.is_dir():
+        #     Path.mkdir(iso_save_dir)
+        # plot_isosurf(fit_3d, x_values, y_values, z_values,
+        #              levels=[-0.3, 0, 0.3], save_name=save_name, save_dir=iso_save_dir,
+        #              az_el_combinations='all',
+        #              show_plots=show_plots)
 
     if log_3d_prediction:
         perf_prediction_dir = Path(directory, REL_PATHS['perf_prediction'])

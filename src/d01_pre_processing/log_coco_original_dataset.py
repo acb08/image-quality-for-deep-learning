@@ -24,6 +24,10 @@ def main(dataset_id, description=None):
     dataset_info = ORIGINAL_DATASETS[dataset_id]
     dataset_rel_path = dataset_info['rel_path']  # image directory
     artifact_type = dataset_info['artifact_type']
+    if 'yolo_cfg' in dataset_info.keys():
+        yolo_cfg = dataset_info['yolo_cfg']
+    else:
+        yolo_cfg = None
 
     # paths for standardizing with other artifacts
     dataset_filename = STANDARD_DATASET_FILENAME
@@ -38,6 +42,7 @@ def main(dataset_id, description=None):
         'distortion_tags': [],
         'distortion_iterations': [],
         'ROOT_DIR_at_run': str(ROOT_DIR),
+        'yolo_cfg': yolo_cfg
     }
 
     with wandb.init(project=WANDB_PID, job_type='load_dataset') as run:
@@ -67,6 +72,6 @@ if __name__ == '__main__':
     # main('val_256', description=_description)
     # main('train_256_challenge', description='logging train_256_standard dataset as W&B artifact')
 
-    _description = 'logging coco train2017 dataset as W&B artifact. parent_dataset_id is ' \
+    _description = 'logging coco128 dataset (used for debugging)  as W&B artifact. parent_dataset_id is ' \
                     'identical to dataset_id when logging initial datasets'
-    main('train2017', description=_description)
+    main('coco128', description=_description)

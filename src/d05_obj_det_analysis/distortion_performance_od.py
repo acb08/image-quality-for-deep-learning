@@ -31,7 +31,8 @@ class ModelDistortionPerformanceResultOD:
         if 'distortion_type_flags' in dataset.keys():
             self.distortion_type_flags = dataset['distortion_type_flags']
             if set(self.distortion_type_flags) != set(manual_distortion_type_flags):
-                print('Warning: distortion type flags in dataset differ from manual distortion type flags')
+                print(f'Warning: distortion type flags ({self.distortion_type_flags}) in dataset differ '
+                      f'from manual distortion type flags ({manual_distortion_type_flags})')
         else:
             self.distortion_type_flags = manual_distortion_type_flags
         self.convert_to_std = convert_to_std
@@ -206,7 +207,7 @@ def get_obj_det_distortion_perf_result(result_id=None, identifier=None, config=N
 
 if __name__ == '__main__':
 
-    config_name = 'analyze_yolov8n_r_scan.yml'
+    config_name = 'analyze_yolov8n_r_scan._regression_check.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_name, help='config filename to be used')

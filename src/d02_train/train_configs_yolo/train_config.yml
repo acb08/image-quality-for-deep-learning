@@ -1,0 +1,19 @@
+---
+
+train_dataset_id: coco128
+train_dataset_artifact_alias: latest
+
+starting_model_id: 'yolov8n'
+starting_model_artifact_alias: 'latest'
+distortion_tags: []
+
+num_epochs: 5
+batch_size: 2
+num_workers: 0
+
+
+description: debug yolo train script
+artifact_type: 'model'
+
+name_string: yolov8n-coco128-updated-env
+

@@ -1,6 +1,6 @@
 # from torchvision.models.detection import fasterrcnn_resnet50_fpn, FasterRCNN_ResNet50_FPN_Weights
 # import src.d02_train.train_obj_det
-from src.d02_train import train_obj_det as run
+from src.d02_train import train_faster_rcnn as run
 import json
 import torch
 import src.d00_utils.definitions as definitions
@@ -47,6 +47,7 @@ def evaluate_yolo(model, data_loader, device, status_interval=500):
             print(f'{total_images} images complete')
 
     return all_results, all_targets
+
 
 def run_test(model, cutoff=None, batch_size=2, output_dir='test_result', output_filename='result.json', log_json=True,
          yolo_mode=True):

@@ -1,0 +1,6 @@
+---
+
+result_id: 0032rlt-yolov8m-0046tst-coco_b_scan_v2-blur:v0
+identifier: yolov8m-b-scan
+
+flatten_axis_combinations: [[0, 2]]

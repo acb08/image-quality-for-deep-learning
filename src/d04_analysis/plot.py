@@ -7,7 +7,7 @@ from matplotlib.ticker import MaxNLocator
 from pathlib import Path
 
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from skimage.measure import marching_cubes
+# from skimage.measure import marching_cubes
 
 from src.d04_analysis.fit import linear_predict
 from src.d04_analysis.analysis_functions import conditional_extract_2d, create_identifier, get_distortion_perf_2d, \
@@ -511,100 +511,100 @@ def conditional_multi_plot_3d(blur_sigmas, noise_means, z_dict,
     return save_name
 
 
-def plot_isosurf(vol_data, x, y, z, scx=1, scy=1, scz=1,
-                 levels=None, save_name=None, save_dir=None,
-                 x_label='resolution', y_label='blur', z_label='noise',
-                 alpha=0.2, step_size=1, az_el_combinations='default',
-                 show_plots=False):
-    """
-    Uses the marching cubes method to identify iso-surfaces in 3d data and then creates a 3d plot of the iso-surface at
-    the value specified by level. If level==None, the mean of the min and max value in vol_data is used.
-    """
-
-    delta_x = x[1] - x[0]
-    delta_y = y[1] - y[0]
-    delta_z = z[1] - z[0]
-    x0, y0, z0 = np.min(x), np.min(y), np.min(z)
-
-    vertices_list = []
-    faces_list = []
-
-    if not levels:
-        try:
-            verts, faces, normals, values = marching_cubes(vol_data,
-                                                           spacing=(delta_x, delta_y, delta_z),
-                                                           step_size=step_size)
-            # slide vertices by appropriate offset in x, y, z since marching cubes does not account
-            # for absolute coordinates
-            offset = np.multiply([x0, y0, z0], np.ones(np.shape(verts)))
-            verts += offset
-
-            vertices_list.append(verts)
-            faces_list.append(faces)
-        except ValueError:
-            print('unable to generate iso-surface')
-
-    else:
-        for level in levels:
-            mean, std = np.mean(vol_data), np.std(vol_data)
-            scaled_level = level * std + mean
-            try:
-                verts, faces, normals, values = marching_cubes(vol_data,
-                                                               spacing=(delta_x, delta_y, delta_z),
-                                                               level=scaled_level,
-                                                               step_size=step_size)
-                # slide vertices by appropriate offset in x, y, z since marching cubes does not account
-                # for absolute coordinates
-                offset = np.multiply([x0, y0, z0], np.ones(np.shape(verts)))
-                verts += offset
-
-                vertices_list.append(verts)
-                faces_list.append(faces)
-            except ValueError:
-                print(f'unable to generate iso-surface at level {level}')
-
-    if az_el_combinations == 'all':
-        az_el_combinations_local = AZ_EL_COMBINATIONS
-    elif az_el_combinations == 'default':
-        az_el_combinations_local = {'0-0': {'az': AZ_EL_DEFAULTS['az'], 'el': AZ_EL_DEFAULTS['el']}}
-    elif az_el_combinations == 'iso_default':
-        az_el_combinations_local = ISOSURF_AZ_EL_COMBINATIONS
-    else:
-        raise ValueError('az_el_combinations must be either "all", "default", or "iso_default"')
-
-    for combination_key in az_el_combinations_local:
-        az, el = az_el_combinations_local[combination_key]['az'], az_el_combinations_local[combination_key]['el']
-
-        fig = plt.figure(figsize=(10, 10))
-        ax = fig.add_subplot(111, projection='3d', azim=az, elev=el)
-
-        for i, verts in enumerate(vertices_list):
-            faces = faces_list[i]
-            mesh = Poly3DCollection(verts[faces], alpha=alpha)
-            mesh.set_edgecolor('k')
-            ax.add_collection3d(mesh)
-
-        ax.set_xlabel(x_label)
-        ax.set_ylabel(y_label)
-        ax.set_zlabel(z_label)
-
-        ax.set_xlim(min(0, scx * np.min(x)), scx * np.max(x))
-        ax.set_ylim(min(0, scy * np.min(y)), scy * np.max(y))
-        ax.set_zlim(min(0, scz * np.min(z)), scz * np.max(z))
-        plt.tight_layout()
-
-        if az_el_combinations != 'default':
-            save_name_stem = save_name.split('.')[0]
-            save_name_updated = f'{save_name_stem}_az{az}_el{el}.png'
-        else:
-            save_name_updated = save_name
-
-        if save_name and save_dir:
-            plt.savefig(Path(save_dir, save_name_updated))
-
-        if show_plots:
-            plt.show()
-        plt.close()
+# def plot_isosurf(vol_data, x, y, z, scx=1, scy=1, scz=1,
+#                  levels=None, save_name=None, save_dir=None,
+#                  x_label='resolution', y_label='blur', z_label='noise',
+#                  alpha=0.2, step_size=1, az_el_combinations='default',
+#                  show_plots=False):
+#     """
+#     Uses the marching cubes method to identify iso-surfaces in 3d data and then creates a 3d plot of the iso-surface at
+#     the value specified by level. If level==None, the mean of the min and max value in vol_data is used.
+#     """
+#
+#     delta_x = x[1] - x[0]
+#     delta_y = y[1] - y[0]
+#     delta_z = z[1] - z[0]
+#     x0, y0, z0 = np.min(x), np.min(y), np.min(z)
+#
+#     vertices_list = []
+#     faces_list = []
+#
+#     if not levels:
+#         try:
+#             verts, faces, normals, values = marching_cubes(vol_data,
+#                                                            spacing=(delta_x, delta_y, delta_z),
+#                                                            step_size=step_size)
+#             # slide vertices by appropriate offset in x, y, z since marching cubes does not account
+#             # for absolute coordinates
+#             offset = np.multiply([x0, y0, z0], np.ones(np.shape(verts)))
+#             verts += offset
+#
+#             vertices_list.append(verts)
+#             faces_list.append(faces)
+#         except ValueError:
+#             print('unable to generate iso-surface')
+#
+#     else:
+#         for level in levels:
+#             mean, std = np.mean(vol_data), np.std(vol_data)
+#             scaled_level = level * std + mean
+#             try:
+#                 verts, faces, normals, values = marching_cubes(vol_data,
+#                                                                spacing=(delta_x, delta_y, delta_z),
+#                                                                level=scaled_level,
+#                                                                step_size=step_size)
+#                 # slide vertices by appropriate offset in x, y, z since marching cubes does not account
+#                 # for absolute coordinates
+#                 offset = np.multiply([x0, y0, z0], np.ones(np.shape(verts)))
+#                 verts += offset
+#
+#                 vertices_list.append(verts)
+#                 faces_list.append(faces)
+#             except ValueError:
+#                 print(f'unable to generate iso-surface at level {level}')
+#
+#     if az_el_combinations == 'all':
+#         az_el_combinations_local = AZ_EL_COMBINATIONS
+#     elif az_el_combinations == 'default':
+#         az_el_combinations_local = {'0-0': {'az': AZ_EL_DEFAULTS['az'], 'el': AZ_EL_DEFAULTS['el']}}
+#     elif az_el_combinations == 'iso_default':
+#         az_el_combinations_local = ISOSURF_AZ_EL_COMBINATIONS
+#     else:
+#         raise ValueError('az_el_combinations must be either "all", "default", or "iso_default"')
+#
+#     for combination_key in az_el_combinations_local:
+#         az, el = az_el_combinations_local[combination_key]['az'], az_el_combinations_local[combination_key]['el']
+#
+#         fig = plt.figure(figsize=(10, 10))
+#         ax = fig.add_subplot(111, projection='3d', azim=az, elev=el)
+#
+#         for i, verts in enumerate(vertices_list):
+#             faces = faces_list[i]
+#             mesh = Poly3DCollection(verts[faces], alpha=alpha)
+#             mesh.set_edgecolor('k')
+#             ax.add_collection3d(mesh)
+#
+#         ax.set_xlabel(x_label)
+#         ax.set_ylabel(y_label)
+#         ax.set_zlabel(z_label)
+#
+#         ax.set_xlim(min(0, scx * np.min(x)), scx * np.max(x))
+#         ax.set_ylim(min(0, scy * np.min(y)), scy * np.max(y))
+#         ax.set_zlim(min(0, scz * np.min(z)), scz * np.max(z))
+#         plt.tight_layout()
+#
+#         if az_el_combinations != 'default':
+#             save_name_stem = save_name.split('.')[0]
+#             save_name_updated = f'{save_name_stem}_az{az}_el{el}.png'
+#         else:
+#             save_name_updated = save_name
+#
+#         if save_name and save_dir:
+#             plt.savefig(Path(save_dir, save_name_updated))
+#
+#         if show_plots:
+#             plt.show()
+#         plt.close()
 
 
 def plot_1d_performance(x, performance_dict, distortion_id,

@@ -44,3 +44,5 @@ Thumbs.db
 ###########
 wandb/
 artifacts/
+/src/d02_train/temp_yaml/_data.yaml
+/src/d02_train/temp_yaml/_data.yaml

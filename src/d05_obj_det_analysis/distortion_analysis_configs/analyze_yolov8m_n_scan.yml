@@ -1,0 +1,6 @@
+---
+
+result_id: 0033rlt-yolov8m-0047tst-coco_n_scan_v2-noise:v0
+identifier: yolov8m-n-scan
+
+flatten_axis_combinations: [[0, 1]]

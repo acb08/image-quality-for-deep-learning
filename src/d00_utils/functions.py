@@ -1,12 +1,14 @@
 import torchvision.models as models
 import torch
+
+from src.d00_utils import definitions as definitions
 from src.d00_utils.definitions import ROOT_DIR, REL_PATHS, ORIGINAL_DATASETS, KEY_LENGTH, ARTIFACT_TYPE_TAGS, \
     STANDARD_CONFIG_USED_FILENAME, NUM_CLASSES
 import json
 from pathlib import Path
 from yaml import safe_load, dump
 import numpy as np
-from src.d00_utils.classes import Sat6ResNet, Sat6ResNet50, Sat6DenseNet161
+from src.d00_utils.classes import Sat6ResNet, Sat6ResNet50, Sat6DenseNet161, COCO
 import copy
 import time
 from ultralytics import YOLO
@@ -422,4 +424,10 @@ if __name__ == '__main__':
     print(_name)
 
 
+def wandb_to_detection_dataset(dataset, yolo_fmt=False):
 
+    instances = dataset['instances']
+    image_dir = Path(definitions.ROOT_DIR, dataset['dataset_rel_dir'])
+    coco = COCO(image_dir, instances, yolo_fmt=yolo_fmt)
+
+    return coco

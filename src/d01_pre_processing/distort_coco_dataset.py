@@ -80,6 +80,11 @@ def apply_distortions(image, distortion_functions, mapped_annotations, updated_i
 
 def update_annotations(annotations, res, updated_image_id, remove_fragile_annotations=True):
 
+    """
+    Updates the annotations associated with an image that has been distorted.  Updates the image_id and wWhen
+    resolution != 1, updates the bounding boxes.
+    """
+
     updated_annotations = []
 
     for annotation in annotations:

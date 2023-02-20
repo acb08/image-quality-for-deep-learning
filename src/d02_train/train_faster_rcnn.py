@@ -222,16 +222,6 @@ def evaluate(model, data_loader, device, status_interval=500, yolo_mode=False):
     return all_results, all_targets
 
 
-def wandb_to_detection_dataset(dataset, yolo_fmt=False):
-
-    instances = dataset['instances']
-    image_dir = Path(definitions.ROOT_DIR, dataset['dataset_rel_dir'])
-    coco = COCO(image_dir, instances, yolo_fmt=yolo_fmt)
-
-    return coco
-
-
-
 if __name__ == '__main__':
 
     if torch.cuda.is_available():

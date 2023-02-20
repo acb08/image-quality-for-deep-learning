@@ -13,7 +13,7 @@ def parse_label_file_txt(verbose=True):
 
     name_label_map = {}
 
-    with open(Path(ROOT_DIR, REL_PATHS['utils'], STANDARD_LABEL_FILENAME), 'r') as f:
+    with open(Path(ROOT_DIR, REL_PATHS['label_definition_files'], STANDARD_LABEL_FILENAME), 'r') as f:
 
         for i, line in enumerate(f):
 
@@ -29,7 +29,7 @@ def parse_label_file_txt(verbose=True):
 
 def get_yolo_labels():
 
-    with open(Path(ROOT_DIR,  REL_PATHS['utils'], YOLO_LABEL_FILENAME), 'r') as f:
+    with open(Path(ROOT_DIR,  REL_PATHS['label_definition_files'], YOLO_LABEL_FILENAME), 'r') as f:
         name_label_map = safe_load(f)
 
     return name_label_map['names']
@@ -74,7 +74,7 @@ def get_original_paper_labels():
 
     original_labels = {}
 
-    with open(Path(ROOT_DIR,  REL_PATHS['utils'], COCO_LABELS_ORIGINAL_PAPER_FILENAME), 'r') as f:
+    with open(Path(ROOT_DIR,  REL_PATHS['label_definition_files'], COCO_LABELS_ORIGINAL_PAPER_FILENAME), 'r') as f:
         for i, line in enumerate(f):
             label = line.rstrip('\n')
             original_labels[i] = label
@@ -147,26 +147,4 @@ def log_yolo_to_original_mapping():
 
 if __name__ == '__main__':
 
-    # _original_paper_labels = get_original_paper_labels()
-    # _standard_labels = parse_label_file_txt(verbose=False)
-    # _yolo_labels = get_yolo_labels()
-    #
-    #
-    # _standard_to_original_key_map = map_equivalent_dict_keys(_standard_labels, _original_paper_labels)
-    # _yolo_to_original_key_map = map_equivalent_dict_keys(_yolo_labels, _original_paper_labels)
-    #
-    # check_consistency(starting_dict=_yolo_labels,
-    #                   target_dict=_original_paper_labels,
-    #                   key_mapping=_yolo_to_original_key_map)
-    #
-    # check_consistency(starting_dict=_standard_labels,
-    #                   target_dict=_original_paper_labels,
-    #                   key_mapping=_standard_to_original_key_map)
-    #
-    # _standard_to_original_mapping_logged = log_key_map(_standard_to_original_key_map,
-    #                                                    filename=STANDARD_TO_ORIGINAL_PAPER_LABEL_MAP_FILENAME,
-    #                                                    double_check=True)
-    # _yolo_to_original_mapping_logged = log_key_map(_yolo_to_original_key_map,
-    #                                                filename=YOLO_TO_ORIGINAL_PAPER_LABEL_MAP_FILENAME,
-    #                                                double_check=True)
     log_yolo_to_original_mapping()
