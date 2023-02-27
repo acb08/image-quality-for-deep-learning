@@ -48,7 +48,10 @@ def yaml_on_the_fly(rel_path=None,
         names=names,
     )
 
-    save_path = Path(ROOT_DIR, REL_PATHS['temp_yaml'], '_data.yaml')
+    save_dir = Path(ROOT_DIR, REL_PATHS['temp_yaml'])
+    if not save_dir.is_dir():
+        Path.mkdir(save_dir)
+    save_path = Path(save_dir, '_data.yaml')
     with open(save_path, 'w') as f:
         yaml.safe_dump(data, f)
 
