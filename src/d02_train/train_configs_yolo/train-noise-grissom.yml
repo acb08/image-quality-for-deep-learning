@@ -8,8 +8,8 @@ starting_model_artifact_alias: 'latest'
 distortion_tags: []
 
 num_epochs: 1
-batch_size: 1
-num_workers: 0
+batch_size: 8
+num_workers: 4
 
 
 description: training on basic coco noise dataset
