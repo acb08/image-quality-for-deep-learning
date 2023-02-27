@@ -15,5 +15,5 @@ num_workers: 4
 description: training on basic coco noise dataset
 artifact_type: 'model'
 
-name_string: yolov8n-res
+name_string: yolov8n-res  # later manually changed artifact name to 0002yolo-yolov8-noise_best_loss:v0
 
