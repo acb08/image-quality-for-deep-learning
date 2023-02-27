@@ -3,7 +3,7 @@
 description: test of pre-trained model val dataset
 descriptive_tags: ['pre-trained-model']
 
-test_dataset_id: val2017
+test_dataset_id: 0051tst-coco_rbn_checkout:v0
 test_dataset_artifact_alias: latest
 
 model_artifact_id:  fasterrcnn_resnet50_fpn
@@ -13,7 +13,7 @@ batch_size: 2
 num_workers: 0
 pin_memory: True
 
-status_interval: 500  # images
+status_interval: 16  # images
 
 
 #rgb_flag: False

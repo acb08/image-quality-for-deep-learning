@@ -982,9 +982,6 @@ def calculate_aggregate_results(outputs, targets,
 
     for class_label, data in result.items():
 
-        if class_label > 80:
-            print(class_label, data)
-
         detections, gt_mapped_scores, gt = data
         precision, recall = raw_pr_curves(detections, gt_mapped_scores, gt)
         precision_smoothed = precision_cleanup(precision)

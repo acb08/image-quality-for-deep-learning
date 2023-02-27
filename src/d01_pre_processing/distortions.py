@@ -397,7 +397,7 @@ def no_op_coco(img):
     """
     Debugging function to check out data pipeline
     """
-    return img, None, 'no_dist', 0
+    return np.asarray(img, dtype=np.uint8), None, 'no_dist', 0
 
 
 def n0_coco(img):
@@ -470,6 +470,16 @@ def r_scan_coco(img):
 def r_scan_coco_v2(img):
 
     res_frac = random.choice([0.05, 0.1, 0.2, 0.3, 0.4, 0.6, 0.7, 0.8, 0.9, 1])
+    img_out = VariableCOCOResize()(img, res_frac)
+
+    return img_out, None, 'res', res_frac
+
+
+def r_no_change_coco(img):
+    """
+    Debug function that does not change the image
+    """
+    res_frac = random.choice([1])
     img_out = VariableCOCOResize()(img, res_frac)
 
     return img_out, None, 'res', res_frac
@@ -736,6 +746,7 @@ coco_tag_to_image_distortions = {  # coco distortion functions return distortion
     'b0_coco': b0_coco,
     'n0_coco': n0_coco,
     'r0_coco': r0_coco,
+    'r_no_change_coco': r_no_change_coco,
 
     'r_scan_coco': r_scan_coco,
     'b_scan_coco': b_scan_coco,

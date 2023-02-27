@@ -65,8 +65,6 @@ def test_detection_model(config):
         #     dataset_rel_dir = Path(dataset_rel_dir, REL_PATHS[last_distortion_type_flag])
         dataset_abs_dir = Path(ROOT_DIR, dataset_rel_dir)
 
-
-
         outputs, targets = evaluate(model=model,
                                     data_loader=loader,
                                     device=device,
@@ -117,7 +115,7 @@ def test_detection_model(config):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_name', default='r_scan_yolov8n_local.yml', help='config filename to be used')
+    parser.add_argument('--config_name', default='test_config.yml', help='config filename to be used')
     parser.add_argument('--config_dir',
                         default=Path(Path(__file__).parents[0], 'test_configs_detection'),
                         help="configuration file directory")

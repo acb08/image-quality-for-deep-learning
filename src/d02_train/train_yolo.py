@@ -12,23 +12,40 @@ from src.d00_utils.functions import construct_artifact_id, load_wandb_data_artif
     id_from_tags, log_model_helper
 
 
-def yaml_on_the_fly(rel_path: str,
-                    train: str,
-                    val: str):
+def yaml_on_the_fly(rel_path=None,
+                    train=None,
+                    val=None,
+                    test=None,
+                    path=None):
+
+    """
+
+    :param rel_path: relative path from project's ROOT_DIR to yolo_root containing images and labels directories
+    :param train: from rel_path to train images
+    :param val: from rel_path to validation images
+    :param test:  from rel_path to test images
+    :param path: alternate (alias) for rel_path (cannot both be passed)
+    :return: path to temporary yaml file
+    """
+
+    if rel_path is not None and path is not None:
+        raise ValueError
+
+    if rel_path is None:
+        rel_path = path
 
     path = str(Path(ROOT_DIR, rel_path))
     train = str(train)
     val = str(val)
-    test = None  # not using yolo format test datasets
 
     names = get_yolo_labels()
 
     data = dict(
-        path = path,
-        train = train,
-        val = val,
-        test = test,
-        names = names,
+        path=path,
+        train=train,
+        val=val,
+        test=test,
+        names=names,
     )
 
     save_path = Path(ROOT_DIR, REL_PATHS['temp_yaml'], '_data.yaml')
@@ -61,21 +78,24 @@ def check_highest_dir_idx(sub_dirs, stem):
     else:
         return None
 
+
 def get_yolo_dir_name(stem, dir_count):
     if dir_count == 0:
         return stem
     else:
         return f'{stem}{dir_count + 1}'
 
+
 def get_yolo_output_dirs(parent):
 
     parent = Path(parent)
 
-    default_train_sub_dir = REL_PATHS['yolo_train_default_subdir']
-    default_val_sub_dir = REL_PATHS['yolo_val_default_subdir']
+    default_train_sub_dir = REL_PATHS['yolo_train_default_output_subdir']
+    default_val_sub_dir = REL_PATHS['yolo_val_default_output_subdir']
 
     train_sub_dir_count, high_train_dir_idx = count_relevant_sub_dirs(parent, stem=default_train_sub_dir)
-    train_sub_dir_name= get_yolo_dir_name(default_train_sub_dir, train_sub_dir_count)
+    train_sub_dir_name = get_yolo_dir_name(default_train_sub_dir, train_sub_dir_count)
+
     if high_train_dir_idx is not None:
         assert high_train_dir_idx == train_sub_dir_count
 
@@ -148,7 +168,7 @@ def load_tune_model(config):
                     epochs=num_epochs,
                     batch=batch_size,
                     project=output_dir)
-        model.val()
+        # model.val()
 
         model_helper_path = log_model_helper(best_weights_path.parent, model_metadata)
 
@@ -184,7 +204,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_name', default='train_config.yml', help='config filename to be used')
+    parser.add_argument('--config_name', default='train-noise.yml', help='config filename to be used')
     parser.add_argument('--config_dir',
                         default=Path(Path(__file__).parents[0], 'train_configs_yolo'),
                         help="configuration file directory")

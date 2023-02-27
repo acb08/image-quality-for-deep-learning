@@ -1,0 +1,19 @@
+---
+
+train_dataset_id: 0005trn-coco_res_train_checkout:v0
+train_dataset_artifact_alias: latest
+
+starting_model_id: 'yolov8n'
+starting_model_artifact_alias: 'latest'
+distortion_tags: []
+
+num_epochs: 1
+batch_size: 1
+num_workers: 0
+
+
+description: training on basic coco dataset
+artifact_type: 'model'
+
+name_string: yolov8n-res
+

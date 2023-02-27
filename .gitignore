@@ -45,4 +45,7 @@ Thumbs.db
 wandb/
 artifacts/
 /src/d02_train/temp_yaml/_data.yaml
-/src/d02_train/temp_yaml/_data.yaml
+/src/d02_train/runs/
+/example_dataset.txt
+/example_dataset_shorter.txt
+/src/d01_pre_processing/file_copy_sandbox.py

@@ -1,0 +1,22 @@
+---
+
+description: create a train with varied resolution to see to debug model training on distorted data
+
+parent_dataset_id: coco128
+parent_artifact_alias: latest
+parent_artifact_filename: standard  # standard functions as a flag to use definitions.STANDARD_ARTIFACT_FILENAME
+
+num_images: all
+val_frac: 0.1
+
+distortion_tags: ['r_scan_coco_v2']
+distortion_type_flags: ['res']  # specifies distortion_tags associated distortion types
+iterations: 1
+artifact_type: train_dataset
+#dataset_split_key: test  # used to mirror 'train'/'val' split in data structure
+artifact_filename: standard
+datatype_key: np.uint8
+
+image_shape: null
+
+name_string: coco128_res_train_checkout

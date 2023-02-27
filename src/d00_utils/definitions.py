@@ -67,10 +67,17 @@ REL_PATHS = {
 
     'label_definition_files':  r'image-quality-for-deep-learning/src/d00_utils/label_definition_files',
     'temp_yaml':  r'image-quality-for-deep-learning/src/d02_train/temp_yaml',
-    'yolo_train_default_subdir': 'train',
-    'yolo_val_default_subdir': 'val',
+    'yolo_train_default_output_subdir': 'train',
+    'yolo_val_default_output_subdir': 'val',
     'yolo_best_weights': 'weights/best.pt',
-    'yolo_last_weights': 'weights/last.pt'
+    'yolo_last_weights': 'weights/last.pt',
+
+    'dataset_sub_struct': {  # keys correct to dataset_split_key variable
+        'train': ('images/train', 'labels/train'),
+        'val': ('images/val', 'labels/val'),
+        'test': ('images/test', 'labels/test'),
+
+    }
 }
 
 _project_config_filename = 'project_config.yml'
@@ -240,7 +247,7 @@ elif WANDB_PID == 'coco':
         'train2017': {
             'rel_path': r'datasets/train/coco/images/train2017',
             'metadata_filename': 'instances_train2017.json',  # need to deal with conversion to "instances" nomenclature
-            'artifact_type': 'test_dataset',
+            'artifact_type': 'train_dataset',
 
             'yolo_cfg': {
                 'rel_path': r'datasets/train/coco/', # joined with ROOT_DIR for path in _data.yaml

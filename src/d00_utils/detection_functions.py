@@ -1,17 +1,42 @@
 import torch
-
+from pathlib import Path
 from src.d00_utils.definitions import YOLO_TO_ORIGINAL_PAPER_KEY_MAPPING
+from src.d00_utils.definitions import ROOT_DIR
 
 
 def get_image_ids(coco_instance_images):
     return [x['id'] for x in coco_instance_images]
 
 
-def map_annotations(coco_annotations, image_ids):
+def map_annotations(coco_annotations, image_ids, give_status=False):
 
     mapped_annotations = {}
 
-    for image_id in image_ids:
+    for annotation in coco_annotations:
+        image_id = annotation['image_id']
+        if image_id in mapped_annotations.keys():
+            mapped_annotations[image_id].append(annotation)
+        else:
+            mapped_annotations['image_id'] = [annotation]
+
+    background_only_image_ids = set(image_ids).difference(set(mapped_annotations.keys()))
+    for image_id in background_only_image_ids:
+        mapped_annotations[image_id] = []
+
+    return mapped_annotations
+
+
+def _map_annotations(coco_annotations, image_ids, give_status=False):
+
+    mapped_annotations = {}
+
+    for i, image_id in enumerate(image_ids):
+
+        if give_status:
+            if i < 10:
+                print(f'annotation {i}')
+            elif i > 10 and i % 500 == 0:
+                print(f'annotation {i}')
 
         filtered_annotations = [x for x in coco_annotations if x['image_id'] == image_id]
         mapped_annotations[image_id] = filtered_annotations
@@ -124,4 +149,17 @@ def _yolo_to_original_coco_label(label):
 def coco_standard_to_yolo_labels(labels: list):
     pass
 
+
+def check_files(dataset):
+
+    instances = dataset['instances']
+    images = instances['images']
+    filenames = set([image['file_name'] for image in images])
+
+    image_dir = Path(ROOT_DIR, dataset['dataset_rel_dir'])
+    file_paths_found = list(Path(image_dir).iterdir())
+    image_filenames = [file_path.name for file_path in file_paths_found if file_path.suffix in {'.png', '.jpg'}]
+    missing_files = [filename for filename in image_filenames if filename not in filenames]
+
+    return missing_files
 

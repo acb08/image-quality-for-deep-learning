@@ -404,6 +404,15 @@ def construct_artifact_id(artifact_name, artifact_alias=None):
     return f'{artifact_name}:{artifact_alias}', artifact_stem
 
 
+def wandb_to_detection_dataset(dataset, yolo_fmt=False):
+
+    instances = dataset['instances']
+    image_dir = Path(definitions.ROOT_DIR, dataset['dataset_rel_dir'])
+    coco = COCO(image_dir, instances, yolo_fmt=yolo_fmt)
+
+    return coco
+
+
 if __name__ == '__main__':
 
     # foo = key_from_dir(r'C:\Users\acb6595\Documents\Research\places2\project_portable\datasets\test')
@@ -424,10 +433,4 @@ if __name__ == '__main__':
     print(_name)
 
 
-def wandb_to_detection_dataset(dataset, yolo_fmt=False):
 
-    instances = dataset['instances']
-    image_dir = Path(definitions.ROOT_DIR, dataset['dataset_rel_dir'])
-    coco = COCO(image_dir, instances, yolo_fmt=yolo_fmt)
-
-    return coco
