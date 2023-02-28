@@ -372,7 +372,10 @@ def load_wandb_model_artifact(run, artifact_id, return_configs=False):
     arch = helper_data['arch']
     # arch = 'resnet18_sat6'
     artifact_type = helper_data['artifact_type']
-    model_filename = helper_data['model_file_config']['model_filename']
+    try:
+        model_filename = helper_data['model_file_config']['model_filename']
+    except KeyError:
+        model_filename = 'best.pt'  # TODO: get rid of try/except, fix model helper up stream
     model_path = Path(artifact_dir, model_filename)
     model = load_model(model_path, arch)
 

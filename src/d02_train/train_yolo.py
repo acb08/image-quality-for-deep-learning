@@ -167,6 +167,12 @@ def load_tune_model(config):
         model_metadata = dict(config)
         model_metadata['model_filename'] = best_weights_filename
 
+        new_model_checkpoint_file_config = {
+            'model_rel_dir': str(new_model_rel_dir),
+            'model_filename': best_weights_path.name
+        }
+        config['model_file_config'] = new_model_checkpoint_file_config
+
         model.train(data=temp_yaml_cfg_path,
                     epochs=num_epochs,
                     batch=batch_size,
