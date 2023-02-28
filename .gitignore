@@ -49,3 +49,4 @@ artifacts/
 /example_dataset.txt
 /example_dataset_shorter.txt
 /src/d01_pre_processing/file_copy_sandbox.py
+/src/d05_obj_det_analysis/debug_compare.py

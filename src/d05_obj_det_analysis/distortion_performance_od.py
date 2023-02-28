@@ -207,7 +207,7 @@ def get_obj_det_distortion_perf_result(result_id=None, identifier=None, config=N
 
 if __name__ == '__main__':
 
-    config_name = 'distortion_analysis_config.yml'
+    config_name = 'analyze_yolov8n_n_scan.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_name, help='config filename to be used')

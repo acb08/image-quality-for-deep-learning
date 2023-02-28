@@ -17,7 +17,7 @@ def map_annotations(coco_annotations, image_ids, give_status=False):
         if image_id in mapped_annotations.keys():
             mapped_annotations[image_id].append(annotation)
         else:
-            mapped_annotations['image_id'] = [annotation]
+            mapped_annotations[image_id] = [annotation]
 
     background_only_image_ids = set(image_ids).difference(set(mapped_annotations.keys()))
     for image_id in background_only_image_ids:

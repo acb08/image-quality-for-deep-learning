@@ -205,7 +205,6 @@ def evaluate(model, data_loader, device, status_interval=500, yolo_mode=False):
             outputs = [{k: v.to(cpu_device) for k, v in out.items()} for out in outputs]
             targets = [{k: v.to(cpu_device) for k, v in t.items()} for t in targets]
 
-
         res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
         # tgt = {target["image_id"].item(): target for target, output in zip(targets, outputs)}
         tgt = {target["image_id"].item(): target for target in targets}

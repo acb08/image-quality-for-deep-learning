@@ -115,7 +115,7 @@ def test_detection_model(config):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_name', default='test_config.yml', help='config filename to be used')
+    parser.add_argument('--config_name', default='n_scan_yolov8n-noise_local.yml', help='config filename to be used')
     parser.add_argument('--config_dir',
                         default=Path(Path(__file__).parents[0], 'test_configs_detection'),
                         help="configuration file directory")

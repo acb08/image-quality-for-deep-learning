@@ -356,7 +356,6 @@ def load_model(model_path, arch):
 
     print(str(model_path))
 
-
     model.load_state_dict(torch.load(model_path))
 
     return model
