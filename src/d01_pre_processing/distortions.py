@@ -393,6 +393,19 @@ def b_scan_coco_v2(img):
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'blur', std
 
 
+def b_fr_tr_coco(img):
+
+    sigma_min, sigma_max = 0, 5
+    sigma_range = np.linspace(sigma_min, sigma_max, num=20, endpoint=True)
+    std = np.random.choice(sigma_range)
+
+    kernel_size = int(5 * std)
+    if kernel_size % 2 == 0:
+        kernel_size += 1
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'blur', std
+
+
 def no_op_coco(img):
     """
     Debugging function to check out data pipeline
@@ -451,6 +464,23 @@ def n_scan_coco_v2(img):
     return img_out, None, 'noise', lambda_poisson
 
 
+def n_fr_tr_coco(img):
+    """
+    Debugging function to check out data pipeline
+    """
+
+    sigma_min, sigma_max = 0, 80
+    step = 5
+    sigma_vals = step * np.arange(int(sigma_max / step) + 1)
+    sigma_poisson = np.random.choice(sigma_vals)
+    lambda_poisson = int(sigma_poisson ** 2)  # convert from np.int64 to regular int for json serialization
+    img_out = _add_zero_centered_poisson_noise(img, lambda_poisson)
+
+    img_out = np.asarray(img_out, dtype=np.uint8)
+
+    return img_out, None, 'noise', lambda_poisson
+
+
 def r0_coco(img):
 
     res_frac = random.choice([0.4, 0.6, 0.7, 0.8, 0.9, 1])
@@ -475,6 +505,15 @@ def r_scan_coco_v2(img):
     return img_out, None, 'res', res_frac
 
 
+def r_fr_tr_coco(img):
+
+    res_fractions = np.linspace(0.2, 1, num=20)
+    res_frac = random.choice(res_fractions)
+    img_out = VariableCOCOResize()(img, res_frac)
+
+    return img_out, None, 'res', res_frac
+
+
 def r_no_change_coco(img):
     """
     Debug function that does not change the image
@@ -483,7 +522,6 @@ def r_no_change_coco(img):
     img_out = VariableCOCOResize()(img, res_frac)
 
     return img_out, None, 'res', res_frac
-
 
 
 def r_scan():
@@ -755,4 +793,8 @@ coco_tag_to_image_distortions = {  # coco distortion functions return distortion
     'r_scan_coco_v2': r_scan_coco_v2,
     'b_scan_coco_v2': b_scan_coco_v2,
     'n_scan_coco_v2': n_scan_coco_v2,
+
+    'r_fr_tr_coco': r_fr_tr_coco,
+    'b_fr_tr_coco': b_fr_tr_coco,
+    'n_fr_ft_coco': n_fr_tr_coco,
 }
