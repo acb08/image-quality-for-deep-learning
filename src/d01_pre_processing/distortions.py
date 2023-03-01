@@ -395,7 +395,7 @@ def b_scan_coco_v2(img):
 
 def b_fr_tr_coco(img):
 
-    sigma_min, sigma_max = 0, 5
+    sigma_min, sigma_max = 0.1, 5
     sigma_range = np.linspace(sigma_min, sigma_max, num=20, endpoint=True)
     std = np.random.choice(sigma_range)
 
