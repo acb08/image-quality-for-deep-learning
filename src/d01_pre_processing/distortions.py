@@ -796,5 +796,5 @@ coco_tag_to_image_distortions = {  # coco distortion functions return distortion
 
     'r_fr_tr_coco': r_fr_tr_coco,
     'b_fr_tr_coco': b_fr_tr_coco,
-    'n_fr_ft_coco': n_fr_tr_coco,
+    'n_fr_tr_coco': n_fr_tr_coco,
 }
