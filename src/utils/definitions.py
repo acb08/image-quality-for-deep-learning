@@ -136,6 +136,8 @@ DATATYPE_MAP = {
     'np.int64': np.int64,
 }
 
+YOLO_TO_ORIGINAL_PAPER_KEY_MAPPING = None  # mappings loaded if WANDB_PID == 'coco'
+
 if WANDB_PID[:4] == 'sat6':
     PROJECT_ID = 'sat6'
     # note: val slice in original datasets used for test dataset in this

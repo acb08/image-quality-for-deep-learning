@@ -601,17 +601,17 @@ def log_uid(directory, uid):
 
 if __name__ == '__main__':
 
-    config_filename = 's6_oct_fr90_composite_config.yml'
-    # config_filename = 'pl_oct_composite_fr90_mega1_mega2.yml'
+    # config_filename = 's6_oct_fr90_composite_config.yml'
+    config_filename = 'pl_oct_composite_fr90_mega1_mega2.yml'
 
-    analyze_1d = False
-    analyze_2d = False
+    analyze_1d = True
+    analyze_2d = True
     analyze_3d = True
 
-    make_standard_plots = False
+    make_standard_plots = True
 
-    make_simulation_plots_1d = False
-    make_simulation_plots_2d = False
+    make_simulation_plots_1d = True
+    make_simulation_plots_2d = True
 
     make_isosurf_plots = False
 
