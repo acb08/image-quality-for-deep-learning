@@ -5,8 +5,7 @@ description: test of noise-tuned yolov8n model on noised coco dataset
 test_dataset_id: 0047tst-coco_n_scan_v2-noise:v0
 test_dataset_artifact_alias: latest
 
-model_artifact_id: 0002yolo-yolov8-noise_best_loss:v0
-#model_artifact_id: yolov8n # verifying the issue is with the model
+model_artifact_id: 0003yolo-yolov8n-noise_best_loss:v0
 model_artifact_alias: latest
 
 batch_size: 2

@@ -30,9 +30,10 @@ class ModelDistortionPerformanceResultOD:
         self.distortion_tags = dataset['distortion_tags']
         if 'distortion_type_flags' in dataset.keys():
             self.distortion_type_flags = dataset['distortion_type_flags']
-            if set(self.distortion_type_flags) != set(manual_distortion_type_flags):
-                print(f'Warning: distortion type flags ({self.distortion_type_flags}) in dataset differ '
-                      f'from manual distortion type flags ({manual_distortion_type_flags})')
+            if manual_distortion_type_flags is not None:
+                if set(self.distortion_type_flags) != set(manual_distortion_type_flags):
+                    print(f'Warning: distortion type flags ({self.distortion_type_flags}) in dataset differ '
+                          f'from manual distortion type flags ({manual_distortion_type_flags})')
         else:
             self.distortion_type_flags = manual_distortion_type_flags
         self.convert_to_std = convert_to_std
@@ -73,6 +74,8 @@ class ModelDistortionPerformanceResultOD:
         self._parsed_mini_results = None
 
         self.shape = (len(self.distortion_space[0]), len(self.distortion_space[1]), len(self.distortion_space[2]))
+
+        self._3d_distortion_perf_props = None
 
     def __len__(self):
         return len(self.image_ids)
@@ -143,7 +146,10 @@ class ModelDistortionPerformanceResultOD:
 
         return self._parsed_mini_results
 
-    def get_3d_distortion_perf_props(self, distortion_ids, details=False, make_plots=False):
+    def get_3d_distortion_perf_props(self, distortion_ids, details=False, make_plots=False, force_recalculate=False):
+
+        if not force_recalculate and self._3d_distortion_perf_props is not None:
+            return self._3d_distortion_perf_props
 
         if distortion_ids != ('res', 'blur', 'noise'):
             raise ValueError('method requires distortion_ids (res, blur, noise)')
@@ -178,11 +184,14 @@ class ModelDistortionPerformanceResultOD:
         parameter_array = np.asarray(parameter_array, dtype=np.float32)
         performance_array = np.atleast_2d(np.asarray(performance_array, dtype=np.float32)).T
 
-        return res_values, blur_values, noise_values, map3d, parameter_array, performance_array, full_extract
+        self._3d_distortion_perf_props = (res_values, blur_values, noise_values, map3d, parameter_array,
+                                          performance_array, full_extract)
+
+        return self._3d_distortion_perf_props
 
 
 def get_obj_det_distortion_perf_result(result_id=None, identifier=None, config=None,
-                                       distortion_ids=('res', 'blur', 'noise'), make_dir=True):
+                                       distortion_ids=('res', 'blur', 'noise'), make_dir=True, run=None):
 
     if not result_id and not identifier:
         result_id = config['result_id']
@@ -192,22 +201,55 @@ def get_obj_det_distortion_perf_result(result_id=None, identifier=None, config=N
     if make_dir and not output_dir.is_dir():
         Path.mkdir(output_dir, parents=True)
 
-    with wandb.init(project=definitions.WANDB_PID, job_type='analyze_test_result') as run:
+    if run is None:
+        with wandb.init(project=definitions.WANDB_PID, job_type='analyze_test_result') as run:
 
+            dataset, result, dataset_id = load_dataset_and_result(run=run, result_id=result_id)
+            distortion_performance_result = ModelDistortionPerformanceResultOD(
+                dataset=dataset,
+                result=result,
+                convert_to_std=True,
+                result_id=result_id,
+                identifier=identifier,
+                # manual_distortion_type_flags=distortion_ids
+            )
+
+    else:
         dataset, result, dataset_id = load_dataset_and_result(run=run, result_id=result_id)
-        distortion_performance_result = ModelDistortionPerformanceResultOD(dataset=dataset,
-                                                                           result=result,
-                                                                           convert_to_std=True,
-                                                                           result_id=result_id,
-                                                                           identifier=identifier,
-                                                                           manual_distortion_type_flags=distortion_ids)
+        distortion_performance_result = ModelDistortionPerformanceResultOD(
+            dataset=dataset,
+            result=result,
+            convert_to_std=True,
+            result_id=result_id,
+            identifier=identifier,
+            # manual_distortion_type_flags=distortion_ids
+        )
 
     return distortion_performance_result, output_dir
 
 
+def flatten_axes_from_cfg(config):
+
+    if 'flatten_axes' in config.keys():
+        return config['flatten_axes']
+    else:
+        return 0, 1, 2
+
+
+def flatten_axis_combinations_from_cfg(config):
+
+    if 'flatten_axis_combinations' in config.keys():
+        flatten_axis_combinations = config['flatten_axis_combinations']
+        flatten_axis_combinations = [tuple(combination) for combination in flatten_axis_combinations]
+        flatten_axis_combinations = tuple(flatten_axis_combinations)
+        return flatten_axis_combinations
+    else:
+        return (1, 2), (0, 2), (0, 1)
+
+
 if __name__ == '__main__':
 
-    config_name = 'analyze_yolov8n_n_scan.yml'
+    config_name = 'analyze_yolov8n-noise_n_scan.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_name, help='config filename to be used')
@@ -217,18 +259,22 @@ if __name__ == '__main__':
     args_passed = parser.parse_args()
     run_config = get_config(args_passed)
 
-    if 'flatten_axes' in run_config.keys():
-        _flatten_axes = run_config['flatten_axes']
-        _flatten_axes = tuple(_flatten_axes)
-    else:
-        _flatten_axes = (0, 1, 2)
+    # if 'flatten_axes' in run_config.keys():
+    #     _flatten_axes = run_config['flatten_axes']
+    #     _flatten_axes = tuple(_flatten_axes)
+    # else:
+    #     _flatten_axes = (0, 1, 2)
 
-    if 'flatten_axis_combinations' in run_config.keys():
-        _flatten_axis_combinations = run_config['flatten_axis_combinations']
-        _flatten_axis_combinations = [tuple(combination) for combination in _flatten_axis_combinations]
-        _flatten_axis_combinations = tuple(_flatten_axis_combinations)
-    else:
-        _flatten_axis_combinations = ((1, 2), (0, 2), (0, 1))
+    _flatten_axes = flatten_axes_from_cfg(run_config)
+
+    # if 'flatten_axis_combinations' in run_config.keys():
+    #     _flatten_axis_combinations = run_config['flatten_axis_combinations']
+    #     _flatten_axis_combinations = [tuple(combination) for combination in _flatten_axis_combinations]
+    #     _flatten_axis_combinations = tuple(_flatten_axis_combinations)
+    # else:
+    #     _flatten_axis_combinations = ((1, 2), (0, 2), (0, 1))
+
+    _flatten_axis_combinations = flatten_axis_combinations_from_cfg(run_config)
 
     _distortion_performance_result, _output_dir = get_obj_det_distortion_perf_result(config=run_config)
 
@@ -248,7 +294,9 @@ if __name__ == '__main__':
     #                       directory=_output_dir,
     #                       perf_metric='mAP')
 
-    plot.plot_1d_from_3d(perf_3d=_map3d,
+    _perf_dict_3d = {'performance': _map3d}
+
+    plot.plot_1d_from_3d(perf_dict_3d=_perf_dict_3d,
                          x_vals=_res_vals,
                          y_vals=_blur_vals,
                          z_vals=_noise_vals,

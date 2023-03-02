@@ -1,6 +1,7 @@
 ---
 
-result_id: 0041rlt-0002yolo-yolov8-noise_best_loss-0047tst-coco_n_scan_v2-noise:v0
-identifier: yolov8n-noise-trained-n-scan__pretrained_yolov8n_debug__
+result_id: 0042rlt-0003yolo-yolov8n-noise_best_loss-0047tst-coco_n_scan_v2-noise:v0
+#result_id: 0041rlt-0002yolo-yolov8-noise_best_loss-0047tst-coco_n_scan_v2-noise:v0
+identifier: yolov8n-noise-trained-5-epoch-n-scan
 
 flatten_axis_combinations: [[0, 1]]

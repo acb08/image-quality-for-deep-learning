@@ -749,7 +749,7 @@ def compare_1d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blu
         plt.show()
 
 
-def plot_1d_from_3d(perf_3d, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),
+def plot_1d_from_3d(perf_dict_3d, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),
                     result_identifier='3d_1d_projection',
                     flatten_axis_combinations=((1, 2), (0, 2), (0, 1)),
                     directory=None,
@@ -773,20 +773,25 @@ def plot_1d_from_3d(perf_3d, x_vals, y_vals, z_vals, distortion_ids=('res', 'blu
         save_dir_individual = directory
         show_plots_individual = show_plots
 
-    for i, flatten_axes in enumerate(flatten_axis_combinations):
-        f0_1d, axis = flatten_2x(perf_3d, x_vals, y_vals, z_vals, flatten_axes=flatten_axes)
-        axis_label = keep_1_of_3(a=distortion_ids, discard_indices=flatten_axes)
-        axis_check = keep_1_of_3(a=x_vals, b=y_vals, c=z_vals, discard_indices=flatten_axes)
-        assert np.array_equal(axis, axis_check)
+    performance_dict_1d = {}
 
-        if name_string is not None:
-            performance_key = name_string
-        else:
-            performance_key = 'performance'
-        performance_dict = {performance_key: f0_1d}
+    for i, flatten_axes in enumerate(flatten_axis_combinations):
+        axis = None
+        axis_label = None
+        prev_axis = None
+        for key, perf_3d in perf_dict_3d.items():
+            f0_1d, axis = flatten_2x(perf_3d, x_vals, y_vals, z_vals, flatten_axes=flatten_axes)
+            axis_label = keep_1_of_3(a=distortion_ids, discard_indices=flatten_axes)
+            axis_check = keep_1_of_3(a=x_vals, b=y_vals, c=z_vals, discard_indices=flatten_axes)
+            assert np.array_equal(axis, axis_check)
+            if prev_axis is not None:
+                assert np.array_equal(axis, prev_axis)
+            prev_axis = axis
+
+            performance_dict_1d[key] = f0_1d
 
         plot_1d_performance(x=axis,
-                            performance_dict=performance_dict,
+                            performance_dict=performance_dict_1d,
                             distortion_id=axis_label,
                             result_identifier=result_identifier,
                             ylabel=ylabel,
@@ -810,6 +815,17 @@ def plot_1d_from_3d(perf_3d, x_vals, y_vals, z_vals, distortion_ids=('res', 'blu
 
     if show_plots:
         plt.show()
+
+
+def plot_2d_from_3d(perf_dict_3d,
+                    x_vals,
+                    y_vals,
+                    z_vals,
+                    distortion_ids,
+                    flatten_axes,
+                    show_plots=True,
+                    ):
+    pass
 
 
 def residual_color_plot(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),

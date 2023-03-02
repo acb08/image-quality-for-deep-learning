@@ -1,0 +1,14 @@
+---
+
+test_result_identifiers:
+
+  - ['austinbergstrom/coco/0042rlt-0003yolo-yolov8n-noise_best_loss-0047tst-coco_n_scan_v2-noise:v0',
+     '5-epoch']
+  - ['0041rlt-0002yolo-yolov8-noise_best_loss-0047tst-coco_n_scan_v2-noise:v0',
+     '1-epoch']
+  - ['0030rlt-yolov8n-0047tst-coco_n_scan_v2-noise:v0',
+     'pre-trained']
+
+overwrite: False
+manual_name: noise-model-noise-scan
+flatten_axis_combinations: [[0, 1]]
