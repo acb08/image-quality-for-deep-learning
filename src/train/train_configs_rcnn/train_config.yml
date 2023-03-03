@@ -16,7 +16,7 @@ lr: 0.005
 momentum: 0.9
 weight_decay: 0.0005
 
-status_interval: 50
+status_interval: 1000
 
 description: debug
 artifact_type: model
