@@ -212,7 +212,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_name', default='train-noise.yml', help='config filename to be used')
+    parser.add_argument('--config_name', default='train_config.yml', help='config filename to be used')
     parser.add_argument('--config_dir',
                         default=Path(Path(__file__).parents[0], 'train_configs_yolo'),
                         help="configuration file directory")
