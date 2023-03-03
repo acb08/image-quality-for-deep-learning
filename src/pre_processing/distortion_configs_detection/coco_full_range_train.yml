@@ -11,7 +11,7 @@ val_frac: 0.05
 
 distortion_tags: ['r_fr_tr_coco', 'b_fr_tr_coco', 'n_fr_tr_coco']
 distortion_type_flags: ['res', 'blur', 'noise']  # specifies distortion_tags associated distortion types
-iterations: 10
+iterations: 1
 artifact_type: train_dataset
 #dataset_split_key: test  # used to mirror 'train'/'val' split in data structure
 artifact_filename: standard
