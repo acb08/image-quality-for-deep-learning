@@ -8,7 +8,7 @@ starting_model_artifact_alias: 'latest'
 distortion_tags: []
 
 num_epochs: 5
-batch_size: 6
+batch_size: 4
 num_workers: 4
 
 optimizer_type: SGD
