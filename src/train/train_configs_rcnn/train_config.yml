@@ -7,9 +7,9 @@ starting_model_id: fasterrcnn_resnet50_fpn
 starting_model_artifact_alias: latest
 distortion_tags: []
 
-num_epochs: 5
-batch_size: 1
-num_workers: 0
+num_epochs: 1
+batch_size: 16
+num_workers: 4
 
 optimizer_type: SGD
 lr: 0.005
