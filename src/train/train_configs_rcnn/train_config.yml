@@ -1,0 +1,25 @@
+---
+
+train_dataset_id: coco128
+train_dataset_artifact_alias: latest
+
+starting_model_id: fasterrcnn_resnet50_fpn
+starting_model_artifact_alias: latest
+distortion_tags: []
+
+num_epochs: 5
+batch_size: 1
+num_workers: 0
+
+optimizer_type: SGD
+lr: 0.005
+momentum: 0.9
+weight_decay: 0.0005
+
+status_interval: 50
+
+description: debug
+artifact_type: model
+
+name_string: coco128-dist-debug
+

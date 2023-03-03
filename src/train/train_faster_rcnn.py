@@ -1,18 +1,28 @@
+import copy
+import time
 import torch
 from pathlib import Path
 from torch.utils.data import Dataset
 import torch.distributed as dist
 import math
 import sys
-import src.utils.definitions as definitions
+from src.utils.definitions import ROOT_DIR, ORIGINAL_DATASETS, WANDB_PID, STANDARD_DATASET_FILENAME, REL_PATHS, \
+    STANDARD_CHECKPOINT_FILENAME
 from src.utils.detection_functions import yolo_result_to_target_fmt, translate_yolo_to_original_label_fmt
-from src.utils import functions
+from src.utils.functions import load_original_dataset, get_config, construct_artifact_id, load_wandb_data_artifact, \
+    load_wandb_model_artifact, id_from_tags, wandb_to_detection_dataset
 from src.utils.classes import COCO
+import argparse
+import wandb
+from src.train.train import log_checkpoint, save_best_loss_model
+
+
+_T0 = time.time()
 
 
 def _load_instances_placeholder(dataset_id='val2017'):
 
-    original_dataset = functions.load_original_dataset(dataset_id)
+    original_dataset = load_original_dataset(dataset_id)
     instances = original_dataset['instances']
 
     return instances
@@ -31,8 +41,8 @@ def collate_fn(batch):
 
 def get_dataset(cutoff=None, dataset_key='val2017', yolo_fmt=False):
 
-    path_data = definitions.ORIGINAL_DATASETS[dataset_key]
-    image_dir = Path(definitions.ROOT_DIR, path_data['rel_path'])
+    path_data = ORIGINAL_DATASETS[dataset_key]
+    image_dir = Path(ROOT_DIR, path_data['rel_path'])
 
     instances = _load_instances_placeholder(dataset_id=dataset_key)
 
@@ -101,6 +111,8 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=10,
     running_loss_total = 0
     total_images = 0
 
+    num_batches = len(data_loader)
+
     for i, (images, targets) in enumerate(data_loader):
         images = list(image.to(device) for image in images)
         total_images += len(images)
@@ -132,10 +144,10 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=10,
         if lr_scheduler is not None:
             lr_scheduler.step()
 
-        if i > 0 and i % print_freq == 0:
-            print(f'batch {i} train loss:', loss_value)
+        if i > 0 and total_images % print_freq == 0:
+            print(f'batch {i + 1} / {num_batches} train loss ({total_images} images):', loss_value)
 
-    mean_loss = running_loss_total / total_images
+    mean_loss = float(running_loss_total) / total_images
     print(f'epoch {epoch} mean loss: ', mean_loss)
 
     return loss_dict, mean_loss
@@ -143,24 +155,26 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=10,
 
 def validate(model, data_loader, device, print_freq=10, scaler=None):
 
-    model.eval()
+    with torch.no_grad():
 
-    running_loss_total = 0
-    total_images = 0
+        model.train()  # if model in eval mode, boxes returned rather than loss values
 
-    for i, (images, targets) in enumerate(data_loader):
-        images = list(image.to(device) for image in images)
-        total_images += len(images)
-        targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-        with torch.cuda.amp.autocast(enabled=scaler is not None):
-            loss_list = model(images, targets)
-            losses = sum(loss for loss in loss_list)
-            running_loss_total += losses
+        running_loss_total = 0
+        total_images = 0
 
-    mean_val_loss = running_loss_total / total_images
-    print(f'mean val loss: ', mean_val_loss)
+        for i, (images, targets) in enumerate(data_loader):
+            images = list(image.to(device) for image in images)
+            total_images += len(images)
+            targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
+            with torch.cuda.amp.autocast(enabled=scaler is not None):
+                loss_dict = model(images, targets)
+                losses = sum(loss.item() for loss in loss_dict.values())
+                running_loss_total += losses
 
-    return mean_val_loss, loss_list
+        mean_val_loss = running_loss_total / total_images
+        print(f'mean val loss: ', mean_val_loss)
+
+    return loss_dict, mean_val_loss
 
 
 @torch.inference_mode()
@@ -203,7 +217,6 @@ def evaluate(model, data_loader, device, status_interval=500, yolo_mode=False):
             targets = [{k: v.to(cpu_device) for k, v in t.items()} for t in targets]
 
         res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
-        # tgt = {target["image_id"].item(): target for target, output in zip(targets, outputs)}
         tgt = {target["image_id"].item(): target for target in targets}
         all_results.update(res)
         all_targets.update(tgt)
@@ -218,18 +231,159 @@ def evaluate(model, data_loader, device, status_interval=500, yolo_mode=False):
     return all_results, all_targets
 
 
+def load_tune_model(config):
+
+    with wandb.init(project=WANDB_PID, job_type='train_model', config=config) as run:
+
+        config = wandb.config  # allows wandb parameter sweeps (not currently implemented)
+
+        dataset_artifact_id, __ = construct_artifact_id(config['train_dataset_id'],
+                                                        artifact_alias=config['train_dataset_artifact_alias'])
+        starting_model_artifact_id, __ = construct_artifact_id(config['starting_model_id'],
+                                                               artifact_alias=config['starting_model_artifact_alias'])
+
+        model, arch, __ = load_wandb_model_artifact(run, starting_model_artifact_id, return_configs=True)
+        config['arch'] = arch
+
+        __, dataset = load_wandb_data_artifact(run, dataset_artifact_id, STANDARD_DATASET_FILENAME)
+        detection_dataset = wandb_to_detection_dataset(dataset, yolo_fmt=False)
+
+        num_epochs = config['num_epochs']
+        batch_size = config['batch_size']
+        num_workers = config['num_workers']
+        artifact_type = config['artifact_type']
+        status_interval = config['status_interval']
+        description = config['description']
+
+        optimizer_type = config['optimizer_type']
+        lr = config['lr']
+        momentum = config['momentum']
+        weight_decay = config['weight_decay']
+
+        model_id_tags = [arch]
+        if 'name_string' in config.keys() and config['name_string'] is not None:
+            model_id_tags.append(config['name_string'])
+            new_model_id = id_from_tags(artifact_type, model_id_tags)
+
+        else:
+            new_model_id = id_from_tags(artifact_type, model_id_tags)
+
+        new_model_rel_dir = Path(REL_PATHS[artifact_type], new_model_id)
+        output_dir = Path(ROOT_DIR, new_model_rel_dir)
+        output_dir.mkdir(parents=True)
+
+        if torch.cuda.is_available():
+            device = 'cuda'
+            torch.cuda.empty_cache()
+        else:
+            device = 'cpu'
+
+        loader = get_loader(detection_dataset, num_workers=num_workers, batch_size=batch_size)
+
+        model.to(device)
+
+        params = [p for p in model.parameters() if p.requires_grad]
+
+        # optimizer = torch.optim.SGD(params, lr=lr, momentum=momentum, weight_decay=weight_decay)
+        optimizer = getattr(torch.optim, optimizer_type)(params, lr=lr,
+                                                         momentum=momentum, weight_decay=weight_decay)
+
+        new_model_checkpoint_file_config = {
+            'model_rel_dir': str(new_model_rel_dir),
+            'model_filename': STANDARD_CHECKPOINT_FILENAME
+        }
+        config['model_file_config'] = new_model_checkpoint_file_config
+
+        train_losses = []
+        val_losses = []
+
+        for epoch in range(num_epochs):
+
+            train_loss_dict, mean_train_loss = train_one_epoch(model=model,
+                                                               optimizer=optimizer,
+                                                               data_loader=loader,
+                                                               device=device,
+                                                               epoch=epoch,
+                                                               print_freq=status_interval,
+                                                               scaler=None)
+            train_losses.append(mean_train_loss)
+
+            loss_dict, mean_val_loss = validate(model=model,
+                                                data_loader=loader,
+                                                device=device,
+                                                scaler=None)
+            val_losses.append(mean_val_loss)
+
+            artifact_metadata = dict(config)
+            artifact_metadata.update({
+                'epoch': epoch
+            })
+
+            new_model_artifact = wandb.Artifact(
+                new_model_id,
+                type=artifact_type,
+                metadata=artifact_metadata,
+                description=description,
+            )
+
+            _time = round(time.time() - _T0, 1)
+            epoch_stats = {
+                'train_loss': mean_train_loss,
+                'val_loss': mean_val_loss,
+                'epoch': epoch,
+                'time': _time
+            }
+            wandb.log(epoch_stats)
+            log_checkpoint(model, artifact_metadata, new_model_artifact, run)
+
+            if val_losses[-1] <= min(val_losses):
+
+                best_loss_model_metadata = copy.deepcopy(dict(artifact_metadata))
+                best_loss_model_path, best_loss_helper_path = save_best_loss_model(model,
+                                                                                   best_loss_model_metadata,
+                                                                                   val_losses,
+                                                                                   epoch)
+
+            print(f'Epoch {epoch} losses: {mean_train_loss} (train), {mean_train_loss} (val), {_time} s run time')
+
+        best_loss_model_artifact = wandb.Artifact(
+            f'{new_model_id}_best_loss',
+            type=artifact_type,
+            metadata=artifact_metadata,
+            description=description
+        )
+        best_loss_model_artifact.add_file(str(best_loss_model_path))
+        best_loss_model_artifact.add_file(str(best_loss_helper_path))
+        run.log_artifact(best_loss_model_artifact)
+        run.name = new_model_id
+
+    print('done')
+
+
 if __name__ == '__main__':
 
-    if torch.cuda.is_available():
-        _device = 'cuda'
-        torch.cuda.empty_cache()
-    else:
-        _device = 'cpu'
+    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config_name', default='train_config.yml', help='config filename to be used')
+    parser.add_argument('--config_dir',
+                        default=Path(Path(__file__).parents[0], 'train_configs_rcnn'),
+                        help="configuration file directory")
+    args_passed = parser.parse_args()
 
-    _dataset = get_dataset(cutoff=4)
-    _test_dataset = get_dataset(cutoff=20)
-    _loader = get_loader(_dataset, batch_size=1)
-    _test_loader = get_loader(_test_dataset, batch_size=1)
+    run_config = get_config(args_passed)
+
+    load_tune_model(run_config)
+
+    # if torch.cuda.is_available():
+    #     _device = 'cuda'
+    #     torch.cuda.empty_cache()
+    # else:
+    #     _device = 'cpu'
+    #
+    # _dataset = get_dataset(cutoff=4)
+    # _test_dataset = get_dataset(cutoff=20)
+    # _loader = get_loader(_dataset, batch_size=1)
+    # _test_loader = get_loader(_test_dataset, batch_size=1)
 
     # _model = get_model()
     # _model.to(_device)

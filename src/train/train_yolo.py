@@ -115,6 +115,7 @@ def get_yolo_weight_paths(train_sub_dir):
 def load_tune_model(config):
 
     run_tags = copy.deepcopy(config['distortion_tags'])
+    wandb.login()
 
     with wandb.init(project=WANDB_PID, job_type='train_model', config=config, tags=run_tags) as run:
 
