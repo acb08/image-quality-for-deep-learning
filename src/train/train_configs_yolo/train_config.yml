@@ -8,7 +8,7 @@ starting_model_artifact_alias: 'latest'
 distortion_tags: []
 
 num_epochs: 2
-batch_size: 8
+batch_size: 12
 num_workers: 0
 
 
