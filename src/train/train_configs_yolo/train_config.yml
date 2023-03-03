@@ -3,12 +3,12 @@
 train_dataset_id: 0007trn-coco128_noise_train_checkout:v0
 train_dataset_artifact_alias: latest
 
-starting_model_id: 'yolov8n'
+starting_model_id: 'yolov8l'
 starting_model_artifact_alias: 'latest'
 distortion_tags: []
 
 num_epochs: 2
-batch_size: 2
+batch_size: 8
 num_workers: 0
 
 
