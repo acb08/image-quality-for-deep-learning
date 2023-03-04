@@ -1,6 +1,6 @@
 ---
 
-train_dataset_id: 0023trn-coco_fr_train:v0
+train_dataset_id: 0019trn-coco_noise_train_checkout:v0
 train_dataset_artifact_alias: latest
 
 starting_model_id: 'yolov8n'
@@ -11,9 +11,8 @@ num_epochs: 5
 batch_size: 16
 num_workers: 4
 
-
-description: training on coco fr dataset
+description: training on basic coco noise dataset
 artifact_type: 'model'
 
-name_string: v8n-fr  # later manually changed artifact name to 0002yolo-yolov8-noise_best_loss:v0
+name_string: yolov8n-noise  # later manually changed artifact name to 0002yolo-yolov8-noise_best_loss:v0
 
