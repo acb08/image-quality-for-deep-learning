@@ -259,40 +259,19 @@ if __name__ == '__main__':
     args_passed = parser.parse_args()
     run_config = get_config(args_passed)
 
-    # if 'flatten_axes' in run_config.keys():
-    #     _flatten_axes = run_config['flatten_axes']
-    #     _flatten_axes = tuple(_flatten_axes)
-    # else:
-    #     _flatten_axes = (0, 1, 2)
-
     _flatten_axes = flatten_axes_from_cfg(run_config)
-
-    # if 'flatten_axis_combinations' in run_config.keys():
-    #     _flatten_axis_combinations = run_config['flatten_axis_combinations']
-    #     _flatten_axis_combinations = [tuple(combination) for combination in _flatten_axis_combinations]
-    #     _flatten_axis_combinations = tuple(_flatten_axis_combinations)
-    # else:
-    #     _flatten_axis_combinations = ((1, 2), (0, 2), (0, 1))
-
     _flatten_axis_combinations = flatten_axis_combinations_from_cfg(run_config)
 
     _distortion_performance_result, _output_dir = get_obj_det_distortion_perf_result(config=run_config)
 
-    # _outputs = _distortion_performance_result.result['outputs']
-    # _targets = _distortion_performance_result.result['targets']
-
-    # _mapped_stuff = _distortion_performance_result.map_images_to_dist_pts()
-
-    # _parsed_results = _distortion_performance_result.parse_by_dist_pt()
-
     _res_vals, _blur_vals, _noise_vals, _map3d, _parameter_array, _perf_array, _full_extract = (
         _distortion_performance_result.get_3d_distortion_perf_props(distortion_ids=('res', 'blur', 'noise')))
 
-    # plot.compare_2d_views(f0=_map3d, f1=_map3d,
-    #                       x_vals=_res_vals, y_vals=_blur_vals, z_vals=_noise_vals,
-    #                       distortion_ids=('res', 'blur', 'noise'), flatten_axes=_flatten_axes,
-    #                       directory=_output_dir,
-    #                       perf_metric='mAP')
+    plot.compare_2d_views(f0=_map3d, f1=_map3d,
+                          x_vals=_res_vals, y_vals=_blur_vals, z_vals=_noise_vals,
+                          distortion_ids=('res', 'blur', 'noise'), flatten_axes=_flatten_axes,
+                          directory=_output_dir,
+                          perf_metric='mAP')
 
     _perf_dict_3d = {'performance': _map3d}
 

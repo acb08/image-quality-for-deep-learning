@@ -1,7 +1,7 @@
 import numpy as np
 import argparse
 from pathlib import Path
-from src.utils.functions import get_config
+from src.utils.functions import get_config, log_config
 from src.analysis.compare_correlate_results import get_compare_dir
 from src.obj_det_analysis.distortion_performance_od import get_obj_det_distortion_perf_result, \
     flatten_axis_combinations_from_cfg, flatten_axes_from_cfg
@@ -49,6 +49,9 @@ def main(config):
     flatten_axes = flatten_axes_from_cfg(config)
     flatten_axis_combinations = flatten_axis_combinations_from_cfg(config)
 
+    output_dir = get_compare_dir(test_result_identifiers, manual_name=config['manual_name'])
+    log_config(output_dir=output_dir, config=config)
+
     performance_dict_3d = {}
 
     res_vals = None
@@ -83,6 +86,7 @@ def main(config):
                     flatten_axis_combinations=flatten_axis_combinations,
                     show_plots=True,
                     plot_together=False,
+                    directory=output_dir,
                     ylabel='mAP',
                     legend=False,
                     y_lim_bottom=-0.03,
@@ -96,7 +100,7 @@ def main(config):
 
 if __name__ == '__main__':
 
-    config_name = 'compare_config.yml'
+    config_name = 'fr_pt_n_scan.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_name, help='config filename to be used')

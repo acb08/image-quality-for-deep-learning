@@ -1,0 +1,12 @@
+---
+
+test_result_identifiers:
+
+  - ['0028rlt-yolov8n-0046tst-coco_b_scan_v2-blur:v0',
+     'pre-trained']
+  - ['0045rlt-0019yolo-v8n-fr_best_loss-0046tst-coco_b_scan_v2-blur:v0',
+     'full-range']
+
+overwrite: False
+manual_name: fr-pt-blur-scan
+flatten_axis_combinations: [[0, 2]]
