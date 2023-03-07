@@ -1,6 +1,6 @@
 # from torchvision.models.detection import fasterrcnn_resnet50_fpn, FasterRCNN_ResNet50_FPN_Weights
 # import src.train.train_obj_det
-from src.train import train_faster_rcnn as run
+from src.train import rcnn as run
 import json
 import torch
 import src.utils.definitions as definitions

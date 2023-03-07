@@ -2,7 +2,7 @@ from pathlib import Path
 import json
 # from src.utils.classes import COCO
 # from src.utils import definitions
-from src.train import train_faster_rcnn as run
+from src.train import rcnn as run
 
 
 def load_instances(directory, filename):

@@ -9,7 +9,7 @@ from src.utils.functions import load_wandb_model_artifact, load_wandb_data_artif
     log_config, construct_artifact_id, wandb_to_detection_dataset
 from pathlib import Path
 import src.utils.detection_functions as coco_functions
-from src.train.train_faster_rcnn import get_loader, evaluate
+from src.train.rcnn import get_loader, evaluate
 
 
 def test_detection_model(config):
