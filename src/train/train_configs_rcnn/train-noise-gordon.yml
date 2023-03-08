@@ -4,7 +4,7 @@ train_dataset_id: 0019trn-coco_noise_train_checkout:v0
 train_dataset_artifact_alias: latest
 
 starting_model_id: fasterrcnn_resnet50_fpn
-starting_model_artifact_alias: 'latest'
+starting_model_artifact_alias: latest
 distortion_tags: []
 
 num_epochs: 1
