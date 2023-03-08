@@ -8,8 +8,8 @@ starting_model_artifact_alias: latest
 distortion_tags: []
 
 num_epochs: 1
-batch_size: 6
-num_workers: 4
+batch_size: 1
+num_workers: 2
 
 optimizer_type: SGD
 lr: 0.005
@@ -21,5 +21,5 @@ status_interval: 1000
 description: debug
 artifact_type: model
 
-name_string: coco128-dist-debug
+name_string: coco128-debug
 

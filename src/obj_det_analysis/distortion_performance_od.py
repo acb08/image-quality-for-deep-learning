@@ -249,7 +249,7 @@ def flatten_axis_combinations_from_cfg(config):
 
 if __name__ == '__main__':
 
-    config_name = 'analyze_yolov8n-noise_n_scan.yml'
+    config_name = 'distortion_analysis_config.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_name, help='config filename to be used')
@@ -267,11 +267,11 @@ if __name__ == '__main__':
     _res_vals, _blur_vals, _noise_vals, _map3d, _parameter_array, _perf_array, _full_extract = (
         _distortion_performance_result.get_3d_distortion_perf_props(distortion_ids=('res', 'blur', 'noise')))
 
-    plot.compare_2d_views(f0=_map3d, f1=_map3d,
-                          x_vals=_res_vals, y_vals=_blur_vals, z_vals=_noise_vals,
-                          distortion_ids=('res', 'blur', 'noise'), flatten_axes=_flatten_axes,
-                          directory=_output_dir,
-                          perf_metric='mAP')
+    # plot.compare_2d_views(f0=_map3d, f1=_map3d,
+    #                       x_vals=_res_vals, y_vals=_blur_vals, z_vals=_noise_vals,
+    #                       distortion_ids=('res', 'blur', 'noise'), flatten_axes=_flatten_axes,
+    #                       directory=_output_dir,
+    #                       perf_metric='mAP')
 
     _perf_dict_3d = {'performance': _map3d}
 

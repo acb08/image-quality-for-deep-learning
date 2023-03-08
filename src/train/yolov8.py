@@ -5,7 +5,7 @@ import argparse
 from pathlib import Path
 from src.utils.coco_label_functions import get_yolo_labels
 from src.utils.functions import get_config
-from src.utils.definitions import STANDARD_DATASET_FILENAME, ROOT_DIR, WANDB_PID, REL_PATHS
+from src.utils.definitions import STANDARD_DATASET_FILENAME, ROOT_DIR, WANDB_PID, REL_PATHS, HOST
 from src.utils.functions import construct_artifact_id, load_wandb_data_artifact, load_wandb_model_artifact, \
     id_from_tags, log_model_helper
 
@@ -182,10 +182,12 @@ def load_tune_model(config):
 
         # TODO: figure out how to get the best val loss model
 
+        metadata = dict(config)
+
         best_loss_model_artifact = wandb.Artifact(
             f'{new_model_id}_best_loss',
             type=artifact_type,
-            metadata=dict(config),
+            metadata=metadata,
             description=description
         )
 
@@ -219,6 +221,7 @@ if __name__ == '__main__':
     args_passed = parser.parse_args()
 
     run_config = get_config(args_passed)
+    run_config['host'] = HOST
 
     load_tune_model(run_config)
 

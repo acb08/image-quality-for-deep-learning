@@ -7,7 +7,7 @@ import torch.distributed as dist
 import math
 import sys
 from src.utils.definitions import ROOT_DIR, ORIGINAL_DATASETS, WANDB_PID, STANDARD_DATASET_FILENAME, REL_PATHS, \
-    STANDARD_CHECKPOINT_FILENAME
+    STANDARD_CHECKPOINT_FILENAME, HOST
 from src.utils.detection_functions import yolo_result_to_target_fmt, translate_yolo_to_original_label_fmt
 from src.utils.functions import load_original_dataset, get_config, construct_artifact_id, load_wandb_data_artifact, \
     load_wandb_model_artifact, id_from_tags, wandb_to_detection_dataset
@@ -316,7 +316,7 @@ def load_tune_model(config):
 
             artifact_metadata = dict(config)
             artifact_metadata.update({
-                'epoch': epoch
+                'epoch': epoch,
             })
 
             new_model_artifact = wandb.Artifact(
@@ -349,7 +349,7 @@ def load_tune_model(config):
         best_loss_model_artifact = wandb.Artifact(
             f'{new_model_id}_best_loss',
             type=artifact_type,
-            metadata=artifact_metadata,
+            metadata=best_loss_model_metadata,
             description=description
         )
         best_loss_model_artifact.add_file(str(best_loss_model_path))
@@ -371,6 +371,7 @@ if __name__ == '__main__':
     args_passed = parser.parse_args()
 
     run_config = get_config(args_passed)
+    run_config['host'] = HOST
 
     load_tune_model(run_config)
 

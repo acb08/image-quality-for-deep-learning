@@ -4,7 +4,7 @@ import json
 import wandb
 from ultralytics import YOLO
 from src.utils.definitions import WANDB_PID, STANDARD_DATASET_FILENAME, ROOT_DIR, STANDARD_TEST_RESULT_FILENAME, \
-    REL_PATHS
+    REL_PATHS, HOST
 from src.utils.functions import load_wandb_model_artifact, load_wandb_data_artifact, id_from_tags, get_config, \
     log_config, construct_artifact_id, wandb_to_detection_dataset
 from pathlib import Path
@@ -85,11 +85,12 @@ def test_detection_model(config):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_name', default='n_scan_yolov8n-noise_local.yml', help='config filename to be used')
+    parser.add_argument('--config_name', default='test_config.yml', help='config filename to be used')
     parser.add_argument('--config_dir',
                         default=Path(Path(__file__).parents[0], 'test_configs_detection'),
                         help="configuration file directory")
     args_passed = parser.parse_args()
     run_config = get_config(args_passed)
+    run_config['host'] = HOST
 
     test_detection_model(run_config)

@@ -7,7 +7,7 @@ starting_model_id: fasterrcnn_resnet50_fpn
 starting_model_artifact_alias: 'latest'
 distortion_tags: []
 
-num_epochs: 5
+num_epochs: 1
 batch_size: 2
 num_workers: 2
 
@@ -21,5 +21,5 @@ status_interval: 1000
 description: training on basic coco noise dataset
 artifact_type: model
 
-name_string: noise # later manually changed artifact name to 0002yolo-yolov8-noise_best_loss:v0
+name_string: noise-debug # later manually changed artifact name to 0002yolo-yolov8-noise_best_loss:v0
 

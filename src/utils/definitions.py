@@ -2,6 +2,8 @@ import os
 import numpy as np
 from yaml import safe_load
 from pathlib import Path
+import socket
+
 
 """
 Contains global constants. 
@@ -14,6 +16,7 @@ to local image files.
 """
 
 ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '../../..'))
+HOST = socket.gethostname()
 
 STANDARD_DATASET_FILENAME = 'dataset.json'
 STANDARD_CHECKPOINT_FILENAME = 'model_cp.pt'
