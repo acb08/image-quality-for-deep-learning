@@ -1,4 +1,6 @@
 ---
 
-result_id: 0046rlt-0012fasterrcnn-noise-0047tst-coco_n_scan_v2-noise:v0
-identifier: rcnn-noise_n-scan
+result_id: 0048rlt-0023yolo-v8l-fr_best_loss-0047tst-coco_n_scan_v2-noise:v0
+identifier: v8l-noise_n-scan
+
+flatten_axis_combinations: [[0, 1]]

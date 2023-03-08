@@ -5,10 +5,10 @@ description: test of noise-tuned faster-rcnn model on noised coco dataset
 test_dataset_id: 0047tst-coco_n_scan_v2-noise:v0
 test_dataset_artifact_alias: latest
 
-model_artifact_id: 0012fasterrcnn-noise:v2
+model_artifact_id: 0028fasterrcnn-noise-tune-2_best_loss:v0
 model_artifact_alias: latest
 
-batch_size: 8
+batch_size: 4
 num_workers: 0
 pin_memory: True
 

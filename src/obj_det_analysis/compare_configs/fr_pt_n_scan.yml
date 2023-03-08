@@ -3,9 +3,13 @@
 test_result_identifiers:
 
   - ['0030rlt-yolov8n-0047tst-coco_n_scan_v2-noise:v0',
-     'pre-trained']
+     'v8n-pre-trained']
+  - ['0036rlt-yolov8l-0047tst-coco_n_scan_v2-noise:v0',
+     'v8l-pre-trained']
   - ['0044rlt-0019yolo-v8n-fr_best_loss-0047tst-coco_n_scan_v2-noise:v0',
-     'full-range']
+     'v8n-full-range']
+  - ['0048rlt-0023yolo-v8l-fr_best_loss-0047tst-coco_n_scan_v2-noise:v0',
+     'v8l-full-range']
 
 overwrite: False
 manual_name: pt-fr-noise-scan
