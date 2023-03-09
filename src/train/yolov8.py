@@ -2,6 +2,7 @@ import copy
 import yaml
 import wandb
 import argparse
+import shutil
 from pathlib import Path
 from src.utils.coco_label_functions import get_yolo_labels
 from src.utils.functions import get_config
@@ -159,30 +160,29 @@ def load_tune_model(config):
         # internally until I come across a simple way to access the directory info directly
         train_sub_dir, val_sub_dir = get_yolo_output_dirs(parent=output_dir)
         train_sub_dir = Path(output_dir, train_sub_dir)
-        val_sub_dir = Path(output_dir, val_sub_dir)
+
         best_weights_path, last_epoch_weights_path = get_yolo_weight_paths(train_sub_dir)
+        best_weights_dir = best_weights_path.parent
+        best_weights_rel_dir = best_weights_dir.relative_to(ROOT_DIR)
 
         best_weights_filename = best_weights_path.name
-        model_metadata = dict(config)
-        model_metadata['model_filename'] = best_weights_filename
+        # model_metadata = dict(config)
+        # model_metadata['model_filename'] = best_weights_filename
 
-        new_model_checkpoint_file_config = {
-            'model_rel_dir': str(new_model_rel_dir),
-            'model_filename': best_weights_path.name
+        metadata = dict(config)
+
+        best_loss_model_file_config = {
+            'model_rel_dir': str(best_weights_rel_dir),
+            'model_filename': best_weights_filename
         }
-        config['model_file_config'] = new_model_checkpoint_file_config
+        metadata['model_file_config'] = best_loss_model_file_config
 
         model.train(data=temp_yaml_cfg_path,
                     epochs=num_epochs,
                     batch=batch_size,
                     project=output_dir)
-        # model.val()
 
-        model_helper_path = log_model_helper(best_weights_path.parent, model_metadata)
-
-        # TODO: figure out how to get the best val loss model
-
-        metadata = dict(config)
+        model_helper_path = log_model_helper(best_weights_path.parent, metadata)
 
         best_loss_model_artifact = wandb.Artifact(
             f'{new_model_id}_best_loss',
@@ -196,6 +196,32 @@ def load_tune_model(config):
         additional_files = get_target_file_paths(train_sub_dir)
         add_em_all(best_loss_model_artifact, additional_files)
         run.log_artifact(best_loss_model_artifact)
+
+        last_epoch_weights_destination_dir = Path(last_epoch_weights_path.parent, 'last')
+        last_epoch_weights_destination_dir.mkdir()
+        last_epoch_rel_dir = last_epoch_weights_destination_dir.relative_to(ROOT_DIR)
+        last_epoch_model_filename = last_epoch_weights_path.name
+        last_epoch_model_path = Path(last_epoch_weights_destination_dir, last_epoch_model_filename)
+        shutil.move(last_epoch_weights_path, last_epoch_model_path)
+
+        last_epoch_model_file_config = {
+            'model_rel_dir': str(last_epoch_rel_dir),
+            'model_filename': last_epoch_model_filename
+        }
+        last_epoch_metadata = copy.deepcopy(metadata)
+        last_epoch_metadata['model_file_config'] = last_epoch_model_file_config
+
+        last_epoch_helper_path = log_model_helper(last_epoch_weights_destination_dir, last_epoch_metadata)
+        last_epoch_model_artifact = wandb.Artifact(
+            f'{new_model_id}_last_epoch',
+            type=artifact_type,
+            metadata=last_epoch_metadata,
+            description=description
+        )
+        last_epoch_model_artifact.add_file(str(last_epoch_model_path))
+        last_epoch_model_artifact.add_file(str(last_epoch_helper_path))
+        run.log_artifact(last_epoch_model_artifact)
+
         run.name = new_model_id
 
 

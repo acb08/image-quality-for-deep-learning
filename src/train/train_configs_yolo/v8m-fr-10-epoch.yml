@@ -1,0 +1,18 @@
+---
+
+train_dataset_id: 0023trn-coco_fr_train:v0
+train_dataset_artifact_alias: latest
+
+starting_model_id: 'yolov8m'
+starting_model_artifact_alias: 'latest'
+distortion_tags: []
+
+num_epochs: 10
+batch_size: 8
+num_workers: 4
+
+description: training on 10 epochs on coco fr (single distortion iteration) dataset
+artifact_type: 'model'
+
+name_string: v8m-fr-10e  # later manually changed artifact name to 0002yolo-yolov8-noise_best_loss:v0
+

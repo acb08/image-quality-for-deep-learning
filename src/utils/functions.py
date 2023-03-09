@@ -244,13 +244,12 @@ def load_wandb_data_artifact(run, artifact_id, artifact_filename, retries=10):
     return artifact, data
 
 
-def log_model_helper(model_dir, data):
+def log_model_helper(model_dir, data, filename='helper.json'):
 
     """
     Log a helper file to enable easy loading of models with potentially different filenames
     """
 
-    filename = 'helper.json'
     file_path = Path(model_dir, filename)
     with open(file_path, 'w') as f:
         json.dump(data, f)
@@ -366,7 +365,6 @@ def load_wandb_model_artifact(run, artifact_id, return_configs=False):
     artifact = run.use_artifact(artifact_id)
     artifact_dir = artifact.download()
     artifact_abs_dir = Path(Path.cwd(), artifact_dir)
-
     helper_data = read_json_artifact(artifact_abs_dir, 'helper.json')
     arch = helper_data['arch']
     # arch = 'resnet18_sat6'
