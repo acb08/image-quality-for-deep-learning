@@ -8,6 +8,14 @@ from src.utils import definitions
 import wandb
 from src.obj_det_analysis.analysis_tools import calculate_aggregate_results
 from src.analysis import plot
+import time
+
+
+_REPORT_TIME = False
+
+
+def _time_string():
+    return f'{round(time.time() - _T0, 1)} s'
 
 
 class ModelDistortionPerformanceResultOD:
@@ -137,11 +145,13 @@ class ModelDistortionPerformanceResultOD:
             parsed_mini_results = {}
 
             for dist_pt, image_ids in self.image_id_map.items():
-                parsed_outputs = {k: v for (k, v) in self.result['outputs'].items() if int(k) in image_ids}
-                parsed_targets = {k: v for (k, v) in self.result['targets'].items() if int(k) in image_ids}
+                parsed_outputs = {str(image_id): self.result['outputs'][str(image_id)] for image_id in image_ids}
+                parsed_targets = {str(image_id): self.result['targets'][str(image_id)] for image_id in image_ids}
+
                 parsed_mini_results[dist_pt] = {'outputs': parsed_outputs, 'targets': parsed_targets}
 
-                # TODO: figure out why image ids are stored as strings in result['outputs] and result['targets']
+            # TODO: figure out why image ids are stored as strings in result['outputs] and result['targets']
+
             self._parsed_mini_results = parsed_mini_results
 
         return self._parsed_mini_results
@@ -154,7 +164,14 @@ class ModelDistortionPerformanceResultOD:
         if distortion_ids != ('res', 'blur', 'noise'):
             raise ValueError('method requires distortion_ids (res, blur, noise)')
 
+        if _REPORT_TIME:
+            print(f'getting 3d distortion perf probs, {_time_string()}')
+
         parsed_mini_results = self.parse_by_dist_pt()
+
+        if _REPORT_TIME:
+            print(f'parsed mini results, {_time_string()}')
+
         res_values, blur_values, noise_values = self.get_distortion_space()
 
         map3d = np.zeros(self.shape, dtype=np.float32)
@@ -230,26 +247,65 @@ def get_obj_det_distortion_perf_result(result_id=None, identifier=None, config=N
 
 def flatten_axes_from_cfg(config):
 
+    default = 1, 2, 3
+
     if 'flatten_axes' in config.keys():
-        return config['flatten_axes']
+
+        flatten_axes = config['flatten_axes']
+
+        if flatten_axes == 'default':
+            return default
+
+        else:
+            return flatten_axes
     else:
-        return 0, 1, 2
+        return default
 
 
 def flatten_axis_combinations_from_cfg(config):
 
+    default = (1, 2), (0, 2), (0, 1)
+
     if 'flatten_axis_combinations' in config.keys():
+
         flatten_axis_combinations = config['flatten_axis_combinations']
-        flatten_axis_combinations = [tuple(combination) for combination in flatten_axis_combinations]
-        flatten_axis_combinations = tuple(flatten_axis_combinations)
-        return flatten_axis_combinations
+
+        if flatten_axis_combinations == 'default':
+            return default
+
+        else:
+            flatten_axis_combinations = [tuple(combination) for combination in flatten_axis_combinations]
+            flatten_axis_combinations = tuple(flatten_axis_combinations)
+            return flatten_axis_combinations
+
     else:
-        return (1, 2), (0, 2), (0, 1)
+        return default
+
+
+def main(config):
+
+    flatten_axes = flatten_axes_from_cfg(run_config)
+    flatten_axis_combinations = flatten_axis_combinations_from_cfg(run_config)
+
+    distortion_performance_result, output_dir = get_obj_det_distortion_perf_result(config=run_config)
+
+    res_vals, blur_vals, noise_vals, map3d, parameter_array, perf_array, full_extract = (
+        distortion_performance_result.get_3d_distortion_perf_props(distortion_ids=('res', 'blur', 'noise')))
+
+    pass
 
 
 if __name__ == '__main__':
 
-    config_name = 'distortion_analysis_config.yml'
+    _REPORT_TIME = True
+    _T0 = time.time()
+
+    ide_config_name = 'v8m-fr-10e_fr-test.yml'
+
+    if ide_config_name is None:
+        config_name = 'distortion_analysis_config.yml'
+    else:
+        config_name = ide_config_name
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_name, help='config filename to be used')
@@ -267,11 +323,12 @@ if __name__ == '__main__':
     _res_vals, _blur_vals, _noise_vals, _map3d, _parameter_array, _perf_array, _full_extract = (
         _distortion_performance_result.get_3d_distortion_perf_props(distortion_ids=('res', 'blur', 'noise')))
 
-    # plot.compare_2d_views(f0=_map3d, f1=_map3d,
-    #                       x_vals=_res_vals, y_vals=_blur_vals, z_vals=_noise_vals,
-    #                       distortion_ids=('res', 'blur', 'noise'), flatten_axes=_flatten_axes,
-    #                       directory=_output_dir,
-    #                       perf_metric='mAP')
+    plot.compare_2d_views(f0=_map3d, f1=_map3d,
+                          x_vals=_res_vals, y_vals=_blur_vals, z_vals=_noise_vals,
+                          distortion_ids=('res', 'blur', 'noise'),  # flatten_axes=_flatten_axes,
+                          directory=_output_dir,
+                          perf_metric='mAP',
+                          show_plots=True)
 
     _perf_dict_3d = {'performance': _map3d}
 
@@ -287,5 +344,6 @@ if __name__ == '__main__':
                          plot_together=False,
                          ylabel='mAP',
                          legend=False,
-                         y_lim_bottom=-0.03,
-                         y_lim_top=0.65)
+                         # y_lim_bottom=-0.03,
+                         # y_lim_top=0.65)
+                         )
