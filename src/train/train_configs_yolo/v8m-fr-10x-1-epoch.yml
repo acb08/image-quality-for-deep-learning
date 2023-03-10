@@ -16,3 +16,4 @@ artifact_type: model
 
 name_string: v8m-fr10x-1e  # later manually changed artifact name to 0002yolo-yolov8-noise_best_loss:v0
 
+device: 7
