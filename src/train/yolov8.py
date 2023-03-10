@@ -116,11 +116,18 @@ def get_yolo_weight_paths(train_sub_dir):
 def load_tune_model(config):
 
     run_tags = copy.deepcopy(config['distortion_tags'])
+
+    if 'device' in config.keys():
+        device = config['device']
+    else:
+        device = 0
+
     wandb.login()
 
     with wandb.init(project=WANDB_PID, job_type='train_model', config=config, tags=run_tags) as run:
 
-        config = wandb.config # allows wandb parameter sweeps (not currently implemented)
+        config = wandb.config  # allows wandb parameter sweeps (not currently implemented)
+
         dataset_artifact_id, __ = construct_artifact_id(config['train_dataset_id'],
                                                         artifact_alias=config['train_dataset_artifact_alias'])
         starting_model_artifact_id, __ = construct_artifact_id(config['starting_model_id'],
@@ -180,7 +187,8 @@ def load_tune_model(config):
         model.train(data=temp_yaml_cfg_path,
                     epochs=num_epochs,
                     batch=batch_size,
-                    project=output_dir)
+                    project=output_dir,
+                    device=device)
 
         model_helper_path = log_model_helper(best_weights_path.parent, metadata)
 
