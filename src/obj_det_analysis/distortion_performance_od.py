@@ -300,7 +300,7 @@ if __name__ == '__main__':
     _REPORT_TIME = True
     _T0 = time.time()
 
-    ide_config_name = 'v8m-fr-10e_fr-test.yml'
+    ide_config_name = 'v8n_fr-test.yml'
 
     if ide_config_name is None:
         config_name = 'distortion_analysis_config.yml'
@@ -344,6 +344,4 @@ if __name__ == '__main__':
                          plot_together=False,
                          ylabel='mAP',
                          legend=False,
-                         # y_lim_bottom=-0.03,
-                         # y_lim_top=0.65)
                          )
