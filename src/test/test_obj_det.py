@@ -29,8 +29,17 @@ def test_detection_model(config):
         detection_dataset = wandb_to_detection_dataset(dataset, yolo_fmt=yolo_mode)
 
         torch.no_grad()
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        if 'device' in config.keys():
+            device = config['device']
+            if type(device) == str:
+                if device.isdigit():
+                    device = int(device)
+            if type(device) == int:
+                device = f'cuda:{device}'
+        else:
+            device = 'cuda' if torch.cuda.is_available() else 'cpu'
         print('device: ', device)
+
         model.to(device)
         batch_size = config['batch_size']
         num_workers = config['num_workers']
