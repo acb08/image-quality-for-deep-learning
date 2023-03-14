@@ -1,6 +1,6 @@
 ---
 
-result_id: 0008rlt-yolov8x-0046tst-coco_b_scan_v2-blur:v0
-identifier: v8x-b-scan
+result_id: 0010rlt-yolov8x-0046tst-coco_b_scan_v2-blur:v0 # 0008rlt-yolov8x-0046tst-coco_b_scan_v2-blur:v0
+identifier: v8x-b-scan-2
 
 flatten_axis_combinations: [[0, 2]]

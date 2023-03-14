@@ -338,7 +338,7 @@ if __name__ == '__main__':
     _REPORT_TIME = True
     _T0 = time.time()
 
-    ide_config_name = "v8x_r-scan.yml"  # 'v8n_fr-test.yml'
+    ide_config_name = "v8x_b-scan.yml"  # 'v8n_fr-test.yml'
 
     if ide_config_name is None:
         config_name = 'distortion_analysis_config.yml'
