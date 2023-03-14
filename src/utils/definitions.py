@@ -109,13 +109,19 @@ DISTORTION_RANGE_90 = {
         'noise': (0, 50)
     },
     'places365': {
-        'res': (0.2, 1),  # not units specified differently btw sat6 and places
+        'res': (0.2, 1),  # not units specified differently btw sat6 and places/coco
         'blur': (31, 0.5, 4.5),  # (kernel size, sigma_min, sigma_max)
         'noise': (0, 44)
+    },
+    'coco': {  # coco values specified rather than range to avoid extra function calls for each image
+        'res': np.linspace(0.25, 1, num=16),
+        'blur': np.linspace(0.5, 4.5, num=17),
+        'noise': np.arange(0, 15) * 5
     }
 }
 # the only change in the sat6 "90%" distortion range is in blur to mitigate the effects of changing blur std when
 # the entire non-zero portion of the kernel falls within a single pixel
+
 
 DISTORTION_TYPES = ['pan', 'res', 'blur', 'noise']
 

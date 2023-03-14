@@ -8,6 +8,10 @@ from src.utils.classes import VariableImageResize, VariableCOCOResize
 RNG = np.random.default_rng()
 
 
+def _get_kernel_size(std):
+    return 8 * max(int(np.round(std, 0)), 1) + 1
+
+
 def _add_zero_centered_channel_replicated_poisson_noise(img, lambda_poisson):
 
     img = np.asarray(img)
@@ -406,6 +410,16 @@ def b_fr_tr_coco(img):
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'blur', std
 
 
+def b_fr90_coco(img):
+
+    sigma_range = DISTORTION_RANGE_90['coco']['blur']
+    std = np.random.choice(sigma_range)
+
+    kernel_size = _get_kernel_size(std)
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'blur', std
+
+
 def no_op_coco(img):
     """
     Debugging function to check out data pipeline
@@ -481,6 +495,21 @@ def n_fr_tr_coco(img):
     return img_out, None, 'noise', lambda_poisson
 
 
+def n_fr90_coco(img):
+    """
+    Debugging function to check out data pipeline
+    """
+
+    sigma_vals = DISTORTION_RANGE_90['coco']['noise']
+    sigma_poisson = np.random.choice(sigma_vals)
+    lambda_poisson = int(sigma_poisson ** 2)  # convert from np.int64 to regular int for json serialization
+    img_out = _add_zero_centered_poisson_noise(img, lambda_poisson)
+
+    img_out = np.asarray(img_out, dtype=np.uint8)
+
+    return img_out, None, 'noise', lambda_poisson
+
+
 def r0_coco(img):
 
     res_frac = random.choice([0.4, 0.6, 0.7, 0.8, 0.9, 1])
@@ -508,6 +537,15 @@ def r_scan_coco_v2(img):
 def r_fr_tr_coco(img):
 
     res_fractions = np.linspace(0.2, 1, num=20)
+    res_frac = random.choice(res_fractions)
+    img_out = VariableCOCOResize()(img, res_frac)
+
+    return img_out, None, 'res', res_frac
+
+
+def r_fr90_coco(img):
+
+    res_fractions = DISTORTION_RANGE_90['coco']['res']
     res_frac = random.choice(res_fractions)
     img_out = VariableCOCOResize()(img, res_frac)
 
@@ -797,4 +835,8 @@ coco_tag_to_image_distortions = {  # coco distortion functions return distortion
     'r_fr_tr_coco': r_fr_tr_coco,
     'b_fr_tr_coco': b_fr_tr_coco,
     'n_fr_tr_coco': n_fr_tr_coco,
+
+    'r_fr90_coco': r_fr90_coco,
+    'b_fr90_coco': b_fr90_coco,
+    'n_fr90_coco': n_fr90_coco,
 }

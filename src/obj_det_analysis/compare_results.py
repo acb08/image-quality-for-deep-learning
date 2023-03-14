@@ -49,6 +49,17 @@ def main(config):
     flatten_axes = flatten_axes_from_cfg(config)
     flatten_axis_combinations = flatten_axis_combinations_from_cfg(config)
 
+    if 'plot_together' in config.keys():
+        plot_together = config['plot_together']
+    else:
+        plot_together = False
+
+    y_lim_bottom, y_lim_top = None, None
+    if 'y_limits' in config.keys():
+        y_limits = config['y_limits']
+        if y_limits is not None:
+            y_lim_bottom, y_lim_top = config['y_limits']
+
     output_dir = get_compare_dir(test_result_identifiers, manual_name=config['manual_name'])
     log_config(output_dir=output_dir, config=config)
 
@@ -85,12 +96,22 @@ def main(config):
                     distortion_ids=('res', 'blur', 'noise'),
                     flatten_axis_combinations=flatten_axis_combinations,
                     show_plots=True,
-                    plot_together=False,
+                    plot_together=plot_together,
                     directory=output_dir,
                     ylabel='mAP',
                     legend=False,
-                    y_lim_bottom=-0.03,
-                    y_lim_top=0.65)
+                    y_lim_bottom=y_lim_bottom,
+                    y_lim_top=y_lim_top
+                    )
+
+
+    # compare_2d_views(f0=_map3d, f1=_map3d,
+    #                 x_vals=_res_vals, y_vals=_blur_vals, z_vals=_noise_vals,
+    #                       distortion_ids=('res', 'blur', 'noise'),  # flatten_axes=_flatten_axes,
+    #                       directory=_output_dir,
+    #                       perf_metric='mAP',
+    #                       show_plots=True)
+
 
     if flatten_axes is not None:
         pass
@@ -100,7 +121,7 @@ def main(config):
 
 if __name__ == '__main__':
 
-    config_name = 'fr_pt_n_scan.yml'
+    config_name = 'v8l-pt-fr.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_name, help='config filename to be used')

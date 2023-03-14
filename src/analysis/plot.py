@@ -828,6 +828,30 @@ def plot_2d_from_3d(perf_dict_3d,
     pass
 
 
+def plot_1d(x, y, directory=None, filename=None, xlabel='x', ylabel='y', literal_xlabel=False, literal_ylabel=False,
+            ax=None, show=True):
+
+    if xlabel in AXIS_LABELS.keys() and not literal_xlabel:
+        xlabel = AXIS_LABELS[xlabel]
+    if ylabel in AXIS_LABELS.keys() and not literal_ylabel:
+        ylabel = AXIS_LABELS[ylabel]
+
+    if ax is None:
+        fig, ax = plt.subplots()
+
+    ax.plot(x, y)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+
+    if directory is not None and filename is not None:
+        plt.savefig(Path(directory, filename))
+
+    if show:
+        plt.show()
+
+
+
+
 def residual_color_plot(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),
                         flatten_axes=(0, 1, 2), directory=None):
 

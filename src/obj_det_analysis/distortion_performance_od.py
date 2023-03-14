@@ -282,6 +282,41 @@ def flatten_axis_combinations_from_cfg(config):
         return default
 
 
+def view_sorted_performance(performance_array, parameter_array, output_dir=None, low_end=20, high_end=0,
+                            show=True):
+
+    indices = np.argsort(performance_array[:, 0])
+    performance_sorted = performance_array[indices, 0]
+
+    plot.plot_1d(x=np.arange(len(performance_sorted)),
+                 y=performance_sorted,
+                 xlabel='index',
+                 ylabel='mAP',
+                 directory=output_dir,
+                 filename='sorted_performance.png',
+                 show=show,
+                 literal_xlabel=True,
+                 literal_ylabel=False)
+
+    res = parameter_array[:, 0][indices]
+    blur = parameter_array[:, 1][indices]
+    noise = parameter_array[:, 2][indices]
+
+    if output_dir is not None:
+        file = open(Path(output_dir, 'sorted_performance_values.txt'), 'w')
+    else:
+        file = None
+
+    for i in range(low_end):
+        print(f'mAP: {performance_sorted[i]}, ({res[i]}, {blur[i]}, {noise[i]}) (res, blur, noise)', file=file)
+    print('\n\n', file=file)
+    for j in range(high_end):
+        print(f'mAP: {performance_sorted[-j]}, ({res[-j]}, {blur[-j]}, {noise[-j]}) (res, blur, noise)', file=file)
+
+    if file is not None:
+        file.close()
+
+
 def main(config):
 
     flatten_axes = flatten_axes_from_cfg(run_config)
@@ -300,7 +335,7 @@ if __name__ == '__main__':
     _REPORT_TIME = True
     _T0 = time.time()
 
-    ide_config_name = 'v8n_fr-test.yml'
+    ide_config_name = "v8l-fr-10e_fr-test.yml"  # 'v8n_fr-test.yml'
 
     if ide_config_name is None:
         config_name = 'distortion_analysis_config.yml'
@@ -322,6 +357,12 @@ if __name__ == '__main__':
 
     _res_vals, _blur_vals, _noise_vals, _map3d, _parameter_array, _perf_array, _full_extract = (
         _distortion_performance_result.get_3d_distortion_perf_props(distortion_ids=('res', 'blur', 'noise')))
+
+    view_sorted_performance(_perf_array,
+                            _parameter_array,
+                            output_dir=_output_dir,
+                            low_end=50,
+                            high_end=10)
 
     plot.compare_2d_views(f0=_map3d, f1=_map3d,
                           x_vals=_res_vals, y_vals=_blur_vals, z_vals=_noise_vals,
