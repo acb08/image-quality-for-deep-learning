@@ -302,6 +302,9 @@ def view_sorted_performance(performance_array, parameter_array, output_dir=None,
     blur = parameter_array[:, 1][indices]
     noise = parameter_array[:, 2][indices]
 
+    low_end = min(len(indices), low_end)
+    high_end = min(len(indices), high_end)
+
     if output_dir is not None:
         file = open(Path(output_dir, 'sorted_performance_values.txt'), 'w')
     else:
@@ -335,7 +338,7 @@ if __name__ == '__main__':
     _REPORT_TIME = True
     _T0 = time.time()
 
-    ide_config_name = "v8l-fr-10e_fr-test.yml"  # 'v8n_fr-test.yml'
+    ide_config_name = "v8x_r-scan.yml"  # 'v8n_fr-test.yml'
 
     if ide_config_name is None:
         config_name = 'distortion_analysis_config.yml'
