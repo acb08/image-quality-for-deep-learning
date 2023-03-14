@@ -1,0 +1,21 @@
+---
+
+description: test of pre-trained yolov8l model fr90 coco dataset
+
+test_dataset_id: 0054tst-coco_fr90:v0
+test_dataset_artifact_alias: latest
+
+model_artifact_id: yolov8l
+model_artifact_alias: latest
+
+batch_size: 12
+num_workers: 0
+pin_memory: True
+
+status_interval: 500  # images
+
+
+#rgb_flag: False
+#dataset_split_key: test  # used to get to correct level of dataset dict (to mirror 'train'/'val' splits)
+#last_distortion_type_flag: noise  # normally should be 'noise'
+#loss_func: CrossEntropyLoss

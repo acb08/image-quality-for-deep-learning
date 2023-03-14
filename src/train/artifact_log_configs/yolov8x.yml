@@ -1,0 +1,6 @@
+---
+
+model_id: 'yolov8x'
+new_model_id: 'yolov8x'
+new_model_filename: 'yolov8x.pt'
+description: 'logging yolov8x coco model'

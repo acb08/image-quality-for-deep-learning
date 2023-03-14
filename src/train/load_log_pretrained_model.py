@@ -85,6 +85,9 @@ def load_pretrained_model(model_id):
         model = YOLO('yolov8l.pt')
         return model
 
+    if model_id == 'yolov8x':
+        model = YOLO('yolov8x.pt')
+        return model
 
 
 def load_log_original_model(config):
@@ -134,7 +137,7 @@ def load_log_original_model(config):
 
 if __name__ == '__main__':
 
-    config_name = 'yolov8l.yml'
+    config_name = 'yolov8x.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_name, help='config filename to be used')
