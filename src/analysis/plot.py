@@ -676,20 +676,39 @@ def compare_2d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blu
                      az_el_combinations='default', directory=None, residual_plot=False, show_plots=False,
                      perf_metric='acc'):
 
+    if f1 is None:
+        assert type(f0) == dict
+
     for flatten_axis in flatten_axes:
-        f0_2d, axis0, axis1 = flatten(f0, x_vals, y_vals, z_vals, flatten_axis=flatten_axis)
-        f1_2d, __, __ = flatten(f1, x_vals, y_vals, z_vals, flatten_axis=flatten_axis)
+
         xlabel, ylabel = keep_2_of_3(a=distortion_ids, discard_idx=flatten_axis)
+        axis0, axis1 = None, None
 
-        views_2d = {
-            data_labels[0]: f0_2d,
-            data_labels[1]: f1_2d
-        }
+        if f1 is not None:
+            f0_2d, axis0, axis1 = flatten(f0, x_vals, y_vals, z_vals, flatten_axis=flatten_axis)
+            f1_2d, __, __ = flatten(f1, x_vals, y_vals, z_vals, flatten_axis=flatten_axis)
 
-        if residual_plot:
-            residual = f0_2d - f1_2d
-            views_2d['residual'] = residual
-            result_id = f'{result_id}_rdl'
+            views_2d = {
+                data_labels[0]: f0_2d,
+                data_labels[1]: f1_2d
+            }
+
+            if residual_plot:
+                residual = f0_2d - f1_2d
+                views_2d['residual'] = residual
+                result_id = f'{result_id}_rdl'
+        else:
+
+            views_2d = {}
+
+            for key, data3d in f0.items():
+
+                f_2d, _axis0, _axis1 = flatten(data3d, x_vals, y_vals, z_vals, flatten_axis=flatten_axis)
+                if axis0 is not None and axis1 is not None:
+                    assert (axis0, axis1) == (_axis0, _axis1)
+                axis0, axis1 = _axis0, _axis1
+
+                views_2d[key] = f_2d
 
         plot_2d(axis0, axis1, views_2d, x_id=xlabel, y_id=ylabel, result_identifier=result_id,
                 az_el_combinations=az_el_combinations, directory=directory, show_plots=show_plots,
