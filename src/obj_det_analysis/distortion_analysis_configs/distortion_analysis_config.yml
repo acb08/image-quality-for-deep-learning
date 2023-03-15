@@ -1,7 +1,7 @@
 ---
 
-result_id: 0006rlt-yolov8l-0053tst-coco_fr_test:v0
+result_id: 0012rlt-0023yolo-v8l-fr_best_loss-0045tst-coco_r_scan_v2-res:v0
 identifier: null
 
-flatten_axis_combinations: default
-flatten_axes: default
+flatten_axis_combinations: [[1, 2]]
+flatten_axes: null

@@ -1,0 +1,15 @@
+---
+
+test_result_identifiers:
+
+  - ['0013rlt-0023yolo-v8l-fr_best_loss-0046tst-coco_b_scan_v2-blur:v0',
+     'v8l-fr-b1']
+  - ['0035rlt-yolov8l-0046tst-coco_b_scan_v2-blur:v0',
+     'v8l-pt-b2']
+  - ['0011rlt-yolov8x-0046tst-coco_b_scan_v2-blur:v0',
+    'v8l-pt-b1']
+
+overwrite: False
+manual_name: fr-pt-v8l-blur-batch-compare
+flatten_axis_combinations: [[0, 2]]
+

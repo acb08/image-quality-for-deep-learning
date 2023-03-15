@@ -8,7 +8,7 @@ from src.obj_det_analysis.distortion_performance_od import get_obj_det_distortio
 from src.utils.definitions import WANDB_PID
 from src.utils.functions import construct_artifact_id
 import wandb
-from src.analysis.plot import plot_1d_from_3d
+from src.analysis.plot import plot_1d_from_3d, compare_2d_views
 
 
 def get_multiple_od_distortion_performance_results(result_id_pairs,
@@ -89,39 +89,37 @@ def main(config):
         else:
             assert np.array_equal(noise_vals, _noise_vals)
 
-    plot_1d_from_3d(perf_dict_3d=performance_dict_3d,
-                    x_vals=res_vals,
-                    y_vals=blur_vals,
-                    z_vals=noise_vals,
-                    distortion_ids=('res', 'blur', 'noise'),
-                    flatten_axis_combinations=flatten_axis_combinations,
-                    show_plots=True,
-                    plot_together=plot_together,
-                    directory=output_dir,
-                    ylabel='mAP',
-                    legend=False,
-                    y_lim_bottom=y_lim_bottom,
-                    y_lim_top=y_lim_top
-                    )
-
-
-    # compare_2d_views(f0=_map3d, f1=_map3d,
-    #                 x_vals=_res_vals, y_vals=_blur_vals, z_vals=_noise_vals,
-    #                       distortion_ids=('res', 'blur', 'noise'),  # flatten_axes=_flatten_axes,
-    #                       directory=_output_dir,
-    #                       perf_metric='mAP',
-    #                       show_plots=True)
-
+    if flatten_axis_combinations is not None:
+        plot_1d_from_3d(perf_dict_3d=performance_dict_3d,
+                        x_vals=res_vals,
+                        y_vals=blur_vals,
+                        z_vals=noise_vals,
+                        distortion_ids=('res', 'blur', 'noise'),
+                        flatten_axis_combinations=flatten_axis_combinations,
+                        show_plots=True,
+                        plot_together=plot_together,
+                        directory=output_dir,
+                        ylabel='mAP',
+                        legend=True,
+                        y_lim_bottom=y_lim_bottom,
+                        y_lim_top=y_lim_top
+                        )
 
     if flatten_axes is not None:
-        pass
+
+        compare_2d_views(f0=performance_dict_3d, f1=None,
+                         x_vals=res_vals, y_vals=blur_vals, z_vals=noise_vals,
+                         distortion_ids=('res', 'blur', 'noise'),  # flatten_axes=_flatten_axes,
+                         directory=output_dir,
+                         perf_metric='mAP',
+                         show_plots=True)
 
     return distortion_performance_results
 
 
 if __name__ == '__main__':
 
-    config_name = 'v8l-pt-fr.yml'
+    config_name = 'v8x_varied-batch_b-scan.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_name, help='config filename to be used')
