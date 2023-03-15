@@ -1,0 +1,18 @@
+---
+
+test_result_identifiers:
+
+  - ['0022rlt-yolov8x-0047tst-coco_n_scan_v2-noise:v0',
+     'v8x, batch=1']
+  - ['0023rlt-yolov8x-0047tst-coco_n_scan_v2-noise:v0',
+     'v8x, batch=2']
+
+  - [ '0009rlt-yolov8x-0047tst-coco_n_scan_v2-noise:v0',
+      'v8x, batch=8' ]
+
+
+
+overwrite: True 
+manual_name: v8x_noise-scan_test-batch-compare
+flatten_axis_combinations: [[0, 1]]
+flatten_axes: null

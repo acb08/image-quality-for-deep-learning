@@ -8,7 +8,7 @@ test_dataset_artifact_alias: latest
 model_artifact_id: yolov8x
 model_artifact_alias: latest
 
-batch_size: 12
+batch_size: 1
 num_workers: 0
 pin_memory: True
 

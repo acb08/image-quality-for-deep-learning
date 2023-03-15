@@ -338,7 +338,7 @@ if __name__ == '__main__':
     _REPORT_TIME = True
     _T0 = time.time()
 
-    ide_config_name = "v8x-pt_fr90.yml"  # "v8x_b-scan.yml"  # 'v8n_fr-test.yml'
+    ide_config_name = "v8l-fr-10e_fr90-test.yml"  # "v8x_b-scan.yml"  # 'v8n_fr-test.yml'
 
     if ide_config_name is None:
         config_name = 'distortion_analysis_config.yml'
@@ -367,27 +367,30 @@ if __name__ == '__main__':
                             low_end=50,
                             high_end=10)
 
+    _perf_dict_3d = {'performance': _map3d}
+
     if _flatten_axes is not None:
 
-        plot.compare_2d_views(f0=_map3d, f1=_map3d,
+        plot.compare_2d_views(f0=_perf_dict_3d, f1=None,
                               x_vals=_res_vals, y_vals=_blur_vals, z_vals=_noise_vals,
                               distortion_ids=('res', 'blur', 'noise'),  # flatten_axes=_flatten_axes,
                               directory=_output_dir,
                               perf_metric='mAP',
+                              az_el_combinations='all',
                               show_plots=True)
 
-    _perf_dict_3d = {'performance': _map3d}
+    if _flatten_axis_combinations is not None:
 
-    plot.plot_1d_from_3d(perf_dict_3d=_perf_dict_3d,
-                         x_vals=_res_vals,
-                         y_vals=_blur_vals,
-                         z_vals=_noise_vals,
-                         distortion_ids=('res', 'blur', 'noise'),
-                         result_identifier=str(_distortion_performance_result),
-                         flatten_axis_combinations=_flatten_axis_combinations,
-                         directory=_output_dir,
-                         show_plots=True,
-                         plot_together=False,
-                         ylabel='mAP',
-                         legend=False,
-                         )
+        plot.plot_1d_from_3d(perf_dict_3d=_perf_dict_3d,
+                             x_vals=_res_vals,
+                             y_vals=_blur_vals,
+                             z_vals=_noise_vals,
+                             distortion_ids=('res', 'blur', 'noise'),
+                             result_identifier=str(_distortion_performance_result),
+                             flatten_axis_combinations=_flatten_axis_combinations,
+                             directory=_output_dir,
+                             show_plots=True,
+                             plot_together=True,
+                             ylabel='mAP',
+                             legend=False,
+                             )

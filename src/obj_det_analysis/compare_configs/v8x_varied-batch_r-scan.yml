@@ -2,15 +2,18 @@
 
 test_result_identifiers:
 
-  - ['0011rlt-yolov8x-0046tst-coco_b_scan_v2-blur:v0',
-    'v8x, batch=1']
-  - ['0010rlt-yolov8x-0046tst-coco_b_scan_v2-blur:v0',
+  - ['0020rlt-yolov8x-0045tst-coco_r_scan_v2-res:v0',
+     'v8x, batch=1']
+
+  - ['0021rlt-yolov8x-0045tst-coco_r_scan_v2-res:v0',
      'v8x, batch=2']
-  - ['0008rlt-yolov8x-0046tst-coco_b_scan_v2-blur:v0',
-     'v8x, batch=8']
+
+  - [ '0007rlt-yolov8x-0045tst-coco_r_scan_v2-res:v0',
+      'v8x, batch=8' ]
+
 
 
 overwrite: True 
-manual_name: v8x_blur-scan_test-batch-compare
-flatten_axis_combinations: [[0, 2]]
+manual_name: v8x_res-scan_test-batch-compare
+flatten_axis_combinations: [[1, 2]]
 flatten_axes: null

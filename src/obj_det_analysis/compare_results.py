@@ -119,7 +119,7 @@ def main(config):
 
 if __name__ == '__main__':
 
-    config_name = 'v8x_varied-batch_b-scan.yml'
+    config_name = 'v8x_varied-batch_n-scan.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_name, help='config filename to be used')
