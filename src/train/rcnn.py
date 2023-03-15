@@ -272,11 +272,16 @@ def load_tune_model(config):
         output_dir = Path(ROOT_DIR, new_model_rel_dir)
         output_dir.mkdir(parents=True)
 
-        if torch.cuda.is_available():
-            device = 'cuda'
-            torch.cuda.empty_cache()
+        if 'device' in config.keys():
+            device = config['device']
+            if type(device) == str:
+                if device.isdigit():
+                    device = int(device)
+            if type(device) == int:
+                device = f'cuda:{device}'
         else:
-            device = 'cpu'
+            device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        print('device: ', device)
 
         loader = get_loader(detection_dataset, num_workers=num_workers, batch_size=batch_size)
 
