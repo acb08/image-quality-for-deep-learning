@@ -54,6 +54,11 @@ def main(config):
     else:
         plot_together = False
 
+    if 'show_plots' in config.keys():
+        show_plots = config['show_plots']
+    else:
+        show_plots = False
+
     y_lim_bottom, y_lim_top = None, None
     if 'y_limits' in config.keys():
         y_limits = config['y_limits']
@@ -96,13 +101,13 @@ def main(config):
                         z_vals=noise_vals,
                         distortion_ids=('res', 'blur', 'noise'),
                         flatten_axis_combinations=flatten_axis_combinations,
-                        show_plots=True,
+                        show_plots=show_plots,
                         plot_together=plot_together,
                         directory=output_dir,
                         ylabel='mAP',
                         legend=True,
                         y_lim_bottom=y_lim_bottom,
-                        y_lim_top=y_lim_top
+                        y_lim_top=y_lim_top,
                         )
 
     if flatten_axes is not None:
@@ -112,14 +117,15 @@ def main(config):
                          distortion_ids=('res', 'blur', 'noise'),  # flatten_axes=_flatten_axes,
                          directory=output_dir,
                          perf_metric='mAP',
-                         show_plots=True)
+                         show_plots=show_plots,
+                         az_el_combinations='all')
 
     return distortion_performance_results
 
 
 if __name__ == '__main__':
 
-    config_name = 'v8x_varied-batch_n-scan.yml'
+    config_name = 'v8l-pt-fr_fr90_tst-batch-1.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_name, help='config filename to be used')
