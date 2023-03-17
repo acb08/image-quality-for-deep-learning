@@ -719,7 +719,7 @@ def compare_2d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blu
 def compare_1d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),
                      flatten_axis_combinations=((1, 2), (0, 2), (0, 1)), data_labels=('measured', 'fit'),
                      result_id='3d_1d_projection', directory=None, include_fit_stats=True, include_dw=False,
-                     show_plots=True, plot_together=True):
+                     show_plots=True, plot_together=True, ylabel=None):
 
     if plot_together:
         fig, axes = plt.subplots(nrows=1, ncols=3, sharey=True, figsize=(12, 3.4))
@@ -753,7 +753,7 @@ def compare_1d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blu
 
         plot_1d_fit(axis, f0_1d, f1_1d, axis_label, measured_label=data_labels[0], fit_label=fit_label,
                     result_identifier=result_id, directory=save_dir_individual, show_plots=show_plots_individual,
-                    ax=axes[i])
+                    ax=axes[i], ylabel=ylabel)
 
     if plot_together:
         fig.tight_layout()

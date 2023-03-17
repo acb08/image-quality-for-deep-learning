@@ -1,0 +1,14 @@
+---
+
+test_result_identifiers:
+
+  - ['0020rlt-yolov8x-0045tst-coco_r_scan_v2-res:v0',
+     'YOLOv8x']
+
+  - ['0016rlt-fasterrcnn_resnet50_fpn-0045tst-coco_r_scan_v2-res:v0',
+     'Faster-RCNN']
+
+overwrite: True 
+manual_name: frcnn-yolov8x_res-scan
+flatten_axis_combinations: [[1, 2]]
+flatten_axes: null

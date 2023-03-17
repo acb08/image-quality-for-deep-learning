@@ -564,7 +564,7 @@ def visualize_single_image_result(ground_truth, prediction, iou_threshold=0.5, i
     precision_smoothed = precision_cleanup(precision)
     ap = get_average_precision(precision_smoothed, recall)
 
-    fig, (ax0, ax1, ax2) = plt.subplots(ncols=3)
+    fig, (ax0, ax1, ax2) = plt.subplots(ncols=3, figsize=(14, 6))
 
     show_boxes(gt_boxes=gt_boxes,
                predicted_boxes=predicted_boxes,
@@ -579,6 +579,8 @@ def visualize_single_image_result(ground_truth, prediction, iou_threshold=0.5, i
     ax0.set_title('GT and Predict')
     ax1.set_title('Assessed')
     ax2.set_title(f'AP = {round(float(ap), 3)}')
+    ax2.set_xlabel('recall')
+    ax2.set_ylabel('precision')
 
     plt.tight_layout()
     if output_dir is not None:
@@ -866,8 +868,6 @@ def sort_by_label(data):
                 sorted_box_data[label]['scores'] = filtered_scores
 
     return sorted_box_data
-
-
 
 
 if __name__ == '__main__':

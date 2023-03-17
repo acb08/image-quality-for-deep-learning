@@ -1,0 +1,16 @@
+---
+
+test_result_identifiers:
+
+  - ['0022rlt-yolov8x-0047tst-coco_n_scan_v2-noise:v0',
+     'YOLOv8x']
+  - ['0051rlt-fasterrcnn_resnet50_fpn-0047tst-coco_n_scan_v2-noise:v0',
+     'Faster-RCNN']
+
+
+
+
+overwrite: True 
+manual_name: frcnn-yolov8x_noise-scan
+flatten_axis_combinations: [[0, 1]]
+flatten_axes: null
