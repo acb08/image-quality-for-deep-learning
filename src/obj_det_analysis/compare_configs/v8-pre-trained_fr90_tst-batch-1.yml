@@ -1,0 +1,25 @@
+---
+
+test_result_identifiers:
+
+  - ['0024rlt-yolov8x-0054tst-coco_fr90:v0',
+     'v8x']
+  - ['0025rlt-yolov8l-0054tst-coco_fr90:v0',
+     'v8l']
+  - ['0026rlt-yolov8m-0054tst-coco_fr90:v0',
+     'v8m']
+  - ['0027rlt-yolov8n-0054tst-coco_fr90:v0',
+     'v8n00']
+
+
+overwrite: False
+manual_name: yolov8-pretrained-fr90
+flatten_axis_combinations: null # [[0, 1], [0, 2], [1, 2]]
+flatten_axes: default
+
+plot_together: True
+y_limits: null
+
+show_plots: False
+
+
