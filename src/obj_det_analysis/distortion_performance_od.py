@@ -374,6 +374,11 @@ if __name__ == '__main__':
     _flatten_axis_combinations = flatten_axis_combinations_from_cfg(run_config)
     _fit_keys = fit_keys_from_cfg(run_config)
 
+    if 'basic_plots' in run_config.keys():
+        basic_plots = run_config['basic_plots']
+    else:
+        basic_plots = False
+
     _distortion_performance_result, _output_dir = get_obj_det_distortion_perf_result(config=run_config)
 
     _res_vals, _blur_vals, _noise_vals, _map3d, _parameter_array, _perf_array, _full_extract = (
@@ -387,17 +392,17 @@ if __name__ == '__main__':
 
     _perf_dict_3d = {'performance': _map3d}
 
-    if _flatten_axes is not None:
+    if basic_plots and _flatten_axes is not None:
 
-        plot.compare_2d_views(f0=_perf_dict_3d, f1=None,
-                              x_vals=_res_vals, y_vals=_blur_vals, z_vals=_noise_vals,
-                              distortion_ids=('res', 'blur', 'noise'),  # flatten_axes=_flatten_axes,
-                              directory=_output_dir,
-                              perf_metric='mAP',
-                              az_el_combinations='all',
-                              show_plots=True)
+        plot.compare_2d_mean_views(f0=_perf_dict_3d, f1=None,
+                                   x_vals=_res_vals, y_vals=_blur_vals, z_vals=_noise_vals,
+                                   distortion_ids=('res', 'blur', 'noise'),  # flatten_axes=_flatten_axes,
+                                   directory=_output_dir,
+                                   perf_metric='mAP',
+                                   az_el_combinations='all',
+                                   show_plots=True)
 
-    if _flatten_axis_combinations is not None:
+    if basic_plots and _flatten_axis_combinations is not None:
 
         plot.plot_1d_from_3d(perf_dict_3d=_perf_dict_3d,
                              x_vals=_res_vals,
@@ -443,24 +448,34 @@ if __name__ == '__main__':
                                                 fit_key=_fit_key,
                                                 add_bias=False,  # only applies to linear fits
                                                 )
-                plot.compare_2d_views(f0=_map3d, f1=_direct_fit_prediction_3d,
-                                      data_labels=('measured', 'fit'),
-                                      x_vals=_res_vals, y_vals=_blur_vals, z_vals=_noise_vals,
-                                      distortion_ids=('res', 'blur', 'noise'),  # flatten_axes=_flatten_axes,
-                                      directory=_fit_sub_dir,
-                                      perf_metric='mAP',
-                                      az_el_combinations='all',
-                                      show_plots=False)
+                # plot.compare_2d_mean_views(f0=_map3d, f1=_direct_fit_prediction_3d,
+                #                            data_labels=('measured', 'fit'),
+                #                            x_vals=_res_vals, y_vals=_blur_vals, z_vals=_noise_vals,
+                #                            distortion_ids=('res', 'blur', 'noise'),  # flatten_axes=_flatten_axes,
+                #                            directory=_fit_sub_dir,
+                #                            perf_metric='mAP',
+                #                            az_el_combinations='all',
+                #                            show_plots=False)
 
-                plot.compare_1d_views(f0=_map3d, f1=_direct_fit_prediction_3d,
-                                      data_labels=('measured', 'fit'),
-                                      x_vals=_res_vals, y_vals=_blur_vals, z_vals=_noise_vals,
-                                      flatten_axis_combinations=_flatten_axis_combinations,
-                                      result_id='3d_1d_projection',
-                                      directory=_fit_sub_dir,
-                                      show_plots=True,
-                                      plot_together=True,
-                                      ylabel='mAP')
+                plot.compare_2d_slice_views(f0=_map3d, f1=_direct_fit_prediction_3d,
+                                            data_labels=('measured', 'fit'),
+                                            x_vals=_res_vals, y_vals=_blur_vals, z_vals=_noise_vals,
+                                            distortion_ids=('res', 'blur', 'noise'),  # flatten_axes=_flatten_axes,
+                                            directory=_fit_sub_dir,
+                                            perf_metric='mAP',
+                                            az_el_combinations='default',
+                                            show_plots=False
+                                            )
+                #
+                # plot.compare_1d_views(f0=_map3d, f1=_direct_fit_prediction_3d,
+                #                       data_labels=('measured', 'fit'),
+                #                       x_vals=_res_vals, y_vals=_blur_vals, z_vals=_noise_vals,
+                #                       flatten_axis_combinations=_flatten_axis_combinations,
+                #                       result_id='3d_1d_projection',
+                #                       directory=_fit_sub_dir,
+                #                       show_plots=True,
+                #                       plot_together=True,
+                #                       ylabel='mAP')
 
                 print(f'{_fit_key} fit: \n', _fit_coefficients, file=_output_file)
                 print(f'{_fit_key} direct fit correlation: ', _fit_correlation, '\n',

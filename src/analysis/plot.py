@@ -12,7 +12,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from src.analysis.fit import linear_predict
 from src.analysis.analysis_functions import conditional_extract_2d, create_identifier, get_distortion_perf_2d, \
     get_distortion_perf_1d, measure_log_perf_correlation, flatten, keep_2_of_3, sort_parallel, simple_model_check, \
-    flatten_2x, keep_1_of_3, durbin_watson
+    flatten_2x, keep_1_of_3, durbin_watson, get_2d_slices
 
 # from src.analysis.distortion_performance import plot_perf_2d_multi_result, plot_perf_1d_multi_result
 
@@ -21,7 +21,15 @@ AZ_EL_DEFAULTS = {
     'el': 30
 }
 
-# I do not remember why the keys are structured this way, but I do not think it's worth changing
+AZ_EL_COMBINATIONS_MINI = {
+    '0-0': {'az': AZ_EL_DEFAULTS['az'], 'el': AZ_EL_DEFAULTS['el']},
+    '7-2': {'az': 60, 'el': 20},
+    '10-2': {'az': 105, 'el': 20},
+}
+
+
+# I do not remember why I structured AZ_EL_COMBINATIONS this way (strong suspicion the reason was stupid), but I do not
+# think it's worth changing
 AZ_EL_COMBINATIONS = {
     '0-0': {'az': AZ_EL_DEFAULTS['az'], 'el': AZ_EL_DEFAULTS['el']},
     '1-0': {'az': -30, 'el': 30},
@@ -75,6 +83,13 @@ ISOSURF_AZ_EL_COMBINATIONS = {
     '11': {'az': -30, 'el': 40},
     '21': {'az': 30, 'el': 40},
     '31': {'az': 60, 'el': 40},
+}
+
+
+AZ_EL_META_DICT = {
+    'all': AZ_EL_COMBINATIONS,
+    'mini': AZ_EL_COMBINATIONS_MINI,
+    'isosurf': ISOSURF_AZ_EL_COMBINATIONS
 }
 
 AXIS_LABELS = {
@@ -196,7 +211,8 @@ def plot_2d(x_values, y_values, accuracy_means, x_id, y_id,
             az_el_combinations='all',
             directory=None,
             show_plots=False,
-            perf_metric='acc'):
+            perf_metric='acc',
+            z_limits=None):
 
     if not axis_labels or axis_labels == 'default':
         xlabel, ylabel, zlabel = AXIS_LABELS[x_id], AXIS_LABELS[y_id], AXIS_LABELS[perf_metric]
@@ -210,17 +226,21 @@ def plot_2d(x_values, y_values, accuracy_means, x_id, y_id,
     else:
         save_name = f'{x_id}_{y_id}_{perf_metric}.png'
 
-    if az_el_combinations == 'all':
+    if az_el_combinations in AZ_EL_META_DICT.keys():
 
-        for combination_key in AZ_EL_COMBINATIONS:
-            az, el = AZ_EL_COMBINATIONS[combination_key]['az'], AZ_EL_COMBINATIONS[combination_key]['el']
+        combinations = AZ_EL_META_DICT[az_el_combinations]
+
+        for combination_key in combinations.keys():
+
+            az, el = combinations[combination_key]['az'], combinations[combination_key]['el']
 
             wire_plot(x_values, y_values, accuracy_means,
                       xlabel=xlabel, ylabel=ylabel, zlabel=zlabel,
                       az=az, el=el,
                       save_name=save_name,
                       directory=directory,
-                      show_plots=show_plots)
+                      show_plots=show_plots,
+                      z_limits=z_limits)
 
     else:
         if az_el_combinations == 'default':
@@ -235,7 +255,8 @@ def plot_2d(x_values, y_values, accuracy_means, x_id, y_id,
                   az=az, el=el,
                   save_name=save_name,
                   directory=directory,
-                  show_plots=show_plots)
+                  show_plots=show_plots,
+                  z_limits=z_limits)
 
 
 def wire_plot(x, y, z,
@@ -249,7 +270,8 @@ def wire_plot(x, y, z,
               el=AZ_EL_DEFAULTS['el'],
               alpha=0.5,
               indexing='ij',
-              show_plots=False):
+              show_plots=False,
+              z_limits=None):
 
     xx, yy = np.meshgrid(x, y, indexing=indexing)
     fig = plt.figure()
@@ -268,6 +290,8 @@ def wire_plot(x, y, z,
         ax.plot_wireframe(xx, yy, z, alpha=alpha)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
+    if z_limits is not None:
+        ax.set_zlim(z_limits[0], z_limits[1])
     if zlabel:
         if zlabel == 'default':
             zlabel = AXIS_LABELS['z']
@@ -672,10 +696,59 @@ def plot_1d_performance(x, performance_dict, distortion_id,
         plt.close()
 
 
-def compare_2d_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),
-                     flatten_axes=(0, 1, 2), data_labels=('f0', 'f1'), result_id='3d_projection',
-                     az_el_combinations='default', directory=None, residual_plot=False, show_plots=False,
-                     perf_metric='acc'):
+def compare_2d_slice_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),
+                           slice_axes=(0, 1, 2), slices_interval=1, data_labels=('f0', 'f1'), result_id='2d_slice',
+                           az_el_combinations='mini', directory=None, show_plots=False,
+                           perf_metric='acc'):
+
+    z_min = 0.9 * min(np.min(f0), np.min(f1))
+    z_max = 1.1 * max(np.max(f0), np.max(f1))
+    z_limits = (z_min, z_max)
+
+    if f1 is None:
+        assert type(f0) == dict
+
+    if f1 is None:
+        raise NotImplementedError
+
+    for slice_axis in slice_axes:
+
+        xlabel, ylabel = keep_2_of_3(a=distortion_ids, discard_idx=slice_axis)
+        slice_axis_label = distortion_ids[slice_axis]
+
+        slice_axis_sub_dir = Path(directory, f'{slice_axis_label}_slices')
+        if not slice_axis_sub_dir.is_dir():
+            Path.mkdir(slice_axis_sub_dir)
+
+        if f1 is not None:
+
+            f0_slices, axis0, axis1 = get_2d_slices(f0, x_vals, y_vals, z_vals,
+                                                    slice_axis=slice_axis,
+                                                    slice_interval=slices_interval)
+            f1_slices, __, __ = get_2d_slices(f1, x_vals, y_vals, z_vals,
+                                              slice_axis=slice_axis,
+                                              slice_interval=slices_interval)
+
+            assert f0_slices.keys() == f1_slices.keys()
+
+            for i, (key, f0_slice) in enumerate(f0_slices.items()):
+                views_2d = {
+                    data_labels[0]: f0_slice,
+                    data_labels[1]: f1_slices[key]
+                }
+
+                plot_2d(axis0, axis1, views_2d, x_id=xlabel, y_id=ylabel, result_identifier=f'{result_id}_{i}',
+                        az_el_combinations=az_el_combinations, directory=slice_axis_sub_dir, show_plots=show_plots,
+                        perf_metric=perf_metric, z_limits=z_limits)
+
+        else:
+            raise NotImplementedError
+
+
+def compare_2d_mean_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),
+                          flatten_axes=(0, 1, 2), data_labels=('f0', 'f1'), result_id='3d_projection',
+                          az_el_combinations='default', directory=None, residual_plot=False, show_plots=False,
+                          perf_metric='acc'):
 
     if f1 is None:
         assert type(f0) == dict

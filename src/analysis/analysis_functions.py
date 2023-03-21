@@ -388,6 +388,48 @@ def flatten(f, x_vals, y_vals, z_vals, flatten_axis=0):
     return f_2d, remaining_axes[0], remaining_axes[1]
 
 
+def get_2d_slices(f, x_vals, y_vals, z_vals, slice_axis=0, slice_interval=1):
+
+    if slice_axis not in range(3):
+        raise ValueError
+
+    shape = np.shape(f)
+
+    num_slices_possible = shape[slice_axis]
+
+    slice_indices = range(num_slices_possible)
+    slice_indices = [i for i in slice_indices if i % slice_interval == 0]
+
+    axes = (x_vals, y_vals, z_vals)
+    slice_axis_vals = axes[slice_axis]
+    remaining_axes = keep_2_of_3(a=axes, discard_idx=slice_axis)
+
+    assert len(slice_axis_vals) == num_slices_possible
+
+    slices = {}
+
+    for idx in slice_indices:
+        slice_axis_val = slice_axis_vals[idx]
+        slice_2d = _extract_2d_slice(f, slice_axis, idx)
+        slices[slice_axis_val] = slice_2d
+
+    return slices, remaining_axes[0], remaining_axes[1]
+
+
+def _extract_2d_slice(array_3d, slice_axis, idx):
+
+    if slice_axis == 0:
+        slice_2d = array_3d[idx, :, :]
+    elif slice_axis == 1:
+        slice_2d = array_3d[:, idx, :]
+    elif slice_axis == 2:
+        slice_2d = array_3d[:, :, idx]
+    else:
+        raise ValueError('idx must be in range(3)')
+
+    return slice_2d
+
+
 def keep_2_of_3(a=None, b=None, c=None, discard_idx=0):
     """
     Intended for use with flatten() function to keep track of the remaining axes/labels when a 3d array is flattened to

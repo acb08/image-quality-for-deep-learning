@@ -8,7 +8,7 @@ from src.obj_det_analysis.distortion_performance_od import get_obj_det_distortio
 from src.utils.definitions import WANDB_PID
 from src.utils.functions import construct_artifact_id
 import wandb
-from src.analysis.plot import plot_1d_from_3d, compare_2d_views
+from src.analysis.plot import plot_1d_from_3d, compare_2d_mean_views
 
 
 def get_multiple_od_distortion_performance_results(result_id_pairs,
@@ -112,13 +112,13 @@ def main(config):
 
     if flatten_axes is not None:
 
-        compare_2d_views(f0=performance_dict_3d, f1=None,
-                         x_vals=res_vals, y_vals=blur_vals, z_vals=noise_vals,
-                         distortion_ids=('res', 'blur', 'noise'),  # flatten_axes=_flatten_axes,
-                         directory=output_dir,
-                         perf_metric='mAP',
-                         show_plots=show_plots,
-                         az_el_combinations='all')
+        compare_2d_mean_views(f0=performance_dict_3d, f1=None,
+                              x_vals=res_vals, y_vals=blur_vals, z_vals=noise_vals,
+                              distortion_ids=('res', 'blur', 'noise'),  # flatten_axes=_flatten_axes,
+                              directory=output_dir,
+                              perf_metric='mAP',
+                              show_plots=show_plots,
+                              az_el_combinations='all')
 
     return distortion_performance_results
 

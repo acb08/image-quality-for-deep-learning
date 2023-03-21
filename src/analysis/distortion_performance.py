@@ -7,7 +7,7 @@ from src.analysis._shared_methods import _get_processed_instance_props_path, _ch
 from src.analysis.analysis_functions import conditional_mean_accuracy, extract_embedded_vectors, \
     get_class_accuracies, build_3d_field, get_distortion_perf_2d, get_distortion_perf_1d, check_durbin_watson_statistics
 from src.analysis.fit import fit, evaluate_fit, apply_fit
-from src.analysis.plot import plot_1d_linear_fit, plot_2d, plot_2d_linear_fit, compare_2d_views, \
+from src.analysis.plot import plot_1d_linear_fit, plot_2d, plot_2d_linear_fit, compare_2d_mean_views, \
     residual_color_plot, sorted_linear_scatter, compare_1d_views, dual_sorted_linear_scatter  # plot_isosurf
 from src.analysis.binomial_simulation import get_ideal_correlation, run_binomial_accuracy_experiment
 import numpy as np
@@ -379,16 +379,16 @@ def analyze_perf_3d(model_performance,
         print('per_3d = perf_3d_eval for ', str(model_performance))
 
     if standard_plots:
-        compare_2d_views(perf_3d, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
-                         data_labels=('measured (predict)', 'fit'), az_el_combinations='all', directory=directory,
-                         residual_plot=False, result_id='predict_fit_3d_proj',
-                         show_plots=show_plots)
+        compare_2d_mean_views(perf_3d, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
+                              data_labels=('measured (predict)', 'fit'), az_el_combinations='all', directory=directory,
+                              residual_plot=False, result_id='predict_fit_3d_proj',
+                              show_plots=show_plots)
 
         if not np.array_equal(perf_3d, perf_3d_eval):
-            compare_2d_views(perf_3d_eval, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
-                             data_labels=('measured (eval)', 'fit'), az_el_combinations='all', directory=directory,
-                             residual_plot=False, result_id='eval_fit_3d_proj',
-                             show_plots=show_plots)
+            compare_2d_mean_views(perf_3d_eval, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
+                                  data_labels=('measured (eval)', 'fit'), az_el_combinations='all', directory=directory,
+                                  residual_plot=False, result_id='eval_fit_3d_proj',
+                                  show_plots=show_plots)
 
     if make_simulation_plots_1d:
         compare_1d_views(perf_3d_simulated, fit_3d,  x_values, y_values, z_values, distortion_ids=distortion_ids,
@@ -397,21 +397,21 @@ def analyze_perf_3d(model_performance,
                          show_plots=show_1d_plots)
 
     if make_simulation_plots_2d:
-        compare_2d_views(perf_3d_simulated, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
-                         data_labels=('simulated', 'fit'), az_el_combinations='all', directory=directory,
-                         residual_plot=False, result_id='simulation_fit_3d_proj',
-                         show_plots=show_plots)
+        compare_2d_mean_views(perf_3d_simulated, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
+                              data_labels=('simulated', 'fit'), az_el_combinations='all', directory=directory,
+                              residual_plot=False, result_id='simulation_fit_3d_proj',
+                              show_plots=show_plots)
 
     if residual_plot:
-        compare_2d_views(perf_3d, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
-                         data_labels=('measured (predict)', 'fit'), az_el_combinations='all', directory=directory,
-                         residual_plot=residual_plot, result_id='predict_fit_3d_proj')
+        compare_2d_mean_views(perf_3d, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
+                              data_labels=('measured (predict)', 'fit'), az_el_combinations='all', directory=directory,
+                              residual_plot=residual_plot, result_id='predict_fit_3d_proj')
 
         if not np.array_equal(perf_3d, perf_3d_eval):
-            compare_2d_views(perf_3d_eval, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
-                             data_labels=('measured (eval)', 'fit'), az_el_combinations='all', directory=directory,
-                             residual_plot=residual_plot, result_id='eval_fit_3d_proj',
-                             show_plots=show_plots)
+            compare_2d_mean_views(perf_3d_eval, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
+                                  data_labels=('measured (eval)', 'fit'), az_el_combinations='all', directory=directory,
+                                  residual_plot=residual_plot, result_id='eval_fit_3d_proj',
+                                  show_plots=show_plots)
 
     if make_residual_color_plot:
         residual_color_plot(perf_3d, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
