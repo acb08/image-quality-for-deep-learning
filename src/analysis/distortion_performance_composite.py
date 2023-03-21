@@ -628,7 +628,7 @@ if __name__ == '__main__':
     _fit_keys = generate_fit_keys(functional_forms, blur_maps, noise_maps)
 
     fit_keys = [
-        'exp_b0n0',
+        # 'exp_b0n0',
         # 'exp_b0n1',
         # 'exp_b0n2',
         #
@@ -644,7 +644,7 @@ if __name__ == '__main__':
         # 'exp_b4n1',
         # 'exp_b4n2',
 
-        'pl_b0n0',  # simplest / naive mapping
+        # 'pl_b0n0',  # simplest / naive mapping
         # 'pl_b0n1',
         # 'pl_b0n2',
         #
@@ -666,7 +666,7 @@ if __name__ == '__main__':
         #
         # 'giqe3_b2n0',
         # 'giqe3_b2n1',
-        'giqe3_b2n2',
+        # 'giqe3_b2n2',
 
         # 'giqe3_b3n0',
         # 'giqe3_b3n1',
