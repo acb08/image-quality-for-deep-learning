@@ -944,7 +944,6 @@ def plot_1d(x, y, directory=None, filename=None, xlabel='x', ylabel='y', literal
 
 
 
-
 def residual_color_plot(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),
                         flatten_axes=(0, 1, 2), directory=None):
 

@@ -14,6 +14,7 @@ from src.analysis.distortion_performance import analyze_perf_1d, analyze_perf_2d
 from src.analysis.fit_functions import generate_fit_keys
 from hashlib import blake2b
 import copy
+from src.analysis._shared_methods import _get_processed_instance_props_path, _get_3d_distortion_perf_props
 
 
 class CompositePerformanceResult(object):
