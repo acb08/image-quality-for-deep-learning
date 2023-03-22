@@ -212,7 +212,8 @@ def plot_2d(x_values, y_values, accuracy_means, x_id, y_id,
             directory=None,
             show_plots=False,
             perf_metric='acc',
-            z_limits=None):
+            z_limits=None,
+            sub_dir_per_az_el=False):
 
     if not axis_labels or axis_labels == 'default':
         xlabel, ylabel, zlabel = AXIS_LABELS[x_id], AXIS_LABELS[y_id], AXIS_LABELS[perf_metric]
@@ -232,17 +233,26 @@ def plot_2d(x_values, y_values, accuracy_means, x_id, y_id,
 
         for combination_key in combinations.keys():
 
+            if sub_dir_per_az_el:
+                sub_dir = Path(directory, combination_key)
+                if not sub_dir.is_dir():
+                    Path.mkdir(sub_dir)
+            else:
+                sub_dir = directory
+
             az, el = combinations[combination_key]['az'], combinations[combination_key]['el']
 
             wire_plot(x_values, y_values, accuracy_means,
                       xlabel=xlabel, ylabel=ylabel, zlabel=zlabel,
                       az=az, el=el,
                       save_name=save_name,
-                      directory=directory,
+                      directory=sub_dir,
                       show_plots=show_plots,
                       z_limits=z_limits)
 
     else:
+        if sub_dir_per_az_el:
+            raise Warning('sub_dir_per_az_el only works when az_el_combinations in AZ_EL_META_DICT.keys()')
         if az_el_combinations == 'default':
             az, el = AZ_EL_DEFAULTS['az'], AZ_EL_DEFAULTS['el']
         elif az_el_combinations in AZ_EL_COMBINATIONS:
@@ -699,7 +709,7 @@ def plot_1d_performance(x, performance_dict, distortion_id,
 def compare_2d_slice_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),
                            slice_axes=(0, 1, 2), slices_interval=1, data_labels=('f0', 'f1'), result_id='2d_slice',
                            az_el_combinations='mini', directory=None, show_plots=False,
-                           perf_metric='acc'):
+                           perf_metric='acc', sub_dir_per_az_el=True):
 
     z_min = 0.9 * min(np.min(f0), np.min(f1))
     z_max = 1.1 * max(np.max(f0), np.max(f1))
@@ -739,7 +749,7 @@ def compare_2d_slice_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res'
 
                 plot_2d(axis0, axis1, views_2d, x_id=xlabel, y_id=ylabel, result_identifier=f'{result_id}_{i}',
                         az_el_combinations=az_el_combinations, directory=slice_axis_sub_dir, show_plots=show_plots,
-                        perf_metric=perf_metric, z_limits=z_limits)
+                        perf_metric=perf_metric, z_limits=z_limits, sub_dir_per_az_el=sub_dir_per_az_el)
 
         else:
             raise NotImplementedError

@@ -8,7 +8,7 @@ from src.analysis.analysis_functions import conditional_mean_accuracy, extract_e
     get_class_accuracies, build_3d_field, get_distortion_perf_2d, get_distortion_perf_1d, check_durbin_watson_statistics
 from src.analysis.fit import fit, evaluate_fit, apply_fit
 from src.analysis.plot import plot_1d_linear_fit, plot_2d, plot_2d_linear_fit, compare_2d_mean_views, \
-    residual_color_plot, sorted_linear_scatter, compare_1d_views, dual_sorted_linear_scatter  # plot_isosurf
+    residual_color_plot, sorted_linear_scatter, compare_1d_views, dual_sorted_linear_scatter, compare_2d_slice_views
 from src.analysis.binomial_simulation import get_ideal_correlation, run_binomial_accuracy_experiment
 import numpy as np
 from pathlib import Path
@@ -338,7 +338,8 @@ def analyze_perf_3d(model_performance,
                     log_3d_prediction=True,
                     show_plots=False,
                     show_scatter_plots=True,
-                    show_1d_plots=True):
+                    show_1d_plots=True,
+                    plot_fit_slices=False):
 
     x_id, y_id, z_id = distortion_ids
     (x_values, y_values, z_values, perf_3d, perf_3d_eval, fit_3d, perf_3d_simulated, eval_fit_correlation,
@@ -390,6 +391,32 @@ def analyze_perf_3d(model_performance,
                                   residual_plot=False, result_id='eval_fit_3d_proj',
                                   show_plots=show_plots)
 
+    if plot_fit_slices:
+
+        predict_slice_dir = Path(directory, 'predict_fit_slice_views')
+        if not predict_slice_dir.is_dir():
+            Path.mkdir(predict_slice_dir)
+
+        compare_2d_slice_views(f0=perf_3d, f1=fit_3d,
+                               x_vals=x_values, y_vals=y_values, z_vals=z_values,
+                               distortion_ids=distortion_ids,
+                               data_labels=('measured (predict)', 'fit'), az_el_combinations='mini',
+                               directory=predict_slice_dir, perf_metric='acc', show_plots=show_plots,
+                               sub_dir_per_az_el=True)
+
+        if not np.array_equal(perf_3d, perf_3d_eval):
+
+            eval_slice_dir = Path(directory, 'eval_fit_slice_views')
+            if not eval_slice_dir.is_dir():
+                Path.mkdir(eval_slice_dir)
+
+            compare_2d_slice_views(f0=perf_3d_eval, f1=fit_3d,
+                                   x_vals=x_values, y_vals=y_values, z_vals=z_values,
+                                   distortion_ids=distortion_ids,
+                                   data_labels=('measured (eval)', 'fit'), az_el_combinations='mini',
+                                   directory=eval_slice_dir, perf_metric='acc', show_plots=show_plots,
+                                   sub_dir_per_az_el=True)
+
     if make_simulation_plots_1d:
         compare_1d_views(perf_3d_simulated, fit_3d,  x_values, y_values, z_values, distortion_ids=distortion_ids,
                          data_labels=('simulated', 'fit'), directory=directory,
@@ -397,8 +424,10 @@ def analyze_perf_3d(model_performance,
                          show_plots=show_1d_plots)
 
     if make_simulation_plots_2d:
+
         compare_2d_mean_views(perf_3d_simulated, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
-                              data_labels=('simulated', 'fit'), az_el_combinations='all', directory=directory,
+                              data_labels=('simulated', 'fit'), az_el_combinations='all',
+                              directory=directory,
                               residual_plot=False, result_id='simulation_fit_3d_proj',
                               show_plots=show_plots)
 
