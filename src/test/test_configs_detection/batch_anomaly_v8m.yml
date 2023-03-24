@@ -1,0 +1,23 @@
+---
+
+description:  analyzing impact of test batch size on performance
+descriptive_tags: []
+
+test_dataset_id: coco128
+test_dataset_artifact_alias: latest
+
+model_artifact_id: yolov8m
+
+model_artifact_alias: latest
+
+batch_size: null  # batch size to be set in script for anomaly debug
+num_workers: 0
+pin_memory: True
+
+status_interval: 250  # images
+
+
+#rgb_flag: False
+#dataset_split_key: test  # used to get to correct level of dataset dict (to mirror 'train'/'val' splits)
+#last_distortion_type_flag: noise  # normally should be 'noise'
+#loss_func: CrossEntropyLoss
