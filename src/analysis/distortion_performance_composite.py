@@ -2,8 +2,8 @@ import json
 import numpy as np
 import argparse
 from src.analysis.distortion_performance import get_multiple_model_distortion_performance_results
-from src.analysis._shared_methods import _get_processed_instance_props_path, _check_extract_processed_props, \
-    _archive_processed_props, _get_3d_distortion_perf_props, get_instance_hash
+from src.utils.shared_methods import _check_extract_processed_props, \
+    _archive_processed_props, get_instance_hash
 from src.utils.definitions import STANDARD_UID_FILENAME, KEY_LENGTH, ROOT_DIR, \
     REL_PATHS, PROJECT_ID, DISTORTION_RANGE
 from src.utils.functions import get_config, log_config, increment_suffix
@@ -14,7 +14,7 @@ from src.analysis.distortion_performance import analyze_perf_1d, analyze_perf_2d
 from src.analysis.fit_functions import generate_fit_keys
 from hashlib import blake2b
 import copy
-from src.analysis._shared_methods import _get_processed_instance_props_path, _get_3d_distortion_perf_props
+from src.utils.shared_methods import _get_processed_instance_props_path, _get_3d_distortion_perf_props
 
 
 class CompositePerformanceResult(object):

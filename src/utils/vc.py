@@ -12,16 +12,17 @@ from src.utils.definitions import ROOT_DIR
 _CODE_ROOT = Path(ROOT_DIR, 'image-quality-for-deep-learning', 'src')
 
 _mAP_CODE_PATHS = (
-    'utils/functions.py',
+    'utils/shared_methods.py',
     'utils/definitions.py',
     'utils/detection_functions.py',
     'utils/classes.py',
+    'obj_det_analysis/classes.py',
     'analysis/analysis_functions.py',
     'obj_det_analysis/analysis_tools.py'
 )
 
 
-def _get_map_hash_mash():
+def get_map_hash_mash():
 
     hash_mash = str()
 
@@ -37,5 +38,5 @@ def _get_map_hash_mash():
 
 if __name__ == '__main__':
 
-    _hash_mash = _get_map_hash_mash()
+    _hash_mash = get_map_hash_mash()
     print(_hash_mash)

@@ -1,4 +1,4 @@
-from src.utils.classes import VariableResolution, VariablePoissonNoiseChannelReplicated
+from src.pre_processing.classes import VariableResolution, VariablePoissonNoiseChannelReplicated
 import numpy as np
 from src.utils.definitions import DISTORTION_RANGE, NATIVE_RESOLUTION, DISTORTION_RANGE_90
 from torchvision import transforms

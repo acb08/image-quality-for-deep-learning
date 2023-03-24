@@ -3,7 +3,7 @@ import torch
 
 from src.utils import definitions as definitions
 from src.utils.definitions import ROOT_DIR, REL_PATHS, ORIGINAL_DATASETS, KEY_LENGTH, ARTIFACT_TYPE_TAGS, \
-    STANDARD_CONFIG_USED_FILENAME, NUM_CLASSES
+    STANDARD_CONFIG_USED_FILENAME, NUM_CLASSES, STANDARD_DATASET_FILENAME, STANDARD_TEST_RESULT_FILENAME
 import json
 from pathlib import Path
 from yaml import safe_load, dump
@@ -13,6 +13,7 @@ import copy
 import time
 from ultralytics import YOLO
 import shutil
+
 
 def load_original_dataset(dataset_id):
 
@@ -433,5 +434,22 @@ if __name__ == '__main__':
     print(_name)
 
 
+def load_dataset_and_result(run, result_id,
+                            result_alias='latest',
+                            test_dataset_id_key='test_dataset_id',
+                            test_dataset_alias_key='test_dataset_artifact_alias',
+                            dataset_filename=STANDARD_DATASET_FILENAME,
+                            result_filename=STANDARD_TEST_RESULT_FILENAME):
+    if ':' not in result_id:
+        result_id = f'{result_id}:{result_alias}'
 
+    result_dir, result = load_wandb_data_artifact(run, result_id, result_filename)
 
+    dataset_id = result[test_dataset_id_key]
+    dataset_artifact_alias = result[test_dataset_alias_key]
+    if ':' not in dataset_id:
+        dataset_id = f'{dataset_id}:{dataset_artifact_alias}'
+    # dataset_id = f'{dataset_id}:{dataset_artifact_alias}'
+    dataset_dir, dataset = load_wandb_data_artifact(run, dataset_id, dataset_filename)
+
+    return dataset, result, dataset_id

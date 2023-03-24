@@ -124,7 +124,7 @@ def listify(torch_data_dict):
 def yolo_result_to_target_fmt(result):
     # yolo_fmt_labels = result.boxes.cls.tolist()
     # labels = map(yolo_fmt_labels, yolo_fmt_labels)
-    return dict(boxes = result.boxes.xyxy, scores = result.boxes.conf, yolo_fmt_labels=result.boxes.cls)
+    return dict(boxes=result.boxes.xyxy, scores=result.boxes.conf, yolo_fmt_labels=result.boxes.cls)
 
 
 def translate_yolo_to_original_label_fmt(output):

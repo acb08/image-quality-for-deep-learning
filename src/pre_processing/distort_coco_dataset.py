@@ -272,12 +272,6 @@ def distort_coco(image_directory, instances, iterations, distortion_tags, output
     new_instances['images'] = images
     new_instances['annotations'] = annotations
 
-    # yolo_cfg = {  # TODO: add coco config
-    #     'rel_path': 'ROOT_DIR/to/top/level/dataset/directory',
-    #     'train': 'image/train',
-    #     'val': 'image/val'
-    # }
-
     return new_instances
 
 

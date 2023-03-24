@@ -1,22 +1,19 @@
-from src.analysis.distortion_performance import load_dataset_and_result
 import numpy as np
 import argparse
 from pathlib import Path
 
-from src.utils.classes import ModelDistortionPerformanceResultOD
-from src.utils.functions import get_config
+from src.obj_det_analysis.classes import ModelDistortionPerformanceResultOD
+from src.utils.functions import get_config, load_dataset_and_result
 from src.utils import definitions
 import wandb
 from src.analysis import plot
 from src.analysis.analysis_functions import get_sub_dir_and_log_filename, build_3d_field
 from src.analysis.fit import fit, evaluate_fit, apply_fit
 
-_REPORT_TIME = False
-
 
 def get_obj_det_distortion_perf_result(result_id=None, identifier=None, config=None,
                                        distortion_ids=('res', 'blur', 'noise'), make_dir=True, run=None,
-                                       report_time=_REPORT_TIME):
+                                       report_time=False):
 
     if not result_id and not identifier:
         result_id = config['result_id']
@@ -57,7 +54,7 @@ def get_obj_det_distortion_perf_result(result_id=None, identifier=None, config=N
 
 def flatten_axes_from_cfg(config):
 
-    default = 1, 2, 3
+    default = 0, 1, 2
 
     if 'flatten_axes' in config.keys():
 
@@ -146,24 +143,11 @@ def view_sorted_performance(performance_array, parameter_array, output_dir=None,
         file.close()
 
 
-def main(config):
-
-    flatten_axes = flatten_axes_from_cfg(run_config)
-    flatten_axis_combinations = flatten_axis_combinations_from_cfg(run_config)
-
-    distortion_performance_result, output_dir = get_obj_det_distortion_perf_result(config=run_config)
-
-    res_vals, blur_vals, noise_vals, map3d, parameter_array, perf_array, full_extract = (
-        distortion_performance_result.get_3d_distortion_perf_props(distortion_ids=('res', 'blur', 'noise')))
-
-    pass
-
-
 if __name__ == '__main__':
 
     _REPORT_TIME = True
 
-    ide_config_name = "v8l-fr-10e_fr90-test.yml"  # "v8x_b-scan.yml"  # 'v8n_fr-test.yml'
+    ide_config_name = 'v8x_b-scan.yml'  # "v8l-fr-10e_fr90-test.yml"  # "v8x_b-scan.yml"  #
 
     if ide_config_name is None:
         config_name = 'distortion_analysis_config.yml'
@@ -187,7 +171,8 @@ if __name__ == '__main__':
     else:
         basic_plots = False
 
-    _distortion_performance_result, _output_dir = get_obj_det_distortion_perf_result(config=run_config)
+    _distortion_performance_result, _output_dir = get_obj_det_distortion_perf_result(config=run_config,
+                                                                                     report_time=_REPORT_TIME)
 
     _res_vals, _blur_vals, _noise_vals, _map3d, _parameter_array, _perf_array, _full_extract = (
         _distortion_performance_result.get_3d_distortion_perf_props(distortion_ids=('res', 'blur', 'noise')))
@@ -256,14 +241,14 @@ if __name__ == '__main__':
                                                 fit_key=_fit_key,
                                                 add_bias=False,  # only applies to linear fits
                                                 )
-                # plot.compare_2d_mean_views(f0=_map3d, f1=_direct_fit_prediction_3d,
-                #                            data_labels=('measured', 'fit'),
-                #                            x_vals=_res_vals, y_vals=_blur_vals, z_vals=_noise_vals,
-                #                            distortion_ids=('res', 'blur', 'noise'),  # flatten_axes=_flatten_axes,
-                #                            directory=_fit_sub_dir,
-                #                            perf_metric='mAP',
-                #                            az_el_combinations='all',
-                #                            show_plots=False)
+                plot.compare_2d_mean_views(f0=_map3d, f1=_direct_fit_prediction_3d,
+                                           data_labels=('measured', 'fit'),
+                                           x_vals=_res_vals, y_vals=_blur_vals, z_vals=_noise_vals,
+                                           distortion_ids=('res', 'blur', 'noise'),  # flatten_axes=_flatten_axes,
+                                           directory=_fit_sub_dir,
+                                           perf_metric='mAP',
+                                           az_el_combinations='all',
+                                           show_plots=False)
 
                 plot.compare_2d_slice_views(f0=_map3d, f1=_direct_fit_prediction_3d,
                                             data_labels=('measured', 'fit'),
@@ -271,19 +256,20 @@ if __name__ == '__main__':
                                             distortion_ids=('res', 'blur', 'noise'),  # flatten_axes=_flatten_axes,
                                             directory=_fit_sub_dir,
                                             perf_metric='mAP',
-                                            az_el_combinations='default',
-                                            show_plots=False
+                                            az_el_combinations='mini',
+                                            show_plots=False,
+                                            sub_dir_per_az_el=True,
                                             )
-                #
-                # plot.compare_1d_views(f0=_map3d, f1=_direct_fit_prediction_3d,
-                #                       data_labels=('measured', 'fit'),
-                #                       x_vals=_res_vals, y_vals=_blur_vals, z_vals=_noise_vals,
-                #                       flatten_axis_combinations=_flatten_axis_combinations,
-                #                       result_id='3d_1d_projection',
-                #                       directory=_fit_sub_dir,
-                #                       show_plots=True,
-                #                       plot_together=True,
-                #                       ylabel='mAP')
+
+                plot.compare_1d_views(f0=_map3d, f1=_direct_fit_prediction_3d,
+                                      data_labels=('measured', 'fit'),
+                                      x_vals=_res_vals, y_vals=_blur_vals, z_vals=_noise_vals,
+                                      flatten_axis_combinations=_flatten_axis_combinations,
+                                      result_id='3d_1d_projection',
+                                      directory=_fit_sub_dir,
+                                      show_plots=True,
+                                      plot_together=True,
+                                      ylabel='mAP')
 
                 print(f'{_fit_key} fit: \n', _fit_coefficients, file=_output_file)
                 print(f'{_fit_key} direct fit correlation: ', _fit_correlation, '\n',

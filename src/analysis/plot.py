@@ -868,6 +868,8 @@ def plot_1d_from_3d(perf_dict_3d, x_vals, y_vals, z_vals, distortion_ids=('res',
     if plot_together:
         fig_width = 4 * num_combinations
         fig, axes = plt.subplots(nrows=1, ncols=num_combinations, sharey=True, figsize=(fig_width, 3.4))
+        if not hasattr(axes, '__len__'):
+            axes = (axes, )
         save_dir_individual = None
         show_plots_individual = False
     else:
@@ -920,17 +922,6 @@ def plot_1d_from_3d(perf_dict_3d, x_vals, y_vals, z_vals, distortion_ids=('res',
         plt.show()
 
 
-def plot_2d_from_3d(perf_dict_3d,
-                    x_vals,
-                    y_vals,
-                    z_vals,
-                    distortion_ids,
-                    flatten_axes,
-                    show_plots=True,
-                    ):
-    pass
-
-
 def plot_1d(x, y, directory=None, filename=None, xlabel='x', ylabel='y', literal_xlabel=False, literal_ylabel=False,
             ax=None, show=True):
 
@@ -951,7 +942,6 @@ def plot_1d(x, y, directory=None, filename=None, xlabel='x', ylabel='y', literal
 
     if show:
         plt.show()
-
 
 
 def residual_color_plot(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res', 'blur', 'noise'),

@@ -1,8 +1,8 @@
 import copy
-from src.utils.definitions import STANDARD_DATASET_FILENAME, STANDARD_TEST_RESULT_FILENAME, WANDB_PID, REL_PATHS, \
+from src.utils.definitions import WANDB_PID, REL_PATHS, \
     ROOT_DIR, STANDARD_PERFORMANCE_PREDICTION_FILENAME, STANDARD_FIT_STATS_FILENAME
-from src.utils.functions import load_wandb_data_artifact, get_config, construct_artifact_id
-from src.analysis._shared_methods import _get_processed_instance_props_path, _check_extract_processed_props, \
+from src.utils.functions import get_config, construct_artifact_id, load_dataset_and_result
+from src.utils.shared_methods import _get_processed_instance_props_path, _check_extract_processed_props, \
     _archive_processed_props, _get_3d_distortion_perf_props
 from src.analysis.analysis_functions import conditional_mean_accuracy, extract_embedded_vectors, \
     get_class_accuracies, build_3d_field, get_distortion_perf_2d, get_distortion_perf_1d, check_durbin_watson_statistics
@@ -156,27 +156,6 @@ class ModelDistortionPerformanceResult(DistortedDataset):
 
     def get_3d_distortion_perf_props(self, distortion_ids, predict_eval_flag='predict'):
         return _get_3d_distortion_perf_props(self, distortion_ids, predict_eval_flag=predict_eval_flag)
-
-
-def load_dataset_and_result(run, result_id,
-                            result_alias='latest',
-                            test_dataset_id_key='test_dataset_id',
-                            test_dataset_alias_key='test_dataset_artifact_alias',
-                            dataset_filename=STANDARD_DATASET_FILENAME,
-                            result_filename=STANDARD_TEST_RESULT_FILENAME):
-    if ':' not in result_id:
-        result_id = f'{result_id}:{result_alias}'
-
-    result_dir, result = load_wandb_data_artifact(run, result_id, result_filename)
-
-    dataset_id = result[test_dataset_id_key]
-    dataset_artifact_alias = result[test_dataset_alias_key]
-    if ':' not in dataset_id:
-        dataset_id = f'{dataset_id}:{dataset_artifact_alias}'
-    # dataset_id = f'{dataset_id}:{dataset_artifact_alias}'
-    dataset_dir, dataset = load_wandb_data_artifact(run, dataset_id, dataset_filename)
-
-    return dataset, result, dataset_id
 
 
 def analyze_perf_1d(model_performance,

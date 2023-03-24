@@ -3,7 +3,7 @@ from PIL import Image
 import numpy as np
 from torchvision import transforms
 from src.utils.definitions import DISTORTION_RANGE, NATIVE_RESOLUTION, DISTORTION_RANGE_90
-from src.utils.classes import VariableImageResize, VariableCOCOResize
+from src.pre_processing.classes import VariableCOCOResize, VariableImageResize
 
 RNG = np.random.default_rng()
 

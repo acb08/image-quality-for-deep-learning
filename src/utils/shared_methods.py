@@ -1,10 +1,9 @@
 """
 Functions intended to be called by methods of multiple classes that do not have inheritance or composition
 relationships. I suspect a SW developer would disapprove, but it seemed to be the best way to manage commonality
-between very similar bu crucially different classes.
+between very similar but crucially different classes.
 """
 from pathlib import Path
-# from src.analysis.distortion_performance import ModelDistortionPerformanceResult
 import numpy as np
 from hashlib import blake2b
 from src.utils.definitions import ROOT_DIR, REL_PATHS, STANDARD_PROCESSED_DISTORTION_PERFORMANCE_PROPS_FILENAME
@@ -21,21 +20,7 @@ def _get_processed_instance_props_path(_self, predict_eval_flag=None):
     return props_path
 
 
-# def _check_limits_(values, limits):
-#
-#     if np.max(values) > np.max(limits):
-#         return False
-#     elif np.min(values) < np.min(limits):
-#         return False
-#     else:
-#         return True
-
-
-def _check_extract_processed_props(_self, predict_eval_flag=None,
-                                   # res_limits=None,
-                                   # blur_limits=None,
-                                   # noise_limits=None
-                                   ):
+def _check_extract_processed_props(_self, predict_eval_flag=None):
 
     processed_props_path = _self.get_processed_instance_props_path(predict_eval_flag=predict_eval_flag)
     if not Path.is_file(processed_props_path):
@@ -46,43 +31,53 @@ def _check_extract_processed_props(_self, predict_eval_flag=None,
     if _self.instance_hashes[predict_eval_flag] != processed_props_hash:
         return False
 
+    if hasattr(_self, 'vc_hash_mash'):
+        if 'vc_hash_mash' not in processed_props.keys():
+            print('version control hash ont found in processed_props')
+            return False
+        elif processed_props['vc_hash_mash'] != _self.vc_hash_mash:
+            print('version control hash mismatch')
+            return False
+
     res_values = processed_props['res_values']
-    # if res_limits:
-    #     if not _check_limits_(res_values, res_limits):
-    #         return False
-
     blur_values = processed_props['blur_values']
-    # if blur_limits:
-    #     if not _check_limits_(blur_values, blur_limits):
-    #         return False
-
     noise_values = processed_props['noise_values']
-    # if noise_limits:
-    #     if not _check_limits_(noise_values, noise_limits):
-    #         return False
-
     perf_3d = processed_props['perf_3d']
     distortion_array = processed_props['distortion_array']
     perf_array = processed_props['perf_array']
 
-    return res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array, None
+    full_extract = None  # full extract not logged, but it is returned by get_3d_distortion_perf_props()
+
+    return res_values, blur_values, noise_values, perf_3d, distortion_array, perf_array, full_extract
 
 
 def _archive_processed_props(_self, res_values, blur_values, noise_values, perf_3d, distortion_array,
                              perf_array, predict_eval_flag=None,
                              distortion_array_perf_predict=None, top_1_array_perf_predict=None,
-                             top_1_array_eval=None):
+                             top_1_array_eval=None,
+                             vc_hash_mash=None):
 
     processed_props_path = _self.get_processed_instance_props_path(predict_eval_flag=predict_eval_flag)
 
-    np.savez_compressed(processed_props_path,
-                        _instance_hash=_self.instance_hashes[predict_eval_flag],
-                        res_values=res_values,
-                        blur_values=blur_values,
-                        noise_values=noise_values,
-                        perf_3d=perf_3d,
-                        distortion_array=distortion_array,
-                        perf_array=perf_array)
+    if vc_hash_mash is None:
+        np.savez_compressed(processed_props_path,
+                            _instance_hash=_self.instance_hashes[predict_eval_flag],
+                            res_values=res_values,
+                            blur_values=blur_values,
+                            noise_values=noise_values,
+                            perf_3d=perf_3d,
+                            distortion_array=distortion_array,
+                            perf_array=perf_array)
+    else:
+        np.savez_compressed(processed_props_path,
+                            _instance_hash=_self.instance_hashes[predict_eval_flag],
+                            res_values=res_values,
+                            blur_values=blur_values,
+                            noise_values=noise_values,
+                            perf_3d=perf_3d,
+                            distortion_array=distortion_array,
+                            perf_array=perf_array,
+                            vc_hash_mash=vc_hash_mash)
 
 
 def _get_3d_distortion_perf_props(_self, distortion_ids, predict_eval_flag='predict'):
