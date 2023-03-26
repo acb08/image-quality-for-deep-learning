@@ -99,7 +99,27 @@ DISTORTION_RANGE = {
         'res': (0.1, 1),  # not units specified differently btw sat6 and places
         'blur': (31, 0.1, 5),  # (kernel size, sigma_min, sigma_max)
         'noise': (0, 50)
+    },
+    'coco': {
+        'res': (0.2, 1),
+        'blur': (0.1, 5),
+        'noise': (0, 80)
     }
+}
+
+COCO_OCT_DISTORTION_BOUNDS = {
+    'res': (
+        np.linspace(0.55, 1, num=31),
+        np.linspace(0.2, 0.65, num=31)
+    ),
+    'blur': (
+        np.linspace(0.2, 2.7, num=26),
+        np.linspace(2.3, 5, num=26)
+    ),
+    'noise': (
+        np.arange(0, 46),
+        np.arange(35, 81)
+    )
 }
 
 DISTORTION_RANGE_90 = {

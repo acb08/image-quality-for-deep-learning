@@ -570,24 +570,6 @@ def distort_log_coco(config):
         run.name = new_dataset_id
         log_config(_new_dataset_abs_dir, dict(config), return_path=False)
 
-        # new_dataset = {
-        #     'dataset_rel_dir': str(new_dataset_rel_dir),
-        #
-        #     'parent_dataset_id': parent_dataset_id,
-        #     'description': description,
-        #     'artifact_filename': artifact_filename,
-        #     'distortion_tags': distortion_tags,
-        #     'distortion_type_flags': distortion_type_flags,
-        #     'distortion_iterations': iterations,
-        #     'ROOT_DIR_at_run': ROOT_DIR,
-        #
-        #     'yolo_cfg': yolo_cfg
-        # }
-
-        # name_tags = [new_dataset_id]
-        # name_tags.extend(distortion_type_flags)
-        # new_artifact_id = string_from_tags(name_tags)
-
 
 if __name__ == '__main__':
 

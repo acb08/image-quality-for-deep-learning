@@ -2,7 +2,7 @@ import random
 from PIL import Image
 import numpy as np
 from torchvision import transforms
-from src.utils.definitions import DISTORTION_RANGE, NATIVE_RESOLUTION, DISTORTION_RANGE_90
+from src.utils.definitions import DISTORTION_RANGE, NATIVE_RESOLUTION, DISTORTION_RANGE_90, COCO_OCT_DISTORTION_BOUNDS
 from src.pre_processing.classes import VariableCOCOResize, VariableImageResize
 
 RNG = np.random.default_rng()
@@ -410,6 +410,24 @@ def b_fr_tr_coco(img):
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'blur', std
 
 
+def b_tr_0_coco(img):
+
+    sigma_range = COCO_OCT_DISTORTION_BOUNDS['blur'][0]
+    std = np.random.choice(sigma_range)
+    kernel_size = _get_kernel_size(std)
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'blur', std
+
+
+def b_tr_1_coco(img):
+
+    sigma_range = COCO_OCT_DISTORTION_BOUNDS['blur'][1]
+    std = np.random.choice(sigma_range)
+    kernel_size = _get_kernel_size(std)
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'blur', std
+
+
 def b_fr90_coco(img):
 
     sigma_range = DISTORTION_RANGE_90['coco']['blur']
@@ -495,6 +513,38 @@ def n_fr_tr_coco(img):
     return img_out, None, 'noise', lambda_poisson
 
 
+def n_tr_0_coco(img):
+    """
+    Lower half of fr noise range
+    """
+
+    sigma_vals = COCO_OCT_DISTORTION_BOUNDS['noise'][0]
+
+    sigma_poisson = np.random.choice(sigma_vals)
+    lambda_poisson = int(sigma_poisson ** 2)  # convert from np.int64 to regular int for json serialization
+    img_out = _add_zero_centered_poisson_noise(img, lambda_poisson)
+
+    img_out = np.asarray(img_out, dtype=np.uint8)
+
+    return img_out, None, 'noise', lambda_poisson
+
+
+def n_tr_1_coco(img):
+    """
+    Lower half of fr noise range
+    """
+
+    sigma_vals = COCO_OCT_DISTORTION_BOUNDS['noise'][1]
+
+    sigma_poisson = np.random.choice(sigma_vals)
+    lambda_poisson = int(sigma_poisson ** 2)  # convert from np.int64 to regular int for json serialization
+    img_out = _add_zero_centered_poisson_noise(img, lambda_poisson)
+
+    img_out = np.asarray(img_out, dtype=np.uint8)
+
+    return img_out, None, 'noise', lambda_poisson
+
+
 def n_fr90_coco(img):
     """
     Debugging function to check out data pipeline
@@ -550,6 +600,25 @@ def r_fr90_coco(img):
     img_out = VariableCOCOResize()(img, res_frac)
 
     return img_out, None, 'res', res_frac
+
+
+def r_tr_0_coco(img):
+
+    res_fractions = COCO_OCT_DISTORTION_BOUNDS['res'][0]
+    res_frac = random.choice(res_fractions)
+    img_out = VariableCOCOResize()(img, res_frac)
+
+    return img_out, None, 'res', res_frac
+
+
+def r_tr_1_coco(img):
+
+    res_fractions = COCO_OCT_DISTORTION_BOUNDS['res'][1]
+    res_frac = random.choice(res_fractions)
+    img_out = VariableCOCOResize()(img, res_frac)
+
+    return img_out, None, 'res', res_frac
+
 
 
 def r_no_change_coco(img):
@@ -839,4 +908,14 @@ coco_tag_to_image_distortions = {  # coco distortion functions return distortion
     'r_fr90_coco': r_fr90_coco,
     'b_fr90_coco': b_fr90_coco,
     'n_fr90_coco': n_fr90_coco,
+
+    'r_tr_0_coco': r_tr_0_coco,
+    'r_tr_1_coco': r_tr_1_coco,
+
+    'b_tr_0_coco': b_tr_0_coco,
+    'b_tr_1_coco': b_tr_1_coco,
+
+    'n_tr_0_coco': n_tr_0_coco,
+    'n_tr_1_coco': n_tr_1_coco,
+
 }
