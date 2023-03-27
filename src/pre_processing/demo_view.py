@@ -325,12 +325,22 @@ if __name__ == '__main__':
     #     r'/home/acb6595/places/datasets/demo/0000-demo-mp90_upsplash/3-noise',
     # ]
 
+    # _input_directories = [
+    #     r'/home/acb6595/places/datasets/demo/0000-demo-mp90_upsplash/rgb',
+    #     r'/home/acb6595/places/datasets/demo/0000-demo-mp90_upsplash/0-pan',
+    #     r'/home/acb6595/places/datasets/demo/0000-demo-mp90_upsplash/3-noise',
+    #     r'/home/acb6595/places/datasets/demo/0001-demo-ep90_upsplash/3-noise',
+    # ]
+
+    _local_root = r'/home/acb6595/places/analysis/composite_performance/oct-models-fr90-mega-1-mega-2/3d/'
     _input_directories = [
-        r'/home/acb6595/places/datasets/demo/0000-demo-mp90_upsplash/rgb',
-        r'/home/acb6595/places/datasets/demo/0000-demo-mp90_upsplash/0-pan',
-        r'/home/acb6595/places/datasets/demo/0000-demo-mp90_upsplash/3-noise',
-        r'/home/acb6595/places/datasets/demo/0001-demo-ep90_upsplash/3-noise',
+        r'exp_b0n0/predict_fit_slice_views/blur_slices/7-2',
+        r'pl_b0n0/predict_fit_slice_views/blur_slices/7-2',
+        r'giqe3_b2n2/predict_fit_slice_views/blur_slices/7-2',
+        r'giqe5_b2n2/predict_fit_slice_views/blur_slices/7-2'
     ]
+
+    _input_directories = [Path(_local_root, sub_dir) for sub_dir in _input_directories]
 
     # _output_directory_name = 'mp90_image_chain_rgb'
     # _output_directory_name = 'rgb_origin_mp90_ep90'
@@ -338,15 +348,15 @@ if __name__ == '__main__':
     # _output_directory_name = 'mp90_image_chain_rgb'
     # _output_directory_name = 'ep_image_chain_rgb'
     # _output_directory_name = 'upsplash_mp90_image_chain_rgb'
-    _output_directory_name = 'upsplash_rgb_origin_mp90_ep90'
+    _output_directory_name = 'blur_slice_7-2_compare'
 
     _image_strip_output_dir = Path(definitions.ROOT_DIR, definitions.REL_PATHS['demo_images'], _output_directory_name)
 
     main(_input_directories, image_strip_directory=_image_strip_output_dir)
 
-    stack_dir = r'/home/acb6595/places/demo_images/upsplash_rgb_origin_mp90_ep90/keepers'
-    stack_dir = Path(stack_dir)
-    make_vertical_stack(stack_dir)
+    # stack_dir = r'/home/acb6595/places/demo_images/upsplash_rgb_origin_mp90_ep90/keepers'
+    # stack_dir = Path(stack_dir)
+    # make_vertical_stack(stack_dir)
 
     # mosaic_test_dir = r'/home/acb6595/sat6/demo_images/0005-tst-mp90_demo/rgb'
     # mosaic_test_output_dir = '/home/acb6595/sat6/demo_images/0005-tst-mp90_demo/mosaic_test'
