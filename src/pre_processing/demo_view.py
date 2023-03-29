@@ -384,3 +384,4 @@ if __name__ == '__main__':
     # manual_img_strip_dir = r'/home/acb6595/sat6/demo_images/origin-mp-ep-rgb'
     # make_horizontal_strip(manual_img_strip_dir)
 
+    # adding comment so that I can test a git commit on a remote system
