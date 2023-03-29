@@ -6,7 +6,7 @@ import shutil
 from pathlib import Path
 from src.utils.coco_label_functions import get_yolo_labels
 from src.utils.functions import get_config
-from src.utils.definitions import STANDARD_DATASET_FILENAME, ROOT_DIR, WANDB_PID, REL_PATHS, HOST
+from src.utils.definitions import STANDARD_DATASET_FILENAME, ROOT_DIR, WANDB_PID, REL_PATHS, HOST, YOLO_TRAIN_CONFIGS
 from src.utils.functions import construct_artifact_id, load_wandb_data_artifact, load_wandb_model_artifact, \
     id_from_tags, log_model_helper
 
@@ -250,7 +250,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default='train_config.yml', help='config filename to be used')
     parser.add_argument('--config_dir',
-                        default=Path(Path(__file__).parents[0], 'train_configs_yolo'),
+                        default=YOLO_TRAIN_CONFIGS,
                         help="configuration file directory")
     args_passed = parser.parse_args()
 
@@ -258,9 +258,3 @@ if __name__ == '__main__':
     run_config['host'] = HOST
 
     load_tune_model(run_config)
-
-    # test_dir = r'/home/acb6595/coco/models/debug'
-    # next_train_dir, next_val_dir = get_yolo_output_dirs(test_dir)
-    # print(next_train_dir, next_val_dir)
-
-

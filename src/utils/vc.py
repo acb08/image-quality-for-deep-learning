@@ -7,9 +7,8 @@ a recalculation of the mAP result next time I try to use it.)
 
 from hashlib import blake2b
 from pathlib import Path
-from src.utils.definitions import ROOT_DIR
+from src.utils.definitions import CODE_ROOT
 
-_CODE_ROOT = Path(ROOT_DIR, 'image-quality-for-deep-learning', 'src')
 
 _mAP_CODE_PATHS = (
     'utils/shared_methods.py',
@@ -28,7 +27,7 @@ def get_map_hash_mash():
 
     for code_path in _mAP_CODE_PATHS:
 
-        with open(Path(_CODE_ROOT, code_path), 'r') as f:
+        with open(Path(CODE_ROOT, code_path), 'r') as f:
             data = f.read()
             hash_val = blake2b(data.encode('utf-8')).hexdigest()
             hash_mash += hash_val
