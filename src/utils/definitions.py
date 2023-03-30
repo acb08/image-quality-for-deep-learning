@@ -36,7 +36,7 @@ KEY_LENGTH = 4
 STANDARD_TO_ORIGINAL_PAPER_LABEL_MAP_FILENAME = 'std_to_original_paper_coco_label_mappings.yml'
 YOLO_TO_ORIGINAL_PAPER_LABEL_MAP_FILENAME = 'yolo_to_original_paper_coco_label_mappings.yml'
 
-YOLO_TRAIN_CONFIGS = Path(CODE_ROOT, 'train', 'train_configs_yolo')
+YOLO_TRAIN_CONFIG_DIR = Path(CODE_ROOT, 'train', 'train_configs_yolo')
 
 # defines standard paths in project structure for different artifact types
 REL_PATHS = {

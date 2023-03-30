@@ -284,6 +284,7 @@ def load_tune_model(config):
         print('device: ', device)
 
         loader = get_loader(detection_dataset, num_workers=num_workers, batch_size=batch_size)
+        val_loader = None  # TODO: update to get val dataset
 
         model.to(device)
 
