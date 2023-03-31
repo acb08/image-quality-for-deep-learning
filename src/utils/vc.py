@@ -11,13 +11,13 @@ from src.utils.definitions import CODE_ROOT
 
 
 _mAP_CODE_PATHS = (
-    'utils/shared_methods.py',
-    'utils/definitions.py',
-    'utils/detection_functions.py',
-    'utils/classes.py',
-    'obj_det_analysis/classes.py',
-    'analysis/analysis_functions.py',
-    'obj_det_analysis/analysis_tools.py'
+    'src/utils/shared_methods.py',
+    'src/utils/definitions.py',
+    'src/utils/detection_functions.py',
+    'src/utils/classes.py',
+    'src/obj_det_analysis/classes.py',
+    'src/analysis/analysis_functions.py',
+    'src/obj_det_analysis/analysis_tools.py'
 )
 
 
