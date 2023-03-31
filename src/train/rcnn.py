@@ -7,7 +7,7 @@ import torch.distributed as dist
 import math
 import sys
 from src.utils.definitions import ROOT_DIR, ORIGINAL_DATASETS, WANDB_PID, STANDARD_DATASET_FILENAME, REL_PATHS, \
-    STANDARD_CHECKPOINT_FILENAME, HOST
+    STANDARD_CHECKPOINT_FILENAME, HOST, RCNN_TRAIN_CONFIG_DIR
 from src.utils.detection_functions import yolo_result_to_target_fmt, translate_yolo_to_original_label_fmt
 from src.utils.functions import load_original_dataset, get_config, construct_artifact_id, load_wandb_data_artifact, \
     load_wandb_model_artifact, id_from_tags, wandb_to_detection_dataset
@@ -372,7 +372,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default='train_config.yml', help='config filename to be used')
     parser.add_argument('--config_dir',
-                        default=Path(Path(__file__).parents[0], 'train_configs_rcnn'),
+                        default=RCNN_TRAIN_CONFIG_DIR,
                         help="configuration file directory")
     args_passed = parser.parse_args()
 

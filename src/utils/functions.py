@@ -1,6 +1,5 @@
 import torchvision.models as models
 import torch
-
 from src.utils import definitions as definitions
 from src.utils.definitions import ROOT_DIR, REL_PATHS, ORIGINAL_DATASETS, KEY_LENGTH, ARTIFACT_TYPE_TAGS, \
     STANDARD_CONFIG_USED_FILENAME, NUM_CLASSES, STANDARD_DATASET_FILENAME, STANDARD_TEST_RESULT_FILENAME
@@ -8,7 +7,7 @@ import json
 from pathlib import Path
 from yaml import safe_load, dump
 import numpy as np
-from src.utils.classes import Sat6ResNet, Sat6ResNet50, Sat6DenseNet161, COCO
+from src.utils.classes import Sat6ResNet, Sat6ResNet50, Sat6DenseNet161, COCO, PseudoArgs
 import copy
 import time
 from ultralytics import YOLO
@@ -200,7 +199,10 @@ def string_from_tags(tags):
     return tag_string
 
 
-def get_config(args):
+def get_config(args, config_dir=None, config_name=None):
+
+    if args is None:
+        args = PseudoArgs(config_dir=config_dir, config_name=config_name)
 
     with open(Path(args.config_dir, args.config_name), 'r') as file:
         config = safe_load(file)

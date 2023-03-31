@@ -4,7 +4,7 @@ import json
 import wandb
 from ultralytics import YOLO
 from src.utils.definitions import WANDB_PID, STANDARD_DATASET_FILENAME, ROOT_DIR, STANDARD_TEST_RESULT_FILENAME, \
-    REL_PATHS, HOST
+    REL_PATHS, HOST, TEST_DETECTION_CONFIG_DIR
 from src.utils.functions import load_wandb_model_artifact, load_wandb_data_artifact, id_from_tags, get_config, \
     log_config, construct_artifact_id, wandb_to_detection_dataset
 from pathlib import Path
@@ -42,7 +42,8 @@ def _execute_test(detection_dataset,
 
 def test_detection_model(config, batch_sweep=False, batch_sizes=None):
 
-    with wandb.init(project=WANDB_PID, job_type='test_detection_model', notes=config['description'], config=config) as run:
+    notes = config['description']
+    with wandb.init(project=WANDB_PID, job_type='test_detection_model', notes=notes, config=config) as run:
 
         dataset_artifact_id, dataset_artifact_stem = construct_artifact_id(
             config['test_dataset_id'], artifact_alias=config['test_dataset_artifact_alias'])
@@ -151,9 +152,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default='test_config.yml', help='config filename to be used')
-    parser.add_argument('--config_dir',
-                        default=Path(Path(__file__).parents[0], 'test_configs_detection'),
-                        help="configuration file directory")
+    parser.add_argument('--config_dir', default=TEST_DETECTION_CONFIG_DIR, help="configuration file directory")
     args_passed = parser.parse_args()
     run_config = get_config(args_passed)
     run_config['host'] = HOST

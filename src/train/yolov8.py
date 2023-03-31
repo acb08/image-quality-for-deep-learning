@@ -136,6 +136,7 @@ def load_tune_model(config):
         model, arch, __ = load_wandb_model_artifact(run, starting_model_artifact_id, return_configs=True)
 
         config['arch'] = arch
+        config['ROOT_DIR_at_run'] = str(ROOT_DIR)
 
         __, dataset = load_wandb_data_artifact(run, dataset_artifact_id, STANDARD_DATASET_FILENAME)
 
