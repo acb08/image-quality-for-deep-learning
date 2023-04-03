@@ -32,18 +32,25 @@ def binomial(k, n, p):
 
 def binomial_likelihood(acc, num_trials, acc_predicted, eps=1e-10):
 
+    num_trials = int(num_trials)
+
     k = acc * num_trials
     k_int = np.asarray(np.round(k), dtype=np.int64)
 
     if hasattr(num_trials, '__len__'):  # if num_trials is a vector, then k (num successes) should be an integer
         assert max(np.abs(k - k_int)) < eps
+    else:
+        num_trials = np.round(num_trials)
+        num_trials = num_trials * np.ones_like(acc_predicted)
+        num_trials = np.asarray(num_trials, dtype=np.int64)
 
     likelihoods = []
     log_likelihoods = []
 
     for i, k_val in enumerate(k_int):
         acc_val = acc_predicted[i]
-        llh = binomial(k_val, num_trials, acc_val)
+        num_trials_val = num_trials[i]
+        llh = binomial(k_val, num_trials_val, acc_val)
         likelihoods.append(llh)
         log_likelihoods.append(np.log(llh))
 
