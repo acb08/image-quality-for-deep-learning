@@ -25,11 +25,6 @@ def binomial(k, n, p):
     return combinatoric_coeff * p ** k * (1 - p) ** (n - k)
 
 
-# def approx_binomial_prob(acc, n_bar, p):
-#     k_bar = int(acc * n_bar)  # estimated number of successes
-#     return binomial(k_bar, n_bar, p)
-
-
 def binomial_likelihood(acc, num_trials, acc_predicted, eps=1e-10):
 
     k = acc * num_trials
@@ -95,57 +90,5 @@ def sim_val_binomial():
 
 
 if __name__ == '__main__':
-    # calculate the aic!
+
     sim_val_binomial()
-
-    # _n = 80
-    # _k = np.arange(_n + 1)
-    # _p = np.linspace(0.1, 0.9, num=(_n + 1))
-    # _p_error = _p + 0.1 * _p**2
-    #
-    # _acc_sim = run_binomial_accuracy_experiment(_p, _n)
-    # _acc_sim_error = run_binomial_accuracy_experiment(_p_error, _n)
-    #
-    # _sim_likelihood, _sim_log_likelihood, _total_log_likelihood = binomial_likelihood(_acc_sim, _n, _p)
-    # _sim_error_likelihood, _sim_error_log_likelihood, _total_error_log_likelihood = binomial_likelihood(_acc_sim_error, _n, _p)
-    #
-    # _total_likelihood = product(_sim_likelihood)
-    # print(np.log(_total_likelihood), _total_log_likelihood)
-    # _total_error_likelihood = product(_sim_error_likelihood)
-    # print(np.log(_total_error_likelihood), _total_error_log_likelihood)
-    #
-    # plt.figure()
-    # plt.plot(_p, _acc_sim)
-    # plt.plot(_p, _acc_sim_error)
-    # plt.show()
-    #
-    # plt.figure()
-    # plt.plot(_p)
-    # plt.plot(_p_error)
-    # plt.show()
-    #
-    # plt.figure()
-    # plt.plot(_sim_likelihood)
-    # plt.plot(_sim_error_likelihood)
-    # plt.show()
-    #
-    # _aic = akaike_info_criterion(_acc_sim, n_trials=_n, acc_predicted=_p, num_parameters=5)
-    # _aic_error = akaike_info_criterion(_acc_sim_error, n_trials=_n,  acc_predicted=_p, num_parameters=5)
-    # _aic_error_2 = akaike_info_criterion(_acc_sim_error, n_trials=_n,  acc_predicted=_p_error, num_parameters=5)
-    # _aic_error_3 = akaike_info_criterion(_acc_sim, n_trials=_n,  acc_predicted=_p_error, num_parameters=5)
-
-    # pmf = []
-    # for _k_val in _k:
-    #     pmf.append(binomial(_k_val, _n, _p))
-    # pmf = np.asarray(pmf)
-    #
-    # pmf_check = binom.pmf(_k, _n, _p)
-    #
-    # plt.figure()
-    # plt.plot(_k, pmf)
-    # plt.plot(_k, pmf_check)
-    # plt.show()
-    #
-    # print(np.sum(pmf))
-    # print(np.sum(pmf_check))
-    #
