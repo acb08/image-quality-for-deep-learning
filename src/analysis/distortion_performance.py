@@ -17,6 +17,7 @@ import argparse
 import matplotlib.pyplot as plt
 from hashlib import blake2b
 from yaml import dump
+from src.analysis.aic import akaike_info_criterion
 
 
 wandb.login()
@@ -231,7 +232,7 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
                                           fit_key=fit_key, add_bias=add_bias)
 
     if hasattr(model_performance, 'eval_results'):
-        __, __, __, perf_3d_eval, distortion_array_eval, __, __ = (
+        __, __, __, perf_3d_eval, distortion_array_eval, perf_array_eval, __ = (
             model_performance.get_3d_distortion_perf_props(distortion_ids=(x_id, y_id, z_id),
                                                            predict_eval_flag='eval'))
 
@@ -244,6 +245,7 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
     else:
         perf_3d_eval = perf_3d
         distortion_array_eval = distortion_array
+        perf_array_eval = None
 
     fit_prediction = apply_fit(fit_coefficients, distortion_array_eval, distortion_ids=(x_id, y_id, z_id),
                                fit_key=fit_key, add_bias=add_bias)
@@ -253,6 +255,7 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
                                                distortion_array[:, 2],
                                                fit_prediction,
                                                data_dump=False)
+
 
     eval_fit_correlation = evaluate_fit(fit_coefficients, distortion_array_eval, perf_3d_eval,
                                         distortion_ids=(x_id, y_id, z_id), fit_key=fit_key, add_bias=add_bias)
@@ -273,6 +276,14 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
     trials_per_experiment = len(model_performance) / len(np.ravel(perf_3d))
     perf_3d_simulated = run_binomial_accuracy_experiment(p_simulate, trials_per_experiment)
 
+    if perf_array_eval is not None:
+        aic_val = akaike_info_criterion(acc=np.ravel(perf_3d_eval),  # acc, n_trials, acc_predicted, num_parameters
+                                        n_trials=trials_per_experiment,
+                                        acc_predicted=np.ravel(performance_prediction_3d),
+                                        num_parameters=len(fit_coefficients))
+    else:
+        aic_val = None
+
     print(f'{result_name} {x_id} {y_id} {z_id} {fit_key} performance means (performance / perf_fit_prediction'
           f'/perf_eval): {mean_perf} / {mean_perf_prediction} / {mean_perf_eval}', file=log_file)
     print(f'{fit_key} fit: \n', fit_coefficients, file=log_file)
@@ -281,6 +292,9 @@ def get_distortion_perf_3d(model_performance, x_id='res', y_id='blur', z_id='noi
     print(f'{fit_key} eval fit correlation: ', eval_fit_correlation,
           file=log_file)
     print(f'{fit_key} ideal fit correlation: ', ideal_correlation, '\n',
+          file=log_file)
+
+    print(f'{fit_key} Akaike information criterion score: ', aic_val, '\n',
           file=log_file)
 
     print('dw stats (measured results)', file=log_file)
