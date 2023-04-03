@@ -32,8 +32,6 @@ def binomial(k, n, p):
 
 def binomial_likelihood(acc, num_trials, acc_predicted, eps=1e-10):
 
-    num_trials = int(num_trials)
-
     k = acc * num_trials
     k_int = np.asarray(np.round(k), dtype=np.int64)
 
@@ -66,44 +64,75 @@ def product(array):
     return p
 
 
+def sim_val_binomial():
+
+    total_experiments = 4000
+    n_trials = 100 + np.random.randint(0, 51, total_experiments)
+
+    p_success_true = 0.35 + 0.25 * np.sin(np.linspace(0, 2 * np.pi, num=total_experiments))
+    error = np.linspace(0.1, 0.5, num=total_experiments) ** 3
+    error_coefficients = np.linspace(0, 2, num=10)
+
+    simulated_result = run_binomial_accuracy_experiment(p_success=p_success_true,
+                                                        num_trials_per_experiment=n_trials)
+
+    akaike_scores = []
+
+    for coeff in error_coefficients:
+        total_error = error * coeff
+        p_success_predicted = p_success_true + total_error
+        akaike_score = akaike_info_criterion(acc=simulated_result,
+                                             n_trials=n_trials,
+                                             acc_predicted=p_success_predicted,
+                                             num_parameters=5)
+        akaike_scores.append(akaike_score)
+
+    fig, axes = plt.subplots()
+    axes.plot(error_coefficients, akaike_scores)
+    axes.set_xlabel('error coefficient')
+    axes.set_ylabel('Akaike information criterion score')
+    plt.show()
+
+
 if __name__ == '__main__':
     # calculate the aic!
+    sim_val_binomial()
 
-    _n = 80
-    _k = np.arange(_n + 1)
-    _p = np.linspace(0.1, 0.9, num=(_n + 1))
-    _p_error = _p + 0.1 * _p**2
-
-    _acc_sim = run_binomial_accuracy_experiment(_p, _n)
-    _acc_sim_error = run_binomial_accuracy_experiment(_p_error, _n)
-
-    _sim_likelihood, _sim_log_likelihood, _total_log_likelihood = binomial_likelihood(_acc_sim, _n, _p)
-    _sim_error_likelihood, _sim_error_log_likelihood, _total_error_log_likelihood = binomial_likelihood(_acc_sim_error, _n, _p)
-
-    _total_likelihood = product(_sim_likelihood)
-    print(np.log(_total_likelihood), _total_log_likelihood)
-    _total_error_likelihood = product(_sim_error_likelihood)
-    print(np.log(_total_error_likelihood), _total_error_log_likelihood)
-
-    plt.figure()
-    plt.plot(_p, _acc_sim)
-    plt.plot(_p, _acc_sim_error)
-    plt.show()
-
-    plt.figure()
-    plt.plot(_p)
-    plt.plot(_p_error)
-    plt.show()
-
-    plt.figure()
-    plt.plot(_sim_likelihood)
-    plt.plot(_sim_error_likelihood)
-    plt.show()
-
-    _aic = akaike_info_criterion(_acc_sim, n_trials=_n, acc_predicted=_p, num_parameters=5)
-    _aic_error = akaike_info_criterion(_acc_sim_error, n_trials=_n,  acc_predicted=_p, num_parameters=5)
-    _aic_error_2 = akaike_info_criterion(_acc_sim_error, n_trials=_n,  acc_predicted=_p_error, num_parameters=5)
-    _aic_error_3 = akaike_info_criterion(_acc_sim, n_trials=_n,  acc_predicted=_p_error, num_parameters=5)
+    # _n = 80
+    # _k = np.arange(_n + 1)
+    # _p = np.linspace(0.1, 0.9, num=(_n + 1))
+    # _p_error = _p + 0.1 * _p**2
+    #
+    # _acc_sim = run_binomial_accuracy_experiment(_p, _n)
+    # _acc_sim_error = run_binomial_accuracy_experiment(_p_error, _n)
+    #
+    # _sim_likelihood, _sim_log_likelihood, _total_log_likelihood = binomial_likelihood(_acc_sim, _n, _p)
+    # _sim_error_likelihood, _sim_error_log_likelihood, _total_error_log_likelihood = binomial_likelihood(_acc_sim_error, _n, _p)
+    #
+    # _total_likelihood = product(_sim_likelihood)
+    # print(np.log(_total_likelihood), _total_log_likelihood)
+    # _total_error_likelihood = product(_sim_error_likelihood)
+    # print(np.log(_total_error_likelihood), _total_error_log_likelihood)
+    #
+    # plt.figure()
+    # plt.plot(_p, _acc_sim)
+    # plt.plot(_p, _acc_sim_error)
+    # plt.show()
+    #
+    # plt.figure()
+    # plt.plot(_p)
+    # plt.plot(_p_error)
+    # plt.show()
+    #
+    # plt.figure()
+    # plt.plot(_sim_likelihood)
+    # plt.plot(_sim_error_likelihood)
+    # plt.show()
+    #
+    # _aic = akaike_info_criterion(_acc_sim, n_trials=_n, acc_predicted=_p, num_parameters=5)
+    # _aic_error = akaike_info_criterion(_acc_sim_error, n_trials=_n,  acc_predicted=_p, num_parameters=5)
+    # _aic_error_2 = akaike_info_criterion(_acc_sim_error, n_trials=_n,  acc_predicted=_p_error, num_parameters=5)
+    # _aic_error_3 = akaike_info_criterion(_acc_sim, n_trials=_n,  acc_predicted=_p_error, num_parameters=5)
 
     # pmf = []
     # for _k_val in _k:
