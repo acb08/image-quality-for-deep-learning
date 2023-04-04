@@ -128,6 +128,12 @@ COCO_OCT_DISTORTION_BOUNDS = {
     )
 }
 
+
+_COCO_FR_90_RES = (1, 0.25)
+_COCO_FR_90_BLUR = (0.5, 4.5)
+_COCO_FR90_NOISE = (0, 70)
+_STEP = 5
+
 DISTORTION_RANGE_90 = {
     'sat6': {
         'res': (7, 28),  # where used, include check to ensure high end matches NATIVE_RESOLUTION
@@ -140,11 +146,31 @@ DISTORTION_RANGE_90 = {
         'noise': (0, 44)
     },
     'coco': {  # coco values specified rather than range to avoid extra function calls for each image
+        'res': np.linspace(_COCO_FR_90_RES[1], _COCO_FR_90_RES[0], num=16),
+        'blur': np.linspace(_COCO_FR_90_BLUR[0], _COCO_FR_90_BLUR[1], num=17),
+        'noise': np.arange(_COCO_FR90_NOISE[0], _COCO_FR90_NOISE[1] + _STEP, step=_STEP)
+    }
+}
+
+_check = {  # coco values specified rather than range to avoid extra function calls for each image
         'res': np.linspace(0.25, 1, num=16),
         'blur': np.linspace(0.5, 4.5, num=17),
         'noise': np.arange(0, 15) * 5
-    }
 }
+
+COCO_MP_90 = {
+    'res': (_COCO_FR_90_RES[1] + _COCO_FR_90_RES[0]) / 2,
+    'blur': (_COCO_FR_90_BLUR[0] + _COCO_FR_90_BLUR[1]) / 2,
+    'noise': int((_COCO_FR90_NOISE[0] + _COCO_FR90_NOISE[1]) / 2)
+}
+
+
+COCO_EP_90 = {
+    'res': _COCO_FR_90_RES[1],
+    'blur': _COCO_FR_90_BLUR[1],
+    'noise': _COCO_FR90_NOISE[1]
+}
+
 # the only change in the sat6 "90%" distortion range is in blur to mitigate the effects of changing blur std when
 # the entire non-zero portion of the kernel falls within a single pixel
 
