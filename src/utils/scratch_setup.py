@@ -3,7 +3,7 @@ Takes a run config file and a destination directory and transfers the necessary 
 directory.
 """
 import argparse
-from src.utils._preload_tools import get_dataset_dir, duplicate_root, duplicate_project_sub_dirs, transfer_dataset, \
+from src.utils._xfer_tools import get_dataset_dir, duplicate_root, duplicate_project_sub_dirs, transfer_dataset, \
     transfer_code, transfer_project_config
 from src.utils.definitions import YOLO_TRAIN_CONFIG_DIR, RCNN_TRAIN_CONFIG_DIR, TEST_DETECTION_CONFIG_DIR
 from src.utils.functions import get_config

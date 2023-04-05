@@ -8,7 +8,7 @@ scratch storage in the SPORC, data needs to be transferred to the scratch space 
 relevant metadata from the artifact and returns a path to the actual dataset, which the calling script can use to
 find the data to be transferred.
 """
-from src.utils._preload_tools import get_dataset_dir, log_artifact_path
+from src.utils._xfer_tools import get_dataset_dir, log_artifact_path
 from src.utils.definitions import YOLO_TRAIN_CONFIG_DIR
 from src.utils.functions import get_config
 import argparse

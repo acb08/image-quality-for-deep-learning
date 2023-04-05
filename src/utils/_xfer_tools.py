@@ -68,10 +68,14 @@ def get_artifact_stem_directory(path, artifact_type):
     return artifact_stem
 
 
-def duplicate_root(destination, parents_ok=False):
-
+def get_destination_root(destination):
     root_local = Path(ROOT_DIR).parts[-1]
     destination_root = Path(destination, root_local)
+    return destination_root
+
+
+def duplicate_root(destination, parents_ok=False):
+    destination_root = get_destination_root(destination)
     if not destination_root.is_dir():
         Path.mkdir(destination_root, parents=parents_ok)
 
@@ -88,6 +92,17 @@ def duplicate_project_sub_dirs(destination_root):
 def _copy_directory(source, destination):
     command_string = f'rsync -azh {source} {destination}'
     os.system(command_string)
+
+
+def _remove_directory(directory):
+    command_string = f'rm -rf {directory}'
+    os.system(command_string)
+
+
+def cleanup(destination):
+    destination_root = get_destination_root(destination)
+    print(f'deleting {destination_root}')
+    _remove_directory(destination_root)
 
 
 def transfer_dataset(dataset_starting_path, destination_root, dataset_artifact_type):
