@@ -3,10 +3,10 @@
 description:  debugging test of coco128 model  # test of noise-tuned model on noise-scan dataset
 descriptive_tags: []
 
-test_dataset_id: coco128 # 0047tst-coco_n_scan_v2-noise:v0
+test_dataset_id: 0056tst-coco_r_scan_v3_reg_test:v0 # 0047tst-coco_n_scan_v2-noise:v0
 test_dataset_artifact_alias: latest
 
-model_artifact_id: 0049yolo-yolov8n-coco128-logging-debug_best_loss:v0
+model_artifact_id: 0023yolo-v8l-fr_best_loss:v0
   # 0049yolo-yolov8n-coco128-logging-debug_last_epoch:v0
   # 0026fasterrcnn-coco128-debug_best_loss:v0
   # 0024fasterrcnn-coco128-debug_best_loss:v0

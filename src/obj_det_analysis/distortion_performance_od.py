@@ -147,7 +147,7 @@ if __name__ == '__main__':
 
     _REPORT_TIME = True
 
-    ide_config_name = 'v8x_b-scan.yml'  # "v8l-fr-10e_fr90-test.yml"  # "v8x_b-scan.yml"  #
+    ide_config_name = None  # 'v8x_b-scan.yml'  # "v8l-fr-10e_fr90-test.yml"  # "v8x_b-scan.yml"  #
 
     if ide_config_name is None:
         config_name = 'distortion_analysis_config.yml'

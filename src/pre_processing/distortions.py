@@ -619,6 +619,19 @@ def r_scan_coco_v2(img):
     return img_out, None, 'res', res_frac
 
 
+def r_low_debug_coco(img):
+
+    res_frac = 0.05
+    img_out = VariableCOCOResize()(img, res_frac)
+
+    return img_out, None, 'res', res_frac
+
+
+def b_large_debug_coco(img):
+    std = 5
+    return transforms.GaussianBlur(kernel_size=_EP90_COCO_KERNEL_SIZE, sigma=std)(img), None, 'blur', std
+
+
 def r_fr_tr_coco(img):
 
     res_fractions = np.linspace(0.2, 1, num=20)
@@ -976,5 +989,7 @@ coco_tag_to_image_distortions = {  # coco distortion functions return distortion
     'n_tr_0_coco': n_tr_0_coco,
     'n_tr_1_coco': n_tr_1_coco,
 
+    'r_low_debug_coco': r_low_debug_coco,
+    'b_large_debug_coco': b_large_debug_coco,
 
 }

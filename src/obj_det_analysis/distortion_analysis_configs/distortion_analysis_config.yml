@@ -1,7 +1,10 @@
 ---
 
-result_id: 0012rlt-0023yolo-v8l-fr_best_loss-0045tst-coco_r_scan_v2-res:v0
+result_id: 0057rlt-0023yolo-v8l-fr_best_loss-0056tst-coco_r_scan_v3_reg_test:v0
 identifier: null
 
 flatten_axis_combinations: [[1, 2]]
 flatten_axes: null
+
+basic_plots: True
+fit_keys: null

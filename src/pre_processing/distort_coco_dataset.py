@@ -223,47 +223,64 @@ def distort_coco(image_directory, instances, iterations, distortion_tags, output
             if j < 100 and j % 5 == 0:
                 print(f'image {j + 1}, {round(time.time() - T_0, 2)} seconds')
 
+            image_id_count = len(new_image_ids)
+            image_count = len(images)
+            annotation_count = len(annotations)
+
             parent_file_name = parent_img_data['file_name']
             parent_image_id = parent_img_data['id']
-            parent_annotations = mapped_parent_annotations[parent_image_id]
-            parent_image = Image.open(Path(image_directory, parent_file_name))
 
-            image_data = copy.deepcopy(parent_img_data)
-            new_id = new_image_id(new_image_ids)
-            new_image_ids.add(new_id)
-            name_stem = str(new_id).rjust(12, '0')
-            file_name = name_stem + '.png'
+            try:
 
-            if yolo_label_output_dir is not None:
-                parent_label_file_name = str(Path(parent_file_name).stem) + '.txt'
-                parent_label_file_path = Path(yolo_parent_label_dir, parent_label_file_name)
-                new_label_file_name = name_stem + '.txt'
-                new_label_file_path = Path(yolo_label_output_dir, new_label_file_name)
-                try:
-                    shutil.copy(parent_label_file_path, new_label_file_path)
-                except FileNotFoundError:
-                    pass
+                parent_annotations = mapped_parent_annotations[parent_image_id]
+                parent_image = Image.open(Path(image_directory, parent_file_name))
 
-            image, updated_annotations, distortion_data = apply_distortions(image=parent_image,
-                                                                            distortion_functions=distortion_functions,
-                                                                            mapped_annotations=parent_annotations,
-                                                                            updated_image_id=new_id)
+                new_id = new_image_id(new_image_ids)
+                name_stem = str(new_id).rjust(12, '0')
+                file_name = name_stem + '.png'
 
-            if type(image) != Image.Image:
-                image = Image.fromarray(image)
-            image.save(Path(output_dir, file_name))
+                image, updated_annotations, distortion_data = apply_distortions(
+                    image=parent_image, distortion_functions=distortion_functions,
+                    mapped_annotations=parent_annotations, updated_image_id=new_id)
 
-            height, width = np.shape(image)[:2]
+                if type(image) != Image.Image:
+                    image = Image.fromarray(image)
 
-            image_data.update(distortion_data)
-            image_data['id'] = new_id
-            image_data['parent_id'] = parent_image_id
-            image_data['width'] = width
-            image_data['height'] = height
-            image_data['file_name'] = file_name
+                image.save(Path(output_dir, file_name))
 
-            images.append(image_data)
-            annotations.extend(updated_annotations)
+                image_data = copy.deepcopy(parent_img_data)
+                new_image_ids.add(new_id)
+
+                if yolo_label_output_dir is not None:
+                    parent_label_file_name = str(Path(parent_file_name).stem) + '.txt'
+                    parent_label_file_path = Path(yolo_parent_label_dir, parent_label_file_name)
+                    new_label_file_name = name_stem + '.txt'
+                    new_label_file_path = Path(yolo_label_output_dir, new_label_file_name)
+                    try:
+                        shutil.copy(parent_label_file_path, new_label_file_path)
+                    except FileNotFoundError:
+                        print(f'file not found: {parent_label_file_name} in {yolo_parent_label_dir}')
+                        pass
+
+                height, width = np.shape(image)[:2]
+
+                image_data.update(distortion_data)
+                image_data['id'] = new_id
+                image_data['parent_id'] = parent_image_id
+                image_data['width'] = width
+                image_data['height'] = height
+                image_data['file_name'] = file_name
+
+                images.append(image_data)
+                annotations.extend(updated_annotations)
+
+            except RuntimeError:
+
+                print(f'error distorting {parent_file_name} / {parent_image_id}')
+
+                assert image_count == len(images)
+                assert image_id_count == len(new_image_ids)
+                assert annotation_count == len(annotations)
 
             if (j + 1) % 500 == 0:
                 print(f'{j+1} images processed')
