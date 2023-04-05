@@ -15,4 +15,4 @@ description: training on coco endpoint90 dataset
 artifact_type: 'model'
 
 name_string: v8l-ep
-
+device: 1

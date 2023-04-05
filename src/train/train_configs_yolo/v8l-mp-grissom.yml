@@ -15,4 +15,4 @@ description: training on coco midpoint90 dataset
 artifact_type: 'model'
 
 name_string: v8l-mp
-
+device: 1
