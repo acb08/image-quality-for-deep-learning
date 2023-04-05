@@ -1,0 +1,18 @@
+---
+
+train_dataset_id: 0034trn-coco_ep90_tr
+train_dataset_artifact_alias: latest
+
+starting_model_id: 0023yolo-v8l-fr_best_loss:v0
+starting_model_artifact_alias: latest
+distortion_tags: []
+
+num_epochs: 5
+batch_size: 8
+num_workers: 4
+
+description: training on coco midpoint90 dataset
+artifact_type: 'model'
+
+name_string: v8l-ep
+
