@@ -258,3 +258,5 @@ if __name__ == '__main__':
     run_config['host'] = HOST
 
     load_tune_model(run_config)
+
+    print('done')
