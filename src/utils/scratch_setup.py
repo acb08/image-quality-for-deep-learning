@@ -30,7 +30,7 @@ if __name__ == '__main__':
     parser.add_argument('--run_type',
                         default='train',
                         help='train, train_rcnn, test')
-    parser.add_argument('--destination', default='~/scratch')
+    parser.add_argument('--destination', default='/scratch.local')
     args_parsed = parser.parse_args()
 
     run_type = args_parsed.run_type
