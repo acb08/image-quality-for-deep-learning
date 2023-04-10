@@ -425,6 +425,11 @@ def distort_log_coco(config):
         else:
             new_dataset_id, new_dataset_rel_dir = id_from_tags(artifact_type, distortion_tags, return_dir=True)
 
+        if 'keep_image_id' in config.keys():
+            keep_image_id = config['keep_image_id']
+        else:
+            keep_image_id = False
+
         _new_dataset_abs_dir = Path(ROOT_DIR, new_dataset_rel_dir)
         Path.mkdir(_new_dataset_abs_dir)
 
@@ -568,7 +573,9 @@ def distort_log_coco(config):
                                               distortion_tags=distortion_tags,
                                               output_dir=test_image_abs_dir,
                                               cutoff=num_images,
-                                              yolo_parent_label_dir=yolo_label_dir)
+                                              yolo_parent_label_dir=yolo_label_dir,
+                                              keep_image_id=keep_image_id)
+
             yolo_test_path_pointer = Path(test_image_abs_dir).relative_to(_new_dataset_abs_dir)
             yolo_cfg[test_dataset_split_key] = str(yolo_test_path_pointer)
 

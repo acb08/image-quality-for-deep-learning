@@ -88,7 +88,7 @@ def _get_filenames(directory, extension, exclude=None):
     return image_filenames
 
 
-def make_image_strips_multi_dir(source_directories, output_directory, extension='png', background=255,
+def make_image_strips_multi_dir(source_directories, output_directory, extension='jpg', background=255,
                                 base_directory_idx=0):
 
     """
@@ -101,21 +101,22 @@ def make_image_strips_multi_dir(source_directories, output_directory, extension=
     image_filenames = _get_filenames(base_directory, extension)
 
     strip_shape = None
-    height, width, channels = 0, 0, 0
 
     for i, image_filename in enumerate(image_filenames):
         images = []
+        height, width, channels = 0, 0, 0
         for j, directory in enumerate(source_directories):
             image = Image.open(Path(directory, image_filename))
+            image = image.convert('RGB')
             image = np.asarray(image)
             images.append(image)
-            if i == 0:
-                h, w, channels = np.shape(image)
-                height = max(height, h)
-                width += w
+            # if j == 0:
+            h, w, channels = np.shape(image)
+            height = max(height, h)
+            width += w
 
-        if i == 0:
-            strip_shape = (height, width, channels)
+        # if i == 0:
+        strip_shape = (height, width, channels)
 
         image_strip = combine_horizontal(images, strip_shape, background)
         output_path = Path(output_directory, image_filename)

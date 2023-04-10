@@ -29,7 +29,7 @@ def make_plot_strip(config):
 
 if __name__ == '__main__':
 
-    config_filename = 's6_oct-fr90_6-7-nq.yml'
+    config_filename = 'coco128-original-mp90-ep90.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_filename, help='config filename to be used')

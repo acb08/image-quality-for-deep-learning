@@ -19,4 +19,6 @@ datatype_key: np.uint8
 
 image_shape: null
 
+keep_image_id: True
+
 name_string: coco_mp90_demo
