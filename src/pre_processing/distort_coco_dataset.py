@@ -163,7 +163,8 @@ def image_to_yolo_label_filename(image_filename):
 
 def distort_coco(image_directory, instances, iterations, distortion_tags, output_dir, cutoff=None,
                  yolo_parent_label_dir=None,
-                 dataset_split_key=None):
+                 dataset_split_key=None,
+                 keep_image_id=False):
 
     """
     :param image_directory: str or Path object
@@ -184,6 +185,7 @@ def distort_coco(image_directory, instances, iterations, distortion_tags, output
     :param cutoff: number of images in original dataset to use
     :param yolo_parent_label_dir: path to directory of yolo label files
     :param dataset_split_key: str, 'train', 'val', or 'test'
+    :param keep_image_id: bool, images not renamed if True
     :return:
     """
 
@@ -235,9 +237,14 @@ def distort_coco(image_directory, instances, iterations, distortion_tags, output
                 parent_annotations = mapped_parent_annotations[parent_image_id]
                 parent_image = Image.open(Path(image_directory, parent_file_name))
 
-                new_id = new_image_id(new_image_ids)
-                name_stem = str(new_id).rjust(12, '0')
-                file_name = name_stem + '.png'
+                if keep_image_id:  # intended for making demo images at different distortion points
+                    new_id = parent_image_id
+                    file_name = parent_file_name
+                    name_stem = Path(file_name).stem
+                else:
+                    new_id = new_image_id(new_image_ids)
+                    name_stem = str(new_id).rjust(12, '0')
+                    file_name = name_stem + '.png'
 
                 image, updated_annotations, distortion_data = apply_distortions(
                     image=parent_image, distortion_functions=distortion_functions,
@@ -542,7 +549,7 @@ def distort_log_coco(config):
             run.log_artifact(new_val_artifact)
             new_val_artifact.wait()
 
-        elif artifact_type == 'test_dataset':
+        elif artifact_type == 'test_dataset' or artifact_type == 'demo_dataset':
 
             dataset_split_keys = ('test', )  # should match keys in parent_yolo_cfg
             test_dataset_split_key = dataset_split_keys[0]
