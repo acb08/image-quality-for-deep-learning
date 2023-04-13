@@ -1,0 +1,10 @@
+---
+
+parent_dir: datasets
+input_sub_dirs:
+  - train/coco128/images/train2017/illustrated
+  - demo/0001demo-coco_mp90_demo/images/test/illustrated
+  - demo/0000demo-coco_ep90_demo/images/test/illustrated
+
+output_dir: demo/compare/origin-mp90-ep90-illustrated
+base_directory_idx: -1 # determines which directory is used to generate the master filename list

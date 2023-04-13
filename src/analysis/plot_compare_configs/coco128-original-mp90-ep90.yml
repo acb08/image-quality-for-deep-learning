@@ -6,5 +6,5 @@ input_sub_dirs:
   - demo/0001demo-coco_mp90_demo/images/test
   - demo/0000demo-coco_ep90_demo/images/test
 
-output_dir: origin-mp90-ep90
+output_dir: demo/compare/origin-mp90-ep90
 base_directory_idx: -1 # determines which directory is used to generate the master filename list

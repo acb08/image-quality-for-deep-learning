@@ -131,3 +131,28 @@ class COCO(Dataset):
         return image, image_annotations
 
 
+class Illustrator(COCO):
+
+    """
+    Returns PIL images and bounding boxes in list format for use in illustrating images, instead of returning torch
+    tensors for training/testing models
+    """
+
+    def __init__(self, image_directory, instances, cutoff=None):
+        super().__init__(image_directory, instances, cutoff, yolo_fmt=False)
+
+    def __getitem__(self, idx):
+        image_data = self.images[idx]
+        file_name = image_data['file_name']
+        image_id = image_data['id']
+        image = Image.open(Path(self.image_directory, file_name)).convert('RGB')
+        image_annotations = self.mapped_boxes_labels[image_id]
+
+        if len(image_annotations['boxes']) == 0:
+            image_annotations = detection_functions.background_annotation(image)
+
+        image_annotations = {key: item.tolist() for key, item in image_annotations.items()}
+
+        image_annotations['image_id'] = image_id
+
+        return image, image_annotations, file_name
