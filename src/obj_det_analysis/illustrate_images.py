@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from src.utils.definitions import ROOT_DIR
 from src.utils.classes import Illustrator
+import yaml
 
 
 def load_dataset(directory):
@@ -26,7 +27,7 @@ def illustrate_image(image, boxes):
         draw.rectangle(box, outline='red', width=2)
 
 
-def illustrate(directory, output_directory='illustrated'):
+def illustrate(directory, output_directory='illustrated', log_licenses=True):
 
     directory = Path(directory).expanduser()
     output_directory = Path(output_directory)
@@ -36,11 +37,16 @@ def illustrate(directory, output_directory='illustrated'):
             output_directory. mkdir()
 
     dataset = load_dataset(directory)
-    annotation_dataset = get_illustration_dataset(dataset)
+    illustration_dataset = get_illustration_dataset(dataset)
 
-    for image, boxes, filename in annotation_dataset:
+    for image, boxes, filename in illustration_dataset:
         illustrate_image(image, boxes['boxes'])
         image.save(Path(output_directory, filename))
+
+    if log_licenses:
+        license_url_map = illustration_dataset.license_url_map()
+        with open(Path(output_directory, 'license_map.yml'), 'w') as f:
+            yaml.dump(license_url_map, f)
 
 
 if __name__ == '__main__':

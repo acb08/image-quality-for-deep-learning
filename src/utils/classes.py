@@ -140,6 +140,7 @@ class Illustrator(COCO):
 
     def __init__(self, image_directory, instances, cutoff=None):
         super().__init__(image_directory, instances, cutoff, yolo_fmt=False)
+        self._mapped_licenses_urls = None
 
     def __getitem__(self, idx):
         image_data = self.images[idx]
@@ -156,3 +157,9 @@ class Illustrator(COCO):
         image_annotations['image_id'] = image_id
 
         return image, image_annotations, file_name
+
+    def license_url_map(self):
+        if self._mapped_licenses_urls is None:
+            mapped_licenses = {image['file_name']: [image['license'], image['flickr_url']] for image in self.images}
+            self._mapped_licenses_urls = mapped_licenses
+        return self._mapped_licenses_urls
