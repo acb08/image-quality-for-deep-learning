@@ -71,7 +71,7 @@ def make_train_val_splits(instances, val_frac):
 
 
 def apply_distortions(image, distortion_functions, mapped_annotations, updated_image_id,
-                      remove_fragile_annotations=True):
+                      remove_fragile_annotations=True, return_each_stage=False):
     """
 
     :param image: image, PIL or numpy array
@@ -87,6 +87,7 @@ def apply_distortions(image, distortion_functions, mapped_annotations, updated_i
     mapped_annotations
     :param remove_fragile_annotations: bool, if True all annotation fields that may be affected by bounding box
     adjustment are removed
+    :param return_each_stage: bool, it True, a version of the image is saved at each step of the distortion chain
     :return:
         image: PIL, distorted version of input image
         mapped_annotation: dict, contains updated bounding boxes (list) and associated labels (list)
@@ -95,6 +96,11 @@ def apply_distortions(image, distortion_functions, mapped_annotations, updated_i
 
     distortion_data = {}
     updated_mapped_annotations = None
+
+    if return_each_stage:
+        stages = {}
+    else:
+        stages = None
 
     for distortion_func in distortion_functions:
 
@@ -108,6 +114,8 @@ def apply_distortions(image, distortion_functions, mapped_annotations, updated_i
                                                             remove_fragile_annotations=remove_fragile_annotations)
 
         distortion_data[distortion_type_flag] = distortion_value
+        if stages is not None:
+            stages[distortion_type_flag] = image
 
     if updated_mapped_annotations is None:  # inserts updated image id, leaves bounding boxes unchanged when res == 1
         updated_mapped_annotations = update_annotations(mapped_annotations,
@@ -115,7 +123,7 @@ def apply_distortions(image, distortion_functions, mapped_annotations, updated_i
                                                         updated_image_id=updated_image_id,
                                                         remove_fragile_annotations=remove_fragile_annotations)
 
-    return image, updated_mapped_annotations, distortion_data
+    return image, updated_mapped_annotations, distortion_data, stages
 
 
 def update_annotations(annotations, res, updated_image_id, remove_fragile_annotations=True):
@@ -164,7 +172,8 @@ def image_to_yolo_label_filename(image_filename):
 def distort_coco(image_directory, instances, iterations, distortion_tags, output_dir, cutoff=None,
                  yolo_parent_label_dir=None,
                  dataset_split_key=None,
-                 keep_image_id=False):
+                 keep_image_id=False,
+                 save_each_distortion_stage=False):
 
     """
     :param image_directory: str or Path object
@@ -186,7 +195,8 @@ def distort_coco(image_directory, instances, iterations, distortion_tags, output
     :param yolo_parent_label_dir: path to directory of yolo label files
     :param dataset_split_key: str, 'train', 'val', or 'test'
     :param keep_image_id: bool, images not renamed if True
-    :return:
+    :param save_each_distortion_stage: bool, if True a copy of the image is saved for each stage of the image chain
+    :return: dict, new_instances
     """
 
     parent_images = instances['images']
@@ -246,14 +256,24 @@ def distort_coco(image_directory, instances, iterations, distortion_tags, output
                     name_stem = str(new_id).rjust(12, '0')
                     file_name = name_stem + '.png'
 
-                image, updated_annotations, distortion_data = apply_distortions(
+                image, updated_annotations, distortion_data, stages = apply_distortions(
                     image=parent_image, distortion_functions=distortion_functions,
-                    mapped_annotations=parent_annotations, updated_image_id=new_id)
+                    mapped_annotations=parent_annotations, updated_image_id=new_id,
+                    return_each_stage=save_each_distortion_stage)
 
                 if type(image) != Image.Image:
                     image = Image.fromarray(image)
 
                 image.save(Path(output_dir, file_name))
+
+                if stages is not None:
+                    for distortion_type, image_stage in stages.items():
+                        output_subdir = Path(output_dir, distortion_type)
+                        if not output_subdir.is_dir():
+                            output_subdir.mkdir()
+                        if type(image_stage) != Image.Image:
+                            image_stage = Image.fromarray(image_stage)
+                        image_stage.save(Path(output_subdir, file_name))
 
                 image_data = copy.deepcopy(parent_img_data)
                 new_image_ids.add(new_id)
@@ -409,6 +429,11 @@ def distort_log_coco(config):
     else:
         val_frac = None
 
+    if 'save_each_distortion_stage' in config.keys():
+        save_each_distortion_stage = config['save_each_distortion_stage']
+    else:
+        save_each_distortion_stage = False
+
     # dataset_split_keys, dataset_sub_dirs = directory_sub_structure(artifact_type)
 
     with wandb.init(project=WANDB_PID, job_type='distort_dataset', tags=distortion_tags, notes=description,
@@ -434,7 +459,6 @@ def distort_log_coco(config):
         Path.mkdir(_new_dataset_abs_dir)
 
         _new_dataset_common = {
-
             'parent_dataset_id': parent_dataset_id,
             'description': description,
             'artifact_filename': artifact_filename,
@@ -442,7 +466,6 @@ def distort_log_coco(config):
             'distortion_type_flags': distortion_type_flags,
             'distortion_iterations': iterations,
             'ROOT_DIR_at_run': ROOT_DIR,
-
         }
 
         # get image/label sub-directories here
@@ -503,7 +526,8 @@ def distort_log_coco(config):
                                                output_dir=train_image_abs_dir,
                                                cutoff=num_images,
                                                yolo_parent_label_dir=yolo_label_dir,
-                                               dataset_split_key=train_dataset_split_key)
+                                               dataset_split_key=train_dataset_split_key,
+                                               save_each_distortion_stage=save_each_distortion_stage)
 
             yolo_train_path_pointer = Path(train_image_abs_dir).relative_to(_new_dataset_abs_dir)
             yolo_cfg[train_dataset_split_key] = str(yolo_train_path_pointer)
@@ -520,7 +544,8 @@ def distort_log_coco(config):
                                              output_dir=val_image_abs_dir,
                                              cutoff=num_images,
                                              yolo_parent_label_dir=yolo_label_dir,
-                                             dataset_split_key=val_dataset_split_key)
+                                             dataset_split_key=val_dataset_split_key,
+                                             save_each_distortion_stage=save_each_distortion_stage)
 
             yolo_val_path_pointer = Path(val_image_abs_dir).relative_to(_new_dataset_abs_dir)
             yolo_cfg[val_dataset_split_key] = str(yolo_val_path_pointer)
@@ -574,7 +599,8 @@ def distort_log_coco(config):
                                               output_dir=test_image_abs_dir,
                                               cutoff=num_images,
                                               yolo_parent_label_dir=yolo_label_dir,
-                                              keep_image_id=keep_image_id)
+                                              keep_image_id=keep_image_id,
+                                              save_each_distortion_stage=save_each_distortion_stage)
 
             yolo_test_path_pointer = Path(test_image_abs_dir).relative_to(_new_dataset_abs_dir)
             yolo_cfg[test_dataset_split_key] = str(yolo_test_path_pointer)

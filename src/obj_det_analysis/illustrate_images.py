@@ -1,3 +1,5 @@
+import copy
+
 from PIL import ImageDraw
 from src.utils.definitions import STANDARD_DATASET_FILENAME
 import json
@@ -7,7 +9,11 @@ from src.utils.classes import Illustrator
 import yaml
 
 
-def load_dataset(directory):
+def load_dataset(directory, dataset_in_parent_dir=False):
+
+    if dataset_in_parent_dir:
+        directory = Path(directory).parent
+
     with open(Path(directory, STANDARD_DATASET_FILENAME), 'r') as file:
         dataset = json.load(file)
     return dataset
@@ -49,7 +55,36 @@ def illustrate(directory, output_directory='illustrated', log_licenses=True):
             yaml.dump(license_url_map, f)
 
 
+def abridged_dataset_transfer(start_directory, target_directory, pop_keys=('res', 'blur', 'noise')):
+
+    dataset = load_dataset(start_directory)
+    abridged_dataset = copy.deepcopy(dataset)
+
+    if Path(target_directory).is_absolute():
+        target_directory = Path(target_directory).relative_to(ROOT_DIR)
+    abridged_dataset['dataset_rel_dir'] = str(target_directory)
+
+    for image in abridged_dataset['instances']['images']:
+        for key in pop_keys:
+            try:
+                image.pop(key)
+            except KeyError:
+                pass
+
+    abridged_dataset['read_me'] = 'this is an abridged dataset with distortion data removed'
+
+    with open(Path(ROOT_DIR, target_directory, STANDARD_DATASET_FILENAME), 'w') as f:
+        json.dump(abridged_dataset, f)
+
+
 if __name__ == '__main__':
 
-    _directory = r'/home/acb6595/coco/datasets/demo/0001demo-coco_mp90_demo/images/test'
-    illustrate(_directory)
+    _parent_directory = r'/home/acb6595/coco/datasets/demo/0002demo-coco_mp90_img-chain-stages/images/test'
+    _sub_dirs = ['res', 'blur', 'noise']
+    _transfer_abridge_dataset = True
+
+    for _sub_dir in _sub_dirs:
+        _directory = Path(_parent_directory, _sub_dir)
+        if _transfer_abridge_dataset:
+            abridged_dataset_transfer(_parent_directory, _directory)
+        illustrate(_directory)
