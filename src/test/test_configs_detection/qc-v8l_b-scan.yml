@@ -1,0 +1,22 @@
+---
+
+description: quality check / recap test to run pre-trained models on distortion scan datasets
+
+test_dataset_id: 0046tst-coco_b_scan_v2-blur
+test_dataset_artifact_alias: latest
+
+model_artifact_id: yolov8l
+model_artifact_alias: latest
+
+batch_size: 8
+num_workers: 0
+pin_memory: True
+
+status_interval: 500  # images
+
+device: 7
+
+#rgb_flag: False
+#dataset_split_key: test  # used to get to correct level of dataset dict (to mirror 'train'/'val' splits)
+#last_distortion_type_flag: noise  # normally should be 'noise'
+#loss_func: CrossEntropyLoss
