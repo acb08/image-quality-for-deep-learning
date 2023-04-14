@@ -125,7 +125,7 @@ def main(config):
 
 if __name__ == '__main__':
 
-    config_name = 'yolov8x_rcnn_b-scan.yml'
+    config_name = 'yolo_n-scans.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_name, help='config filename to be used')
