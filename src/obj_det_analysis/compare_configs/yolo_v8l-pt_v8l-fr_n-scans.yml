@@ -1,0 +1,15 @@
+---
+
+test_result_identifiers:
+
+  - ['0037rlt-yolov8l-0047tst-coco_n_scan_v2-noise:v0',
+     'pre-trained']
+
+  - ['0055rlt-0023yolo-v8l-fr_best_loss-0047tst-coco_n_scan_v2-noise:v0',
+     'full range trained']
+
+
+overwrite: True 
+manual_name: yolo-pt-fr-noise-scans
+flatten_axis_combinations: [[0, 1]]
+flatten_axes: null
