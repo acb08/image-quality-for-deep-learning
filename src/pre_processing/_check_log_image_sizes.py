@@ -50,12 +50,12 @@ def log_image_sizes(output_dir, image_sizes, filename):
 
 if __name__ == '__main__':
 
-    _directory = r'~/coco/datasets/train/0023trn-coco_fr_train/images/train'
+    _directory = r'~/coco/datasets/train/coco/images/train2017'
     # _directory = r'/home/acb6595/coco/datasets/train/coco128/images/train2017'
     _directory = Path(_directory).expanduser()
     _output_dir = '~/coco/misc'
     _output_dir = Path(_output_dir).expanduser()
 
     _images_sizes = get_image_sizes(_directory)
-    log_image_sizes(_output_dir, _images_sizes, 'image_sizes_0023trn-coco_fr_train.json')
+    log_image_sizes(_output_dir, _images_sizes, 'image_sizes_coco_train2017.json')
 
