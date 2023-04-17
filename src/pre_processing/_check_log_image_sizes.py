@@ -16,7 +16,7 @@ def get_image_filenames(directory):
     return filenames
 
 
-def get_image_sizes(directory, image_filenames=None):
+def get_image_sizes(directory, image_filenames=None, status_interval=1000):
 
     if image_filenames is None:
         image_filenames = get_image_filenames(directory)
@@ -25,12 +25,15 @@ def get_image_sizes(directory, image_filenames=None):
     totals = np.zeros(2)
     counter = 0
 
-    for filename in image_filenames:
+    for i, filename in enumerate(image_filenames):
 
         img = Image.open(Path(directory, filename))
         size = img.size
         totals += np.asarray(size)
         counter += 1
+
+        if i % status_interval == 0 and i > 0:
+            print(f'{counter} images complete, mean size: {totals / counter}')
 
         image_sizes[str(filename)] = list(size)
 
