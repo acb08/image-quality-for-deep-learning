@@ -1,9 +1,9 @@
 ---
 
 test_result_identifiers:
-  - [ '0204rlt-0020-densenet161-full_range_best_loss-0004_tst_r_scan_plv2_res:v0',
+  - [ '0206rlt-0020-densenet161-full_range_best_loss-0002_tst_n_scan_v3_noise:v0',
       'full range' ]
-  - ['0015_rlt_densenet161_pretrained_0004_tst_r_scan_plv2_res:v0',
+  - ['',
      'pre-trained']
 
 
@@ -19,5 +19,4 @@ analyze_3d: False
 analyze_pairwise: False
 plot_together_2d: False
 plot_together_1d: True
-
 

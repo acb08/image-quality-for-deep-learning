@@ -390,7 +390,8 @@ def analyze_plot_perf_1d_multi_result(model_performances,
                                       log_file=None,
                                       show_plots=False,
                                       plot_together=True,
-                                      single_legend=True):
+                                      single_legend=True,
+                                      perform_fits=True):
     """
     :param model_performances: list of model performance class instances
     :param distortion_ids: distortion type tags to be analyzed
@@ -402,6 +403,7 @@ def analyze_plot_perf_1d_multi_result(model_performances,
     :param show_plots: bool, determines whether plots are displayed
     :param plot_together: bool, determines whether to use subplots sharing y-axis
     :param single_legend: bool, determines whether all subplots have a legend or only right-most subplot
+    :param perform_fits: bool, determines whether linear fits generated when get_distortion_perf_1d() is called
     """
     if plot_together:
         fig, axes = plt.subplots(nrows=1, ncols=3, sharey=True, figsize=(12, 3.4))
@@ -425,7 +427,8 @@ def analyze_plot_perf_1d_multi_result(model_performances,
         mean_performances = {}
         for model_performance in model_performances:
             performance_key = str(model_performance)
-            x, y, fit_coefficients, fit_correlation = get_distortion_perf_1d(model_performance, distortion_id)
+            x, y, fit_coefficients, fit_correlation = get_distortion_perf_1d(model_performance, distortion_id,
+                                                                             perform_fit=perform_fits)
             mean_performances[performance_key] = y
 
         if pairwise_analysis:

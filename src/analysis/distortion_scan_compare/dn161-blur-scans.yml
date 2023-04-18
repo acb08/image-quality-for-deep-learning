@@ -1,0 +1,12 @@
+---
+
+test_result_identifiers:
+  - [ '0205rlt-0020-densenet161-full_range_best_loss-0005_tst_b_scan_v3_blur:v0',
+      'full range' ]
+  - ['0016_rlt_densenet161_pretrained_0005_tst_b_scan_v3_blur:v0',
+     'pre-trained']
+
+
+distortion_id: blur
+manual_name: dn161-pt-fr-blur-scans
+

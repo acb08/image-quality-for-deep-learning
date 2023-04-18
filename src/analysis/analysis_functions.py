@@ -331,21 +331,26 @@ def get_distortion_perf_2d(model_performance, x_id, y_id, add_bias=True, log_fil
     return x_values, y_values, accuracy_means, fit_coefficients, correlation, distortion_param_array
 
 
-def get_distortion_perf_1d(model_performance, distortion_id, log_file=None, add_bias=True, per_class=False):
+def get_distortion_perf_1d(model_performance, distortion_id, log_file=None, add_bias=True, per_class=False,
+                           perform_fit=True):
     result_name = str(model_performance)
     distortion_vals, mean_accuracies = model_performance.conditional_accuracy(distortion_id, per_class=per_class)
 
-    fit_coefficients = fit_hyperplane(np.atleast_2d(distortion_vals).T,
-                                      np.atleast_2d(mean_accuracies).T,
-                                      add_bias=add_bias)
+    if perform_fit:
+        fit_coefficients = fit_hyperplane(np.atleast_2d(distortion_vals).T,
+                                          np.atleast_2d(mean_accuracies).T,
+                                          add_bias=add_bias)
 
-    correlation = eval_linear_fit(fit_coefficients,
-                                  np.atleast_2d(distortion_vals).T,
-                                  np.atleast_2d(mean_accuracies).T)
+        correlation = eval_linear_fit(fit_coefficients,
+                                      np.atleast_2d(distortion_vals).T,
+                                      np.atleast_2d(mean_accuracies).T)
 
-    print(f'{result_name} {distortion_id} (per_class = {per_class}) linear fit: ', fit_coefficients, file=log_file)
-    print(f'{result_name} {distortion_id} (per_class = {per_class}) linear fit correlation: ', correlation, '\n',
-          file=log_file)
+        print(f'{result_name} {distortion_id} (per_class = {per_class}) linear fit: ', fit_coefficients, file=log_file)
+        print(f'{result_name} {distortion_id} (per_class = {per_class}) linear fit correlation: ', correlation, '\n',
+              file=log_file)
+    else:
+        fit_coefficients = None
+        correlation = None
 
     return distortion_vals, mean_accuracies, fit_coefficients, correlation
 
