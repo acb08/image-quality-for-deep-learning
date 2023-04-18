@@ -4,9 +4,7 @@ Sanity check for resolution distortion functions.
 import json
 from PIL import Image
 import numpy as np
-import yaml
 from pathlib import Path
-from src.utils.definitions import ROOT_DIR, REL_PATHS
 
 
 def get_image_filenames(directory):
@@ -58,4 +56,3 @@ if __name__ == '__main__':
 
     _images_sizes = get_image_sizes(_directory)
     log_image_sizes(_output_dir, _images_sizes, 'image_sizes_coco_train2017.json')
-
