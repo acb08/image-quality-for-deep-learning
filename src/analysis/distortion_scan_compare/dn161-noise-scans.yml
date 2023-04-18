@@ -1,10 +1,11 @@
 ---
 
 test_result_identifiers:
-  - [ '0206rlt-0020-densenet161-full_range_best_loss-0002_tst_n_scan_v3_noise:v0',
-      'full range' ]
   - ['0006_rlt_densenet161_pretrained_0002_tst_n_scan_v3_noise:v0',
      'pre-trained']
+  - [ '0206rlt-0020-densenet161-full_range_best_loss-0002_tst_n_scan_v3_noise:v0',
+      'full range' ]
+
 
 distortion_id: noise
 manual_name: dn161-pt-fr-noise-scans

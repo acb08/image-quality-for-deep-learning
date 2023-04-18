@@ -1,10 +1,10 @@
 ---
 
 test_result_identifiers:
+  - [ '0015_rlt_densenet161_pretrained_0004_tst_r_scan_plv2_res:v0',
+        'pre-trained' ]
   - [ '0204rlt-0020-densenet161-full_range_best_loss-0004_tst_r_scan_plv2_res:v0',
       'full range' ]
-  - ['0015_rlt_densenet161_pretrained_0004_tst_r_scan_plv2_res:v0',
-     'pre-trained']
 
 
 distortion_id: res
