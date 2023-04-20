@@ -4,11 +4,14 @@ from pathlib import Path
 from src.utils.functions import get_config, log_config
 from src.analysis.compare_correlate_results import get_compare_dir
 from src.obj_det_analysis.distortion_performance_od import get_obj_det_distortion_perf_result, \
-    flatten_axis_combinations_from_cfg, flatten_axes_from_cfg
+    flatten_axis_combinations_from_cfg, flatten_axes_from_cfg, fit_keys_from_cfg
 from src.utils.definitions import WANDB_PID
 from src.utils.functions import construct_artifact_id
 import wandb
 from src.analysis.plot import plot_1d_from_3d, compare_2d_mean_views
+from src.analysis.analysis_functions import get_sub_dir_and_log_filename, build_3d_field
+from src.analysis.fit import fit, evaluate_fit, apply_fit
+from src.analysis import plot
 
 
 def get_multiple_od_distortion_performance_results(result_id_pairs,
@@ -65,6 +68,11 @@ def main(config):
         if y_limits is not None:
             y_lim_bottom, y_lim_top = config['y_limits']
 
+    if 'fit_keys' in config.keys():  # default is to not generate fits
+        fit_keys = fit_keys_from_cfg(config)
+    else:
+        fit_keys = None
+
     output_dir = get_compare_dir(test_result_identifiers, manual_name=config['manual_name'])
     log_config(output_dir=output_dir, config=config)
 
@@ -74,12 +82,20 @@ def main(config):
     blur_vals = None
     noise_vals = None
 
+    if fit_keys is not None:
+        fitting_arrays = {}
+    else:
+        fitting_arrays = None
+
     for distortion_performance_result in distortion_performance_results:
 
         _res_vals, _blur_vals, _noise_vals, _map3d, _parameter_array, _perf_array, _full_extract = (
             distortion_performance_result.get_3d_distortion_perf_props(distortion_ids=('res', 'blur', 'noise')))
         key = str(distortion_performance_result)
         performance_dict_3d[key] = _map3d
+
+        if fitting_arrays is not None:
+            fitting_arrays[key] = (_parameter_array, _perf_array)
 
         if res_vals is None:
             res_vals = _res_vals
@@ -119,6 +135,75 @@ def main(config):
                               perf_metric='mAP',
                               show_plots=show_plots,
                               az_el_combinations='all')
+
+    if fit_keys is not None:
+
+        assert len(distortion_performance_results) == 2
+        predict_key = str(distortion_performance_results[0])
+        eval_key = str(distortion_performance_results[1])
+
+        predict_parameter_array, predict_performance_array = fitting_arrays[predict_key]
+        eval_parameter_array, eval_performance_array = fitting_arrays[eval_key]
+        map3d_measured = performance_dict_3d[eval_key]
+
+        sub_dir, log_filename = get_sub_dir_and_log_filename(output_dir, '3d')
+
+        with open(Path(sub_dir, log_filename), 'w') as output_file:
+
+            print('predict result: ', predict_key, file=output_file)
+            print('eval result: ', eval_key, '\n', file=output_file)
+
+            for fit_key in fit_keys:
+
+                fit_sub_dir, __ = get_sub_dir_and_log_filename(sub_dir, fit_key)
+                fit_coefficients = fit(predict_parameter_array, predict_performance_array,
+                                       distortion_ids=('res', 'blur', 'noise'),
+                                       fit_key=fit_key,
+                                       add_bias=False  # only applies to linear fits
+                                       )
+                eval_prediction = apply_fit(fit_coefficients,
+                                            eval_parameter_array,
+                                            distortion_ids=('res', 'blur', 'noise'),
+                                            fit_key=fit_key,
+                                            add_bias=False  # only applies to linear fits
+                                            )
+                eval_prediction_3d = build_3d_field(eval_parameter_array[:, 0],
+                                                    eval_parameter_array[:, 1],
+                                                    eval_parameter_array[:, 2],
+                                                    eval_prediction,
+                                                    data_dump=False
+                                                    )
+                fit_correlation = evaluate_fit(fit_coefficients,
+                                               eval_parameter_array,
+                                               eval_performance_array,
+                                               distortion_ids=('res', 'blur', 'noise'),
+                                               fit_key=fit_key,
+                                               add_bias=False,  # only applies to linear fits
+                                               )
+                plot.compare_2d_mean_views(f0=map3d_measured,
+                                           f1=eval_prediction_3d,
+                                           data_labels=('measured (eval)', 'fit'),
+                                           x_vals=res_vals, y_vals=blur_vals, z_vals=noise_vals,
+                                           distortion_ids=('res', 'blur', 'noise'),
+                                           directory=fit_sub_dir,
+                                           perf_metric='mAP',
+                                           az_el_combinations='all',
+                                           show_plots=False)
+
+                plot.compare_1d_views(f0=map3d_measured,
+                                      f1=eval_prediction_3d,
+                                      data_labels=('measured (eval)', 'fit'),
+                                      x_vals=res_vals, y_vals=blur_vals, z_vals=noise_vals,
+                                      flatten_axis_combinations=flatten_axis_combinations,
+                                      distortion_ids=('res', 'blur', 'noise'),
+                                      directory=fit_sub_dir,
+                                      result_id='3d_1d_projection',
+                                      show_plots=False,
+                                      ylabel='mAP')
+
+                print(f'{fit_key} fit: \n', fit_coefficients, file=output_file)
+                print(f'{fit_key} direct fit correlation: ', fit_correlation, '\n',
+                      file=output_file)
 
     return distortion_performance_results
 
