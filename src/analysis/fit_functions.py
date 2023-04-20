@@ -2,10 +2,10 @@ import numpy as np
 from scipy.special import erf
 from src.utils.definitions import PROJECT_ID
 from src.analysis.fit_functions_rer import rer_0, rer_1, rer_2, rer_3, rer_4
+from src.utils.definitions import NATIVE_NOISE_ESTIMATE
 
 
 LORENTZ_TERMS = (0.2630388847587775, -0.4590111280646474)  # correction for Gaussian to account for pixel xfer function
-NATIVE_NOISE_ESTIMATE = 1
 
 
 def _n1(n):

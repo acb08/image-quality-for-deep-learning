@@ -241,6 +241,8 @@ if WANDB_PID[:4] == 'sat6':
 
     NUM_CLASSES = 6
 
+    NATIVE_NOISE_ESTIMATE = 1
+
 elif WANDB_PID[:6] == 'places':
 
     PROJECT_ID = 'places365'
@@ -296,6 +298,8 @@ elif WANDB_PID[:6] == 'places':
     }
 
     NUM_CLASSES = 365
+
+    NATIVE_NOISE_ESTIMATE = 1
 
 elif WANDB_PID == 'coco':
 
@@ -409,6 +413,7 @@ elif WANDB_PID == 'coco':
 
     YOLO_TO_ORIGINAL_PAPER_KEY_MAPPING = get_yolo_to_original_key_mapping()
 
+    NATIVE_NOISE_ESTIMATE = 2
 
 else:
     raise Exception('Invalid WANDB_PID')
