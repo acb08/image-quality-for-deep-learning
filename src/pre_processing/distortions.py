@@ -9,7 +9,7 @@ from src.pre_processing.classes import VariableCOCOResize, VariableImageResize
 RNG = np.random.default_rng()
 
 
-def _get_kernel_size(std):
+def get_kernel_size(std):
     return 8 * max(int(np.round(std, 0)), 1) + 1
 
 
@@ -415,7 +415,7 @@ def b_tr_0_coco(img):
 
     sigma_range = COCO_OCT_DISTORTION_BOUNDS['blur'][0]
     std = np.random.choice(sigma_range)
-    kernel_size = _get_kernel_size(std)
+    kernel_size = get_kernel_size(std)
 
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'blur', std
 
@@ -424,7 +424,7 @@ def b_tr_1_coco(img):
 
     sigma_range = COCO_OCT_DISTORTION_BOUNDS['blur'][1]
     std = np.random.choice(sigma_range)
-    kernel_size = _get_kernel_size(std)
+    kernel_size = get_kernel_size(std)
 
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'blur', std
 
@@ -434,12 +434,12 @@ def b_fr90_coco(img):
     sigma_range = DISTORTION_RANGE_90['coco']['blur']
     std = np.random.choice(sigma_range)
 
-    kernel_size = _get_kernel_size(std)
+    kernel_size = get_kernel_size(std)
 
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'blur', std
 
 
-_MP90_COCO_KERNEL_SIZE = _get_kernel_size(COCO_MP_90['blur'])
+_MP90_COCO_KERNEL_SIZE = get_kernel_size(COCO_MP_90['blur'])
 
 
 def b_mp90_coco(img):
@@ -447,7 +447,7 @@ def b_mp90_coco(img):
     return transforms.GaussianBlur(kernel_size=_MP90_COCO_KERNEL_SIZE, sigma=std)(img), None, 'blur', std
 
 
-_EP90_COCO_KERNEL_SIZE = _get_kernel_size(COCO_EP_90['blur'])
+_EP90_COCO_KERNEL_SIZE = get_kernel_size(COCO_EP_90['blur'])
 
 
 def b_ep90_coco(img):

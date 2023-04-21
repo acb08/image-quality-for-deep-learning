@@ -220,7 +220,7 @@ def plot_2d(x_values, y_values, accuracy_means, x_id, y_id,
     elif axis_labels == 'effective_entropy_default':
         xlabel, ylabel, zlabel = AXIS_LABELS[x_id], AXIS_LABELS[y_id], AXIS_LABELS['effective_entropy']
     else:
-        xlabel, ylabel = axis_labels[x_id], axis_labels[x_id]
+        xlabel, ylabel = axis_labels[x_id], axis_labels[y_id]
 
     if result_identifier:
         save_name = f'{x_id}_{y_id}_{str(result_identifier)}_{perf_metric}.png'

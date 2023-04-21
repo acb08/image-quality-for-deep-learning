@@ -173,6 +173,13 @@ def main(config):
                                                     eval_prediction,
                                                     data_dump=False
                                                     )
+                predict_fit_correlation = evaluate_fit(fit_coefficients,
+                                                       predict_parameter_array,
+                                                       predict_performance_array,
+                                                       distortion_ids=('res', 'blur', 'noise'),
+                                                       fit_key=fit_key,
+                                                       add_bias=False,  # only applies to linear fits
+                                                       )
                 fit_correlation = evaluate_fit(fit_coefficients,
                                                eval_parameter_array,
                                                eval_performance_array,
@@ -202,7 +209,9 @@ def main(config):
                                       ylabel='mAP')
 
                 print(f'{fit_key} fit: \n', fit_coefficients, file=output_file)
-                print(f'{fit_key} direct fit correlation: ', fit_correlation, '\n',
+                print(f'{fit_key} predict (direct) fit correlation: ', predict_fit_correlation,
+                      file=output_file)
+                print(f'{fit_key} eval fit correlation: ', fit_correlation, '\n',
                       file=output_file)
 
     return distortion_performance_results

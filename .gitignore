@@ -50,3 +50,5 @@ artifacts/
 /example_dataset_shorter.txt
 /src/pre_processing/file_copy_sandbox.py
 /src/obj_det_analysis/debug_compare.py
+/src/pre_processing/uniform_dist_sandbox.py
+/src/pre_processing/poisson.py
