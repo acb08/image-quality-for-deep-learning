@@ -81,6 +81,8 @@ REL_PATHS = {
     'yolo_best_weights': 'weights/best.pt',
     'yolo_last_weights': 'weights/last.pt',
 
+    'poisson_sim': 'analysis/poisson_sim',
+
     'dataset_sub_struct': {  # keys correct to dataset_split_key variable
         'train': ('images/train', 'labels/train'),
         'val': ('images/val', 'labels/val'),
@@ -94,6 +96,8 @@ with open(Path(ROOT_DIR, REL_PATHS['project_config'], _project_config_filename),
     _config = safe_load(file)  #
 WANDB_PID = _config['PROJECT_ID']
 NATIVE_RESOLUTION = _config['NATIVE_RESOLUTION']  # kept in config file so can be used in multi-project functions
+
+WELL_DEPTH = 10_000
 
 DISTORTION_RANGE = {
     'sat6': {
@@ -184,7 +188,8 @@ ARTIFACT_TYPE_TAGS = {
     'model': r'mdl',
     'test_result': r'rlt',
     'entropy_properties': r'ent',
-    'demo_dataset': r'demo'
+    'demo_dataset': r'demo',
+    'poisson_sim': 'poisson_sim'
 }
 
 # enables storing data types as strings that are json serializable

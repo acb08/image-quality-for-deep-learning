@@ -1,4 +1,4 @@
-from src.pre_processing.distort_coco_dataset import resize_bbox
+from src.pre_processing.distortion_tools import resize_bbox
 from src.pre_processing.distortions import r0_coco
 from src.obj_det_analysis.analysis_tools import add_bboxes
 from src.utils.detection_functions import xywh_to_xyxy

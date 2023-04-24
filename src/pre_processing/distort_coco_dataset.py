@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 import copy
 import json
+
+from src.pre_processing.distortion_tools import update_annotations
 from src.utils.functions import load_wandb_data_artifact, id_from_tags, get_config, \
-    log_config, string_from_tags
+    log_config
 from src.utils.definitions import REL_PATHS, STANDARD_DATASET_FILENAME, WANDB_PID, ROOT_DIR
 from src.pre_processing.distortions import coco_tag_to_image_distortions
 import numpy as np
@@ -14,18 +16,8 @@ from src.utils import detection_functions
 import random
 import time
 import shutil
+
 wandb.login()
-
-FRAGILE_ANNOTATION_KEYS = ['area', 'segmentation']
-
-
-def resize_bbox(res_frac, bbox):
-
-    bbox = np.asarray(bbox)
-    bbox = res_frac * bbox
-    bbox = list(bbox)
-
-    return bbox
 
 
 def make_train_val_splits(instances, val_frac):
@@ -124,36 +116,6 @@ def apply_distortions(image, distortion_functions, mapped_annotations, updated_i
                                                         remove_fragile_annotations=remove_fragile_annotations)
 
     return image, updated_mapped_annotations, distortion_data, stages
-
-
-def update_annotations(annotations, res, updated_image_id, remove_fragile_annotations=True):
-
-    """
-    Updates the annotations associated with an image that has been distorted.  Updates the image_id and wWhen
-    resolution != 1, updates the bounding boxes.
-    """
-
-    updated_annotations = []
-
-    for annotation in annotations:
-
-        updated_annotation = copy.deepcopy(annotation)
-
-        if res != 1:
-            bbox = annotation['bbox']
-            bbox = resize_bbox(res, bbox)
-            updated_annotation['bbox'] = bbox
-
-        updated_annotation['image_id'] = updated_image_id
-
-        if remove_fragile_annotations:
-            for key in FRAGILE_ANNOTATION_KEYS:
-                if key in updated_annotation.keys():
-                    updated_annotation.pop(key)
-
-        updated_annotations.append(updated_annotation)
-
-    return updated_annotations
 
 
 def new_image_id(existing_ids, low=0, high=int(1e12)):
@@ -632,7 +594,7 @@ if __name__ == '__main__':
 
     T_0 = time.time()
 
-    _distortion_config_filename = 'coco_noise_train.yml'
+    _distortion_config_filename = 'coco128_ep90_demo.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=_distortion_config_filename, help='config filename to be used')

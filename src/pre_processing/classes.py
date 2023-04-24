@@ -5,6 +5,8 @@ import torch
 from PIL import Image
 
 from torchvision import transforms
+from src.pre_processing.distortion_tools import image_to_electrons, electrons_to_image, \
+    apply_partial_poisson_distribution
 
 
 class VariableResolution:
@@ -169,3 +171,38 @@ class VariablePoissonNoiseChannelReplicated:
         if self.clamp:
             noisy_tensor = torch.clamp(noisy_tensor, 0, 1)
         return noisy_tensor
+
+
+class PseudoSensor:
+    """
+    Scales signal and noise properties of an input image based on its associated blur and resolution metadata
+    """
+    def __init__(self, read_noise_values, input_image_well_depth):
+        self._dc_fraction_estimator = None
+        self.read_noise_values = read_noise_values
+        self.input_image_well_depth = input_image_well_depth
+
+    def convert_scale_electrons(self, image, res_frac):
+        electrons = image_to_electrons(image, self.input_image_well_depth)
+        scaled_electrons = electrons * (1 / res_frac) ** 2
+        return scaled_electrons
+
+    def apply_read_noise(self):
+        read_noise_value = random.choice(self.read_noise_values)
+        pass
+
+    def estimate_dc_fraction(self, sigma_blur):
+        if self._dc_fraction_estimator is None:
+            return 0
+        else:
+            return self._dc_fraction_estimator(sigma_blur)
+
+    def __call__(self, image, res_frac, sigma_blur):
+        dc_fraction = self.estimate_dc_fraction(sigma_blur)
+        electrons = self.convert_scale_electrons(image, res_frac)
+        electrons = apply_partial_poisson_distribution(electrons, dc_fraction=dc_fraction)
+
+
+
+
+

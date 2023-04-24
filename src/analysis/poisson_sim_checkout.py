@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from src.analysis.poisson_sim import normalize, convert_to_uint8, initial_image, image_to_electrons, \
-    electrons_to_image
+from src.analysis.poisson_sim import initial_electrons_and_image
+from src.pre_processing.distortion_tools import image_to_electrons, electrons_to_image, convert_to_uint8, normalize
 from src.analysis import poisson_sim
 from pathlib import Path
 from PIL import Image
@@ -31,7 +31,7 @@ def check_image_conversion(starting_values=None, shape=None):
 
     for val in starting_values:
 
-        starting_image = initial_image(val / 255, shape=shape, poisson_noise=False)
+        starting_image = initial_electrons_and_image(val / 255, shape=shape, poisson_noise=False)
         electrons = image_to_electrons(starting_image)
         image = electrons_to_image(electrons)
 
@@ -50,37 +50,57 @@ def check_image_conversion(starting_values=None, shape=None):
     plt.show()
 
 
+def noise_evolution():
+
+    electrons, image = initial_electrons_and_image(shape=(256, 256))
+    electron_stds = []
+    dn_stds = []
+
+    electron_stds.append(np.std(electrons))
+    dn_stds.append(np.std(image))
+
+    for iteration in range(10):
+        est_electrons = image_to_electrons(image)
+        image = electrons_to_image(est_electrons)
+        electron_stds.append(np.std(est_electrons))
+        dn_stds.append(np.std(image))
+
+    print(dn_stds)
+    print(electron_stds)
+
+
 if __name__ == '__main__':
     #
     # _starting_values = [1, 8, 16, 32, 64, 128, 200, 255]
     # _shape = (128, 128)
     # check_image_conversion()
 
-    _image = initial_image(poisson_noise=False)
-    # _image.show()
-    print(np.mean(_image), np.std(_image))
-    _electrons = image_to_electrons(_image)
-    print(np.mean(_electrons), np.std(_electrons))
-    _image_check = electrons_to_image(_electrons)
-    print(_image_check == _image)
+    # _image = initial_electrons_and_image(poisson_noise=False)
+    # # _image.show()
+    # print(np.mean(_image), np.std(_image))
+    # _electrons = image_to_electrons(_image)
+    # print(np.mean(_electrons), np.std(_electrons))
+    # _image_check = electrons_to_image(_electrons)
+    # print(_image_check == _image)
+    #
+    # check_image_conversion()
+    #
+    # _demo_dir = '/home/acb6595/coco/datasets/train/coco128/images/train2017'
+    # _image_filenames = list(Path(_demo_dir).iterdir())
+    # # _image_filenames [filename for filename in _image_filenames]
+    # _image_filenames = [f for f in _image_filenames if Path(f).is_file()]
+    #
+    # for i in range(3):
+    #     _img = Image.open(_image_filenames[i])
+    #     _img.show()
+    #     _electrons = image_to_electrons(_img)
+    #     _img_check = electrons_to_image(_electrons)
+    #     _img.show()
+    #     _img_check.show()
+    #     _diff = np.asarray(_img) - np.asarray(_img_check)
+    #     print(np.mean(_diff), np.std(_diff))
 
-    check_image_conversion()
-
-    _demo_dir = '/home/acb6595/coco/datasets/train/coco128/images/train2017'
-    _image_filenames = list(Path(_demo_dir).iterdir())
-    # _image_filenames [filename for filename in _image_filenames]
-    _image_filenames = [f for f in _image_filenames if Path(f).is_file()]
-
-    for i in range(3):
-        _img = Image.open(_image_filenames[i])
-        _img.show()
-        _electrons = image_to_electrons(_img)
-        _img_check = electrons_to_image(_electrons)
-        _img.show()
-        _img_check.show()
-        _diff = np.asarray(_img) - np.asarray(_img_check)
-        print(np.mean(_diff), np.std(_diff))
-
+    noise_evolution()
 
     # #
     # _starting_val = 128
