@@ -30,6 +30,13 @@ test_result_identifiers:
       'v8l-ep, ep90' ]
 
 
+  - ['0005rlt-0023yolo-v8l-fr_best_loss-0053tst-coco_fr_test:v0',
+     'v8l-fr, fr90']
+  - ['0025rlt-yolov8l-0054tst-coco_fr90:v0',
+     'v8l-pre-trained, fr90']
+
+
+
 overwrite: True
 manual_name: point-datasets
 show_plots: False
