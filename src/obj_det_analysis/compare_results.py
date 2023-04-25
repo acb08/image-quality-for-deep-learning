@@ -119,16 +119,12 @@ def main(config):
 
         if res_vals is None:
             res_vals = _res_vals
-        # else:
-        #     assert np.array_equal(_res_vals, res_vals)
+
         if blur_vals is None:
             blur_vals = _blur_vals
-        # else:
-        #     assert np.array_equal(blur_vals, _blur_vals)
+
         if noise_vals is None:
             noise_vals = _noise_vals
-        # else:
-        #     assert np.array_equal(noise_vals, _noise_vals)
 
         if not allow_differing_distortions:
             assert np.array_equal(noise_vals, _noise_vals)
