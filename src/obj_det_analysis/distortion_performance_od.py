@@ -78,12 +78,13 @@ def flatten_axis_combinations_from_cfg(config):
         flatten_axis_combinations = config['flatten_axis_combinations']
 
         if flatten_axis_combinations == 'default':
-            return default
+            flatten_axis_combinations = default
 
-        else:
+        if flatten_axis_combinations is not None:
             flatten_axis_combinations = [tuple(combination) for combination in flatten_axis_combinations]
             flatten_axis_combinations = tuple(flatten_axis_combinations)
-            return flatten_axis_combinations
+
+        return flatten_axis_combinations
 
     else:
         return default

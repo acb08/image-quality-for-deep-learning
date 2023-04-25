@@ -42,6 +42,16 @@ def get_multiple_od_distortion_performance_results(result_id_pairs,
     return performance_results
 
 
+def log_averages(performance_dict, output_dir):
+
+    with open(Path(output_dir, 'mean_performances.txt'), 'w') as log_file:
+
+        for key, map_3d in performance_dict.items():
+            mean_perf = float(np.mean(map_3d))
+            print(f'{key}, mAP average over distortion space: {round(mean_perf, 3)}', file=log_file)
+        print('\n')
+
+
 def main(config):
 
     wandb.login()
@@ -62,6 +72,11 @@ def main(config):
     else:
         show_plots = False
 
+    if 'log_average_performances' in config.keys():
+        log_average_performances = config['log_average_performances']
+    else:
+        log_average_performances = True
+
     y_lim_bottom, y_lim_top = None, None
     if 'y_limits' in config.keys():
         y_limits = config['y_limits']
@@ -72,6 +87,11 @@ def main(config):
         fit_keys = fit_keys_from_cfg(config)
     else:
         fit_keys = None
+
+    if 'allow_differing_distortions' in config.keys():
+        allow_differing_distortions = config['allow_differing_distortions']
+    else:
+        allow_differing_distortions = False
 
     output_dir = get_compare_dir(test_result_identifiers, manual_name=config['manual_name'])
     log_config(output_dir=output_dir, config=config)
@@ -99,16 +119,21 @@ def main(config):
 
         if res_vals is None:
             res_vals = _res_vals
-        else:
-            assert np.array_equal(_res_vals, res_vals)
+        # else:
+        #     assert np.array_equal(_res_vals, res_vals)
         if blur_vals is None:
             blur_vals = _blur_vals
-        else:
-            assert np.array_equal(blur_vals, _blur_vals)
+        # else:
+        #     assert np.array_equal(blur_vals, _blur_vals)
         if noise_vals is None:
             noise_vals = _noise_vals
-        else:
+        # else:
+        #     assert np.array_equal(noise_vals, _noise_vals)
+
+        if not allow_differing_distortions:
             assert np.array_equal(noise_vals, _noise_vals)
+            assert np.array_equal(blur_vals, _blur_vals)
+            assert np.array_equal(_res_vals, res_vals)
 
     if flatten_axis_combinations is not None:
         plot_1d_from_3d(perf_dict_3d=performance_dict_3d,
@@ -214,12 +239,15 @@ def main(config):
                 print(f'{fit_key} eval fit correlation: ', fit_correlation, '\n',
                       file=output_file)
 
+    if log_average_performances:
+        log_averages(performance_dict=performance_dict_3d, output_dir=output_dir)
+
     return distortion_performance_results
 
 
 if __name__ == '__main__':
 
-    config_name = 'yolo_v8l-pt_v8l-fr_b-scans.yml'
+    config_name = 'point_datasets.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_name, help='config filename to be used')

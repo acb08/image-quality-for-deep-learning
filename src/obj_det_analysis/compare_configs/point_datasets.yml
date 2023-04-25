@@ -1,0 +1,42 @@
+---
+
+test_result_identifiers:
+
+  - ['0051rlt-0023yolo-v8l-fr_best_loss-val2017:v0',
+     'v8l-fr, val2017']
+  - [ '0049rlt-yolov8l-val2017:v0',
+      'v8l-pre-trained, val2017' ]
+  - ['0052rlt-0038yolo-v8l-mp_best_loss-val2017:v0',
+    'v8l-mp, val2017']
+  - ['0050rlt-0039yolo-v8l-ep_best_loss-val2017:v0',
+     'v8l-ep, val2017']
+
+  - [ '0047rlt-0023yolo-v8l-fr_best_loss-0056tst-coco_mp90:v0',
+      'v8l-fr, mp90' ]
+  - [ '0045rlt-yolov8l-0056tst-coco_mp90:v0',
+      'v8l-pre-trained, mp90' ]
+  - ['0048rlt-0038yolo-v8l-mp_best_loss-0056tst-coco_mp90:v0',
+     'v8l-mp, mp90']
+  - ['0046rlt-0039yolo-v8l-ep_best_loss-0056tst-coco_mp90:v0',
+    'v8l-ep, mp90']
+
+  - [ '0043rlt-0023yolo-v8l-fr_best_loss-0057tst-coco_ep90:v0',
+      'v8l-fr, ep90' ]
+  - [ '0041rlt-yolov8l-0057tst-coco_ep90:v0',
+      'v8l-pre-trained, ep90' ]
+  - ['0044rlt-0038yolo-v8l-mp_best_loss-0057tst-coco_ep90:v0',
+     'v8l-mp, ep90']
+  - [ '0042rlt-0039yolo-v8l-ep_best_loss-0057tst-coco_ep90:v0',
+      'v8l-ep, ep90' ]
+
+
+overwrite: True
+manual_name: point-datasets
+show_plots: False
+plot_together: False
+flatten_axis_combinations: null
+flatten_axes: null
+
+log_average_performances: True
+
+allow_differing_distortions: True

@@ -108,9 +108,11 @@ class ModelDistortionPerformanceResultOD:
         Pull out distortion info from self._dataset['instances']['images'] and place in numpy vectors
         """
         distortions = {}
-        for flag in self.distortion_type_flags:
-            # distortions[flag] = np.asarray([image[flag] for image in self.images])
-            distortions[flag] = np.asarray([image[flag] for image in images])
+        try:
+            for flag in self.distortion_type_flags:
+                distortions[flag] = np.asarray([image[flag] for image in images])
+        except TypeError:  # occurs when distortion_type_flags is None (i.e. on dataset without distortions)
+            pass
         return distortions
 
     def map_images_to_dist_pts(self):
