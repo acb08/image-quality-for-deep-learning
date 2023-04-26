@@ -864,7 +864,8 @@ def plot_1d_from_3d(perf_dict_3d, x_vals, y_vals, z_vals, distortion_ids=('res',
                     ylabel='mAP',
                     legend=False,
                     y_lim_bottom=None,
-                    y_lim_top=None):
+                    y_lim_top=None,
+                    single_legend=True):
 
     num_combinations = len(flatten_axis_combinations)
 
@@ -875,11 +876,18 @@ def plot_1d_from_3d(perf_dict_3d, x_vals, y_vals, z_vals, distortion_ids=('res',
             axes = (axes, )
         save_dir_individual = None
         show_plots_individual = False
+        if single_legend:
+            legends = num_combinations * [False]
+            legends[-1] = True
+        else:
+            legends = num_combinations * [True]
+
     else:
         axes = num_combinations * [None]
         fig = None
         save_dir_individual = directory
         show_plots_individual = show_plots
+        legends = len(distortion_ids) * [True]
 
     performance_dict_1d = {}
 
@@ -906,7 +914,7 @@ def plot_1d_from_3d(perf_dict_3d, x_vals, y_vals, z_vals, distortion_ids=('res',
                             directory=save_dir_individual,
                             show_plots=show_plots_individual,
                             ax=axes[i],
-                            legend=legend,
+                            legend=legends[i],
                             y_lim_bottom=y_lim_bottom,
                             y_lim_top=y_lim_top,
                             )

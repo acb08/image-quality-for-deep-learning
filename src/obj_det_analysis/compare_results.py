@@ -107,6 +107,11 @@ def main(config):
     else:
         fitting_arrays = None
 
+    if 'single_legend' in config.keys():
+        single_legend = config['single_legend']
+    else:
+        single_legend = True
+
     for distortion_performance_result in distortion_performance_results:
 
         _res_vals, _blur_vals, _noise_vals, _map3d, _parameter_array, _perf_array, _full_extract = (
@@ -145,6 +150,7 @@ def main(config):
                         legend=True,
                         y_lim_bottom=y_lim_bottom,
                         y_lim_top=y_lim_top,
+                        single_legend=single_legend
                         )
 
     if flatten_axes is not None:
@@ -243,7 +249,7 @@ def main(config):
 
 if __name__ == '__main__':
 
-    config_name = 'point_datasets.yml'
+    config_name = 'v8l-pt-ep_fr90-compare.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_name, help='config filename to be used')

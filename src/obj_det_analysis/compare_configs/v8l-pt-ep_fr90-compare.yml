@@ -1,0 +1,23 @@
+---
+
+test_result_identifiers:
+
+  - ['0025rlt-yolov8l-0054tst-coco_fr90:v0',
+     'pre-trained']
+  - ['0057rlt-0039yolo-v8l-ep_best_loss-0054tst-coco_fr90:v0',
+     'endpoint']
+
+
+overwrite: False
+manual_name: v8l-pt-ep_fr90-compare
+flatten_axis_combinations: default # [[0, 1], [0, 2], [1, 2]]
+flatten_axes: default
+
+fit_keys: null
+
+plot_together: True
+y_limits: null
+
+show_plots: False
+
+

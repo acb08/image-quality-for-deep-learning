@@ -1,0 +1,51 @@
+---
+
+data:
+  - ['pre-trained', # model label
+     [0.146,  # v8l-pre-trained, fr90, mAP average over distortion space: 0.146
+      0.608, # v8l-pre-trained, val2017, mAP average over distortion space: 0.608
+      0.065, # v8l-pre-trained, mp90, mAP average over distortion space: 0.065
+      0.0 # v8l-pre-trained, ep90, mAP average over distortion space: 0.0
+      ]]
+
+  - ['midpoint', # model label
+     [0.283, # v8l-mp, fr90, mAP average over distortion space: 0.283
+      0.311, # v8l-mp, val2017, mAP average over distortion space: 0.311
+      0.301, # v8l-mp, mp90, mAP average over distortion space: 0.301
+      0.007, # v8l-mp, ep90, mAP average over distortion space: 0.007
+     ]]
+  - ['endpoint', # model label
+     [0.089, # v8l-ep, fr90, mAP average over distortion space: 0.089
+      0.019, # v8l-ep, val2017, mAP average over distortion space: 0.019
+      0.091, # v8l-ep, mp90, mAP average over distortion space: 0.091
+      0.046, # v8l-ep, ep90, mAP average over distortion space: 0.046
+     ]]
+
+  - [ 'full-range', # model label
+    [0.291, # v8l-fr, fr90, mAP average over distortion space: 0.291
+     0.418, # v8l-fr, val2017, mAP average over distortion space
+     0.258, # v8l-fr, mp90, mAP average over distortion space: 0.258
+     0.022, # v8l-fr, ep90, mAP average over distortion space: 0.022
+    ]]
+
+group_labels: ['full-range', 'undistorted', 'midpoint', 'endpoint']  # dataset labels (need to test against undistorted and include)
+
+ylabel: 'mAP'
+xlabel: null
+manual_name: 'coco-summary'
+
+group_width: 0.7
+padding: 3
+bar_width_frac: 0.7
+edge_color: 'black'
+line_width: 1.2
+overwrite: False
+label_threshold: 0.01
+
+include_bar_labels: True
+rotation: 0
+include_legend: True
+
+bar_hatching: True
+
+
