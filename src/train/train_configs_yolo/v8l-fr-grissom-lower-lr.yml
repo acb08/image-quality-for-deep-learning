@@ -15,5 +15,5 @@ learning_rate: 0.005
 description: training on coco fr dataset with lower learning rate and double the number of epochs
 artifact_type: 'model'
 
-name_string: v8l-fr-llr  # later manually changed artifact name to 0002yolo-yolov8-noise_best_loss:v0
+name_string: v8l-fr-llr
 
