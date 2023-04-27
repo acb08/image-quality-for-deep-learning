@@ -109,9 +109,24 @@ def distort_log_numpy(config):
     description = config['description']
 
     if 'save_rgb_vector' in config.keys():
-        save_rgb_vector = config['save_rgb_vector']
+        save_rgb_vector = config['save_rgb_vector']  # used to save demo vector only
     else:
         save_rgb_vector = False
+
+    if 'rgb' in config.keys():  # rgb throughout rather than pan
+        rgb = config['rgb']
+    else:
+        rgb = False
+
+    if rgb:
+        pan_rgb_flag = 'rgb'
+        convert_to_pan = False
+    else:
+        pan_rgb_flag = 'pan'
+        convert_to_pan = True
+
+    if rgb and save_rgb_vector:
+        raise Exception('save_rgb_vector only intended for making visuals, not to be used with rgb datasets')
 
     with wandb.init(project=WANDB_PID, job_type='distort_dataset', tags=distortion_tags, notes=description,
                     config=config) as run:
@@ -153,11 +168,11 @@ def distort_log_numpy(config):
         else:
             raise Exception('Invalid project ID')
 
-        pan_image_label_filenames = []
+        np0_image_label_filenames = []
         image_distortion_info = {}
 
         for i in range(iterations):
-            file_count_offset = len(pan_image_label_filenames)
+            file_count_offset = len(np0_image_label_filenames)
 
             if sat6:
 
@@ -175,6 +190,9 @@ def distort_log_numpy(config):
                                  file_count_offset=file_count_offset,
                                  filename_stem='test',
                                  parent_dataset_id=parent_artifact_name)
+
+                if rgb:
+                    raise Exception('rgb not implemented for SAT-6')
 
                 new_data_subset = mat_to_numpy(data_x,
                                                data_y,
@@ -211,43 +229,44 @@ def distort_log_numpy(config):
                                                     images_per_file,
                                                     image_shape,
                                                     datatype_key,
-                                                    'pan',
+                                                    pan_rgb_flag,
                                                     new_dataset_abs_dir,
+                                                    convert_to_pan=convert_to_pan,
                                                     file_count_offset=file_count_offset,
                                                     filename_stem='test',
                                                     parent_dataset_id=parent_dataset_id)
 
             subset_image_label_filenames = new_data_subset['image_and_label_filenames']
-            pan_image_label_filenames.extend(subset_image_label_filenames)
+            np0_image_label_filenames.extend(subset_image_label_filenames)
             parent_dataset_ids = new_data_subset['parent_dataset_ids']
             # image_distortion_info.update(res_data_subset['image_distortion_info'])
 
-        pan_dataset = {dataset_split_key: {
-            'image_and_label_filenames': pan_image_label_filenames,
+        np0_dataset = {dataset_split_key: {
+            'image_and_label_filenames': np0_image_label_filenames,
             'image_distortion_info': image_distortion_info},
-            'last_distortion_type_flag': 'pan',  # enables subsequent dataset users to find correct subdirectory
+            'last_distortion_type_flag': pan_rgb_flag,  # enables subsequent dataset users to find correct subdirectory
             'parent_dataset_ids': parent_dataset_ids
         }
 
-        pan_dataset.update(run_metadata)
-        pan_artifact_id = f"{new_dataset_id}_pan"
-        pan_artifact = wandb.Artifact(pan_artifact_id,
+        np0_dataset.update(run_metadata)
+        np0_artifact_id = f"{new_dataset_id}_{pan_rgb_flag}"
+        np0_artifact = wandb.Artifact(np0_artifact_id,
                                       type=artifact_type,
                                       metadata=run_metadata)
-        pan_artifact_path = Path(new_dataset_abs_dir, REL_PATHS['pan'], artifact_filename)
-        with open(pan_artifact_path, 'w') as file:
-            json.dump(pan_dataset, file)
+        np0_artifact_path = Path(new_dataset_abs_dir, REL_PATHS[pan_rgb_flag], artifact_filename)
+        with open(np0_artifact_path, 'w') as file:
+            json.dump(np0_dataset, file)
 
-        pan_artifact.add_file(pan_artifact_path)
-        pan_artifact.metadata = run_metadata
-        run.log_artifact(pan_artifact)
-        pan_artifact.wait()  # allow artifact upload to finish before its used downstream
+        np0_artifact.add_file(str(np0_artifact_path))
+        np0_artifact.metadata = run_metadata
+        run.log_artifact(np0_artifact)
+        np0_artifact.wait()  # allow artifact upload to finish before its used downstream
 
         # with the new pan artifact created, loop through distortion tags and create a new artifact for
         # the output of each associated distortion function, where each subsequent artifact has the last artifact
         # for its parent
-        parent_dataset_id = pan_artifact_id
-        parent_artifact_name = f'{pan_artifact_id}:latest'
+        parent_dataset_id = np0_artifact_id
+        parent_artifact_name = f'{np0_artifact_id}:latest'
 
         for i, distortion_tag in enumerate(distortion_tags):
             distortion_type_flag = distortion_type_flags[i]
