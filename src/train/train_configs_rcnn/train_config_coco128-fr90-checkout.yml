@@ -1,6 +1,7 @@
+
 ---
 
-train_dataset_id: coco128
+train_dataset_id: 0036trn-coco_fr90_tr_checkout:v0
 train_dataset_artifact_alias: latest
 
 starting_model_id: fasterrcnn_resnet50_fpn
