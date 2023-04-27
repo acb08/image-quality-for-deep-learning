@@ -1,6 +1,6 @@
 ---
 
-train_dataset_id: coco128
+train_dataset_id: 0034trn-coco_fr90_tr_checkout:v0
 train_dataset_artifact_alias: latest
 
 starting_model_id: fasterrcnn_resnet50_fpn
@@ -8,7 +8,7 @@ starting_model_artifact_alias: latest
 distortion_tags: []
 
 num_epochs: 1
-batch_size: 4
+batch_size: 1
 num_workers: 2
 
 optimizer_type: SGD
@@ -21,7 +21,7 @@ status_interval: 1000
 description: debug
 artifact_type: model
 
-name_string: coco128-debug
+name_string: rcnn-debug
 
-device: 1
+device: 0
 

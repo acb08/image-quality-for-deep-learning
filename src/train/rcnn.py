@@ -248,7 +248,8 @@ def load_tune_model(config):
         __, dataset = load_wandb_data_artifact(run, dataset_artifact_id, STANDARD_DATASET_FILENAME)
         detection_dataset = wandb_to_detection_dataset(dataset, yolo_fmt=False)
 
-        val_sibling_dataset_id = detection_dataset['val_sibling_dataset_id']
+        val_sibling_dataset_id = dataset['val_sibling_dataset_id']
+        val_sibling_dataset_id, __ = construct_artifact_id(val_sibling_dataset_id)
         __, val_dataset = load_wandb_data_artifact(run, val_sibling_dataset_id, STANDARD_DATASET_FILENAME)
         val_detection_dataset = wandb_to_detection_dataset(val_dataset, yolo_fmt=False)
 
