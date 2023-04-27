@@ -248,6 +248,10 @@ def load_tune_model(config):
         __, dataset = load_wandb_data_artifact(run, dataset_artifact_id, STANDARD_DATASET_FILENAME)
         detection_dataset = wandb_to_detection_dataset(dataset, yolo_fmt=False)
 
+        val_sibling_dataset_id = detection_dataset['val_sibling_dataset_id']
+        __, val_dataset = load_wandb_data_artifact(run, val_sibling_dataset_id, STANDARD_DATASET_FILENAME)
+        val_detection_dataset = wandb_to_detection_dataset(val_dataset, yolo_fmt=False)
+
         num_epochs = config['num_epochs']
         batch_size = config['batch_size']
         num_workers = config['num_workers']
@@ -284,7 +288,7 @@ def load_tune_model(config):
         print('device: ', device)
 
         loader = get_loader(detection_dataset, num_workers=num_workers, batch_size=batch_size)
-        val_loader = None  # TODO: update to get val dataset
+        val_loader = get_loader(val_detection_dataset, num_workers=num_workers, batch_size=batch_size)
 
         model.to(device)
 
@@ -315,7 +319,7 @@ def load_tune_model(config):
             train_losses.append(mean_train_loss)
 
             loss_dict, mean_val_loss = validate(model=model,
-                                                data_loader=loader,
+                                                data_loader=val_loader,
                                                 device=device,
                                                 scaler=None)
             val_losses.append(mean_val_loss)

@@ -1,0 +1,24 @@
+---
+
+description: create coco128 fr90 debugging train dataset
+
+parent_dataset_id: coco128
+parent_artifact_alias: latest
+parent_artifact_filename: standard  # standard functions as a flag to use definitions.STANDARD_ARTIFACT_FILENAME
+
+num_images: all
+val_frac: 0.05
+
+distortion_tags: ['r_fr90_coco', 'b_fr90_coco', 'n_fr90_coco']
+distortion_type_flags: ['res', 'blur', 'noise']  # specifies distortion_tags associated distortion types
+iterations: 10
+artifact_type: train_dataset
+#dataset_split_key: test  # used to mirror 'train'/'val' split in data structure
+artifact_filename: standard
+datatype_key: np.uint8
+
+image_shape: null
+
+keep_image_id: False
+
+name_string: coco_fr90_tr_checkout
