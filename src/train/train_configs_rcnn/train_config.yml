@@ -1,6 +1,6 @@
 ---
 
-train_dataset_id: 0036trn-coco_fr90_tr_checkout-val_split
+train_dataset_id: 0035trn-coco_fr90_tr_checkout-val_split
 train_dataset_artifact_alias: latest
 
 starting_model_id: fasterrcnn_resnet50_fpn
