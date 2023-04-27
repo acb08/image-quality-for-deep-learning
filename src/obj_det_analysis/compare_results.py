@@ -249,7 +249,7 @@ def main(config):
 
 if __name__ == '__main__':
 
-    config_name = 'v8l-pt-ep_fr90-compare.yml'
+    config_name = 'yolo-frcnn_n-scans.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_name, help='config filename to be used')

@@ -4,16 +4,13 @@ test_result_identifiers:
 
   - ['0018rlt-0023yolo-v8l-fr_best_loss-0054tst-coco_fr90:v0',
      'full range trained']
-  - ['0025rlt-yolov8l-0054tst-coco_fr90:v0',
-     'pre-trained']
+  - [ '0025rlt-yolov8l-0054tst-coco_fr90:v0',
+      'pre-trained' ]
   - ['0056rlt-0038yolo-v8l-mp_best_loss-0054tst-coco_fr90:v0',
      'midpoint trained']
-  - ['0057rlt-0039yolo-v8l-ep_best_loss-0054tst-coco_fr90:v0',
-     'endpoint trained']
-
 
 overwrite: False
-manual_name: v8l-fr-pr-mp-ep_fr90-compare
+manual_name: v8l-fr-pt-mp_fr90-compare
 flatten_axis_combinations: default # [[0, 1], [0, 2], [1, 2]]
 flatten_axes: default
 

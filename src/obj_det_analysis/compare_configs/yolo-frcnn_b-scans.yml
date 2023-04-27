@@ -1,0 +1,24 @@
+---
+
+test_result_identifiers:
+
+  - ['0039rlt-yolov8x-0046tst-coco_b_scan_v2-blur:v0',
+     'YOLOv8x']
+
+  - ['0036rlt-yolov8l-0046tst-coco_b_scan_v2-blur:v0',
+     'YOLOv8l']
+
+  - ['0033rlt-yolov8m-0046tst-coco_b_scan_v2-blur:v0',
+     'YOLOv8m']
+
+  - ['0017rlt-fasterrcnn_resnet50_fpn-0046tst-coco_b_scan_v2-blur:v0',
+     'Faster-RCNN']
+
+  - ['0030rlt-yolov8n-0046tst-coco_b_scan_v2-blur:v0',
+     'YOLOv8n']
+
+
+overwrite: True 
+manual_name: yolo-frcnn-blur-scans
+flatten_axis_combinations: [[0, 2]]
+flatten_axes: null

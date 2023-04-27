@@ -149,6 +149,9 @@ def load_tune_model(config):
 
         description = config['description']
         artifact_type = config['artifact_type']
+        learning_rate = 0.01
+        if learning_rate in config.keys():
+            learning_rate = config['learning_rate']
 
         model_id_tags = [arch]
 
@@ -189,7 +192,8 @@ def load_tune_model(config):
                     epochs=num_epochs,
                     batch=batch_size,
                     project=output_dir,
-                    device=device)
+                    device=device,
+                    lr0=learning_rate)
 
         model_helper_path = log_model_helper(best_weights_path.parent, metadata)
 

@@ -16,3 +16,4 @@ artifact_type: model
 
 name_string: yolov8n-coco128-logging-debug
 
+learning_rate: 0.01
