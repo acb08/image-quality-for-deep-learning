@@ -373,6 +373,9 @@ def load_tune_model(config):
 
 if __name__ == '__main__':
 
+    # import torch.multiprocessing
+    # torch.multiprocessing.set_sharing_strategy('file_system')
+
     parser = argparse.ArgumentParser()
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default='train_config.yml', help='config filename to be used')
