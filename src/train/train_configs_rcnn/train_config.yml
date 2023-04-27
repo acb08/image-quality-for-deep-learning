@@ -1,6 +1,6 @@
 ---
 
-train_dataset_id: 0035trn-coco_fr90_tr_checkout-val_split
+train_dataset_id: 0036trn-coco_fr90_tr_checkout:v0
 train_dataset_artifact_alias: latest
 
 starting_model_id: fasterrcnn_resnet50_fpn
@@ -16,7 +16,7 @@ lr: 0.005
 momentum: 0.9
 weight_decay: 0.0005
 
-status_interval: 1000
+status_interval: 100
 
 description: debug
 artifact_type: model
