@@ -24,4 +24,5 @@ artifact_type: model
 name_string: rcnn-debug
 
 device: 1
+misc: "string for change sake"
 
