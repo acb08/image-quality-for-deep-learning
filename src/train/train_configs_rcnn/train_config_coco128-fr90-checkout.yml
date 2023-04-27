@@ -10,7 +10,7 @@ distortion_tags: []
 
 num_epochs: 1
 batch_size: 4
-num_workers: 2
+num_workers: 0
 
 optimizer_type: SGD
 lr: 0.005
