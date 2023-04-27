@@ -23,3 +23,5 @@ artifact_type: model
 
 name_string: coco128-debug
 
+device: 1
+

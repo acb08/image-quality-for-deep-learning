@@ -181,6 +181,7 @@ def load_tune_model(config):
         # model_metadata['model_filename'] = best_weights_filename
 
         metadata = dict(config)
+        metadata['yolo_cfg'] = yolo_cfg
 
         best_loss_model_file_config = {
             'model_rel_dir': str(best_weights_rel_dir),
