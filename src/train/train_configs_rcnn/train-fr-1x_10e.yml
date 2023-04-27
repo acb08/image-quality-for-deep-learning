@@ -18,10 +18,10 @@ weight_decay: 0.0005
 
 status_interval: 1000
 
-description: training on basic coco noise dataset
+description: training on coco full range dataset
 artifact_type: model
 
 device: 1
 
-name_string: rcnn-fr-1x-10e # later manually changed artifact name to 0002yolo-yolov8-noise_best_loss:v0
+name_string: faster-rcnn-fr
 
