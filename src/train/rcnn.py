@@ -117,35 +117,40 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=10,
         images = list(image.to(device) for image in images)
         total_images += len(images)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-        with torch.cuda.amp.autocast(enabled=scaler is not None):
-            loss_dict = model(images, targets)
-            losses = sum(loss for loss in loss_dict.values())
-            running_loss_total += losses
 
-        loss_dict_reduced = reduce_dict(loss_dict)
-        losses_reduced = sum(loss for loss in loss_dict_reduced.values())
+        try:
+            with torch.cuda.amp.autocast(enabled=scaler is not None):
+                loss_dict = model(images, targets)
+                losses = sum(loss for loss in loss_dict.values())
+                running_loss_total += losses
 
-        loss_value = losses_reduced.item()
+            loss_dict_reduced = reduce_dict(loss_dict)
+            losses_reduced = sum(loss for loss in loss_dict_reduced.values())
 
-        if not math.isfinite(loss_value):
-            print(f"Loss is {loss_value}, stopping training")
-            print(loss_dict_reduced)
-            sys.exit(1)
+            loss_value = losses_reduced.item()
 
-        optimizer.zero_grad()
-        if scaler is not None:
-            scaler.scale(losses).backward()
-            scaler.step(optimizer)
-            scaler.update()
-        else:
-            losses.backward()
-            optimizer.step()
+            if not math.isfinite(loss_value):
+                print(f"Loss is {loss_value}, stopping training")
+                print(loss_dict_reduced)
+                sys.exit(1)
 
-        if lr_scheduler is not None:
-            lr_scheduler.step()
+            optimizer.zero_grad()
+            if scaler is not None:
+                scaler.scale(losses).backward()
+                scaler.step(optimizer)
+                scaler.update()
+            else:
+                losses.backward()
+                optimizer.step()
 
-        if i > 0 and total_images % print_freq == 0:
-            print(f'batch {i + 1} / {num_batches} train loss ({total_images} images):', loss_value)
+            if lr_scheduler is not None:
+                lr_scheduler.step()
+
+            if i > 0 and total_images % print_freq == 0:
+                print(f'batch {i + 1} / {num_batches} train loss ({total_images} images):', loss_value)
+
+        except AssertionError:
+            print(f'AssertionError, batch {i}')
 
     mean_loss = float(running_loss_total) / total_images
     print(f'epoch {epoch} mean loss: ', mean_loss)
