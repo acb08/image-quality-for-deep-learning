@@ -1,0 +1,20 @@
+---
+
+test_result_identifiers:
+
+  - ['0018rlt-0023yolo-v8l-fr_best_loss-0054tst-coco_fr90:v0',
+     'v8l-fr-default-lr']
+  - ['0058rlt-0041yolo-v8l-fr-llr_best_loss-0054tst-coco_fr90:v0',
+     'v8l-fr-lower-lr']
+
+
+overwrite: False
+manual_name: v8l-fr-lr-compare
+flatten_axis_combinations: default # [[0, 1], [0, 2], [1, 2]]
+flatten_axes: default
+
+plot_together: True
+y_limits: null
+
+fit_keys: default
+show_plots: False
