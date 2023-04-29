@@ -13,7 +13,7 @@ manual_name: v8l-fr_fr90-m1-m2
 flatten_axis_combinations: default # [[0, 1], [0, 2], [1, 2]]
 flatten_axes: default
 
-plot_together: True
+plot_together: False
 y_limits: null
 
 fit_keys: default

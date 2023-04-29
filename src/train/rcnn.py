@@ -168,13 +168,16 @@ def validate(model, data_loader, device, print_freq=10, scaler=None):
         total_images = 0
 
         for i, (images, targets) in enumerate(data_loader):
-            images = list(image.to(device) for image in images)
-            total_images += len(images)
-            targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-            with torch.cuda.amp.autocast(enabled=scaler is not None):
-                loss_dict = model(images, targets)
-                losses = sum(loss.item() for loss in loss_dict.values())
-                running_loss_total += losses
+            try:
+                images = list(image.to(device) for image in images)
+                total_images += len(images)
+                targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
+                with torch.cuda.amp.autocast(enabled=scaler is not None):
+                    loss_dict = model(images, targets)
+                    losses = sum(loss.item() for loss in loss_dict.values())
+                    running_loss_total += losses
+            except AssertionError:
+                print(f'AssertionError, validation batch {i}')
 
         mean_val_loss = running_loss_total / total_images
         print(f'mean val loss: ', mean_val_loss)
@@ -257,6 +260,9 @@ def load_tune_model(config):
         val_sibling_dataset_id, __ = construct_artifact_id(val_sibling_dataset_id)
         __, val_dataset = load_wandb_data_artifact(run, val_sibling_dataset_id, STANDARD_DATASET_FILENAME)
         val_detection_dataset = wandb_to_detection_dataset(val_dataset, yolo_fmt=False)
+
+        assert val_sibling_dataset_id != dataset_artifact_id
+        assert val_sibling_dataset_id.split(':')[0] != dataset_artifact_id.split(':')[0]
 
         num_epochs = config['num_epochs']
         batch_size = config['batch_size']

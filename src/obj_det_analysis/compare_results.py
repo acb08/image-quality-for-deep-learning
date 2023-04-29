@@ -233,7 +233,8 @@ def main(config):
                                       directory=fit_sub_dir,
                                       result_id='3d_1d_projection',
                                       show_plots=False,
-                                      ylabel='mAP')
+                                      ylabel='mAP',
+                                      plot_together=plot_together)
 
                 print(f'{fit_key} fit: \n', fit_coefficients, file=output_file)
                 print(f'{fit_key} predict (direct) fit correlation: ', predict_fit_correlation,
