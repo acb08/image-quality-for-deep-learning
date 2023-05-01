@@ -52,3 +52,4 @@ artifacts/
 /src/obj_det_analysis/debug_compare.py
 /src/pre_processing/uniform_dist_sandbox.py
 /src/pre_processing/poisson.py
+/src/analysis/bar_chart/contribs.yml
