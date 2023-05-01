@@ -4,7 +4,7 @@ test_result_identifiers:
 
   - ['0018rlt-0023yolo-v8l-fr_best_loss-0054tst-coco_fr90:v0',
      'YOLOv8l full range trained']
-  - ['0028rlt-0023yolo-v8l-fr_best_loss-0055tst-coco_fr90_mega-2:v0',
+  - ['0059rlt-0057fasterrcnn-faster-rcnn-fr_best_loss-0054tst-coco_fr90:v0',
      'Faster-RCNN full range trained']
 
 

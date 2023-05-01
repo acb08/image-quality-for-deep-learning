@@ -283,3 +283,32 @@ class ModelDistortionPerformanceResultOD:
 
     def get_processed_instance_props_path(self, predict_eval_flag='predict'):
         return _get_processed_instance_props_path(self, predict_eval_flag=predict_eval_flag)
+
+
+class _PreProcessedDistortionPerformanceProps:
+
+    def __init__(self, processed_props_path,
+                 result_id,
+                 identifier=None,
+                 predict_eval_flag='predict'):
+        self.processed_props_path = processed_props_path
+        self.result_id = result_id,
+        self.identifier = identifier
+        self.predict_eval_flag = predict_eval_flag
+        self._3d_distortion_perf_props = _get_processed_instance_props_path(self,
+                                                                            predict_eval_flag=self.predict_eval_flag)
+
+    def get_3d_distortion_perf_props(self, distortion_ids=('res', 'blur', 'noise')):
+        return self._3d_distortion_perf_props
+
+    def __str__(self):
+        if self.identifier:
+            return str(self.identifier)
+        else:
+            return self.__repr__()
+
+    def __repr__(self):
+        return self.result_id
+
+
+
