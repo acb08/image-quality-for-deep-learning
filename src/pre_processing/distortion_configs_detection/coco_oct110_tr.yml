@@ -1,6 +1,6 @@
 ---
 
-description: create oct110 train dataset
+description: create oct110 train dataset after failed attempt ~41k images into distortion run
 
 parent_dataset_id: train2017
 parent_artifact_alias: latest
