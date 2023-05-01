@@ -1,0 +1,18 @@
+---
+
+train_dataset_id: created-out-of-order-check-wandb
+train_dataset_artifact_alias: latest
+
+starting_model_id: 0023yolo-v8l-fr_best_loss:v0
+starting_model_artifact_alias: latest
+distortion_tags: []
+
+num_epochs: 10
+batch_size: 8
+num_workers: 4
+
+description: training on coco octant 110 dataset
+artifact_type: model
+
+name_string: v8l-oct110
+
