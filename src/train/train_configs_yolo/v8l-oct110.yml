@@ -1,6 +1,6 @@
 ---
 
-train_dataset_id: created-out-of-order-check-wandb
+train_dataset_id: 0033trn-coco_oct110_tr:v0  # dataset created out of order
 train_dataset_artifact_alias: latest
 
 starting_model_id: 0023yolo-v8l-fr_best_loss:v0
