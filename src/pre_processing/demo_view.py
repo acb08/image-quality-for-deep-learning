@@ -88,7 +88,7 @@ def _get_filenames(directory, extension, exclude=None):
     return image_filenames
 
 
-def make_image_strips_multi_dir(source_directories, output_directory, extension='jpg', background=255,
+def make_image_strips_multi_dir(source_directories, output_directory, extension='png', background=255,
                                 base_directory_idx=0):
 
     """
@@ -333,15 +333,23 @@ if __name__ == '__main__':
     #     r'/home/acb6595/places/datasets/demo/0001-demo-ep90_upsplash/3-noise',
     # ]
 
-    _local_root = r'/home/acb6595/places/analysis/composite_performance/oct-models-fr90-mega-1-mega-2/3d/'
+    # _local_root = r'/home/acb6595/places/analysis/composite_performance/oct-models-fr90-mega-1-mega-2/3d/'
+    # _input_directories = [
+    #     r'exp_b0n0/predict_fit_slice_views/blur_slices/7-2',
+    #     r'pl_b0n0/predict_fit_slice_views/blur_slices/7-2',
+    #     r'giqe3_b2n2/predict_fit_slice_views/blur_slices/7-2',
+    #     r'giqe5_b2n2/predict_fit_slice_views/blur_slices/7-2'
+    # ]
+
+    # _local_root = r'/home/acb6595/places/datasets/test/0006tst-pl-rgb'
     _input_directories = [
-        r'exp_b0n0/predict_fit_slice_views/blur_slices/7-2',
-        r'pl_b0n0/predict_fit_slice_views/blur_slices/7-2',
-        r'giqe3_b2n2/predict_fit_slice_views/blur_slices/7-2',
-        r'giqe5_b2n2/predict_fit_slice_views/blur_slices/7-2'
+        r'/home/acb6595/places/datasets/test/0006tst-pl-rgb/rgb',
+        r'/home/acb6595/places/datasets/test/0006tst-pl-rgb/1-res',
+        r'/home/acb6595/places/datasets/test/0006tst-pl-rgb/2-blur',
+        r'/home/acb6595/places/datasets/test/0006tst-pl-rgb/3-noise'
     ]
 
-    _input_directories = [Path(_local_root, sub_dir) for sub_dir in _input_directories]
+    # _input_directories = [Path(_local_root, sub_dir) for sub_dir in _input_directories]
 
     # _output_directory_name = 'mp90_image_chain_rgb'
     # _output_directory_name = 'rgb_origin_mp90_ep90'
@@ -349,7 +357,8 @@ if __name__ == '__main__':
     # _output_directory_name = 'mp90_image_chain_rgb'
     # _output_directory_name = 'ep_image_chain_rgb'
     # _output_directory_name = 'upsplash_mp90_image_chain_rgb'
-    _output_directory_name = 'blur_slice_7-2_compare'
+    # _output_directory_name = 'blur_slice_7-2_compare'
+    _output_directory_name = 'pl-rgb-checkout'
 
     _image_strip_output_dir = Path(definitions.ROOT_DIR, definitions.REL_PATHS['demo_images'], _output_directory_name)
 

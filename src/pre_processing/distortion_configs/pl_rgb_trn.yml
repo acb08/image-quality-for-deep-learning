@@ -1,0 +1,24 @@
+---
+
+description: quick check of rgb numpy dataset creation on train_256_challenge
+
+parent_dataset_id: train_256_challenge
+parent_artifact_alias: latest
+parent_artifact_filename: standard  # standard functions as a flag to use definitions.STANDARD_ARTIFACT_FILENAME
+
+num_images: 64
+images_per_file: 32
+distortion_tags: ['r_mp90_pl', 'b_mp90_pl', 'n_mp90_pl']
+distortion_type_flags: ['res', 'blur', 'noise']  # specifies distortion_tags associated distortion types
+iterations: 2
+artifact_type: train_dataset
+dataset_split_key: train # used to mirror 'train'/'val' split in data structure
+artifact_filename: standard
+datatype_key: np.uint8
+
+image_shape: [256, 256, 3]  # only used by places scripts
+
+name_string: pl-rgb-train-demo
+
+rgb: True
+
