@@ -9,7 +9,7 @@ distortion_tags: []
 
 num_epochs: 1
 batch_size: 8
-num_workers: 4
+num_workers: 2
 
 description: training on coco octant 000 dataset
 artifact_type: model
