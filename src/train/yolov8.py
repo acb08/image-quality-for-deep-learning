@@ -9,6 +9,11 @@ from src.utils.functions import get_config
 from src.utils.definitions import STANDARD_DATASET_FILENAME, ROOT_DIR, WANDB_PID, REL_PATHS, HOST, YOLO_TRAIN_CONFIG_DIR
 from src.utils.functions import construct_artifact_id, load_wandb_data_artifact, load_wandb_model_artifact, \
     id_from_tags, log_model_helper
+import time
+
+
+T0 = time.time()
+VERBOSE = False
 
 
 def yaml_on_the_fly(rel_path=None,
@@ -127,21 +132,26 @@ def load_tune_model(config):
     with wandb.init(project=WANDB_PID, job_type='train_model', config=config, tags=run_tags) as run:
 
         config = wandb.config  # allows wandb parameter sweeps (not currently implemented)
-
         dataset_artifact_id, __ = construct_artifact_id(config['train_dataset_id'],
                                                         artifact_alias=config['train_dataset_artifact_alias'])
         starting_model_artifact_id, __ = construct_artifact_id(config['starting_model_id'],
                                                                artifact_alias=config['starting_model_artifact_alias'])
-
         model, arch, __ = load_wandb_model_artifact(run, starting_model_artifact_id, return_configs=True)
+
+        if VERBOSE:
+            print('model loaded, ', round(time.time() - T0, 1), 's')
 
         config['arch'] = arch
         config['ROOT_DIR_at_run'] = str(ROOT_DIR)
 
         __, dataset = load_wandb_data_artifact(run, dataset_artifact_id, STANDARD_DATASET_FILENAME)
+        if VERBOSE:
+            print('dataset artifact loaded, ', round(time.time() - T0, 1), 's')
 
         yolo_cfg = dataset['yolo_cfg']
         temp_yaml_cfg_path = yaml_on_the_fly(**yolo_cfg)
+        if VERBOSE:
+            print('yolo cfg: ', yolo_cfg, str(temp_yaml_cfg_path), round(time.time() - T0, 1), 's')
 
         num_epochs = config['num_epochs']
         batch_size = config['batch_size']
@@ -165,6 +175,8 @@ def load_tune_model(config):
         new_model_rel_dir = Path(REL_PATHS[artifact_type], new_model_id)
         output_dir = Path(ROOT_DIR, new_model_rel_dir)
         output_dir.mkdir(parents=True)
+        if VERBOSE:
+            print('output_dir', str(output_dir), round(time.time() - T0, 1), 's')
 
         # path shenanigans there because yolo models auto-create output directories, and I have not found a good way
         # to just access them as a class attribute, so the code below attempts to replicate what yolo is doing
@@ -189,12 +201,17 @@ def load_tune_model(config):
         }
         metadata['model_file_config'] = best_loss_model_file_config
 
+        if VERBOSE:
+            print('training starting, ', round(time.time() - T0, 1), 's')
+
         model.train(data=temp_yaml_cfg_path,
                     epochs=num_epochs,
                     batch=batch_size,
                     project=output_dir,
                     device=device,
                     lr0=learning_rate)
+        if VERBOSE:
+            print('training starting finished, ', round(time.time() - T0, 1), 's')
 
         model_helper_path = log_model_helper(best_weights_path.parent, metadata)
 
@@ -205,11 +222,15 @@ def load_tune_model(config):
             description=description
         )
 
+        if VERBOSE:
+            print('created model artifact, ', round(time.time() - T0, 1), 's')
         best_loss_model_artifact.add_file(str(best_weights_path))
         best_loss_model_artifact.add_file(str(model_helper_path))
         additional_files = get_target_file_paths(train_sub_dir)
         add_em_all(best_loss_model_artifact, additional_files)
         run.log_artifact(best_loss_model_artifact)
+        if VERBOSE:
+            print('best loss model artifact logged, ', round(time.time() - T0, 1), 's')
 
         last_epoch_weights_destination_dir = Path(last_epoch_weights_path.parent, 'last')
         last_epoch_weights_destination_dir.mkdir()
@@ -217,6 +238,9 @@ def load_tune_model(config):
         last_epoch_model_filename = last_epoch_weights_path.name
         last_epoch_model_path = Path(last_epoch_weights_destination_dir, last_epoch_model_filename)
         shutil.move(last_epoch_weights_path, last_epoch_model_path)
+
+        if VERBOSE:
+            print('last epoch model transferred, ', str(last_epoch_model_path), round(time.time() - T0, 1), 's')
 
         last_epoch_model_file_config = {
             'model_rel_dir': str(last_epoch_rel_dir),
@@ -235,6 +259,9 @@ def load_tune_model(config):
         last_epoch_model_artifact.add_file(str(last_epoch_model_path))
         last_epoch_model_artifact.add_file(str(last_epoch_helper_path))
         run.log_artifact(last_epoch_model_artifact)
+
+        if VERBOSE:
+            print('last epoch model artifact logged, ', round(time.time() - T0, 1), 's')
 
         run.name = new_model_id
 
@@ -257,11 +284,15 @@ if __name__ == '__main__':
     parser.add_argument('--config_dir',
                         default=YOLO_TRAIN_CONFIG_DIR,
                         help="configuration file directory")
+    parser.add_argument('--verbose', default='no')
     args_passed = parser.parse_args()
+
+    if args_passed.verbose == 'yes':
+        VERBOSE = True
 
     run_config = get_config(args_passed)
     run_config['host'] = HOST
 
     load_tune_model(run_config)
 
-    print('done')
+    print('done, ', round(time.time() - T0))
