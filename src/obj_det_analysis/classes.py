@@ -7,6 +7,7 @@ from src.utils import detection_functions
 from src.utils.shared_methods import _archive_processed_props, _check_extract_processed_props, \
     _get_processed_instance_props_path
 from src.utils.vc import get_map_hash_mash
+from src.obj_det_analysis.analysis_tools import get_instance_hash
 
 
 class ModelDistortionPerformanceResultOD:
@@ -145,28 +146,26 @@ class ModelDistortionPerformanceResultOD:
         return np.unique(self.res), np.unique(self.blur), np.unique(self.noise)
 
     def get_instance_hash(self):
-        """
-        An ugly method to make sure that logged/cached distortion performance properties come from the same test
-        result.
-        """
-
-        num_use = 32
 
         outputs = self._result['outputs']
         targets = self._result['targets']
-        keys = list(outputs.keys())
-        keys.sort()
-        keys = keys[:num_use]
 
-        data_mash = f'{len(outputs)}{len(targets)}'
-        for key in keys:
-            output = str(outputs[key])
-            target = str(targets[key])
-            data_mash += f'{output}{target}'
+        return get_instance_hash(outputs=outputs,
+                                 targets=targets)
 
-        instance_hash = blake2b(data_mash.encode('utf-8')).hexdigest()
-
-        return instance_hash
+        # keys = list(outputs.keys())
+        # keys.sort()
+        # keys = keys[:num_use]
+        #
+        # data_mash = f'{len(outputs)}{len(targets)}'
+        # for key in keys:
+        #     output = str(outputs[key])
+        #     target = str(targets[key])
+        #     data_mash += f'{output}{target}'
+        #
+        # instance_hash = blake2b(data_mash.encode('utf-8')).hexdigest()
+        #
+        # return instance_hash
 
     def check_extract_processed_props(self, predict_eval_flag='predict'):
         return _check_extract_processed_props(self, predict_eval_flag=predict_eval_flag)
@@ -289,17 +288,35 @@ class _PreProcessedDistortionPerformanceProps:
 
     def __init__(self, processed_props_path,
                  result_id,
+                 outputs,
+                 targets,
                  identifier=None,
                  predict_eval_flag='predict'):
         self.processed_props_path = processed_props_path
-        self.result_id = result_id,
+        self.result_id = result_id
         self.identifier = identifier
         self.predict_eval_flag = predict_eval_flag
-        self._3d_distortion_perf_props = _get_processed_instance_props_path(self,
-                                                                            predict_eval_flag=self.predict_eval_flag)
+        self.outputs = outputs
+        self.targets = targets
+        self.vc_hash_mash = get_map_hash_mash()
+        self.instance_hashes = {'predict': self.get_instance_hash()}
+        self._3d_distortion_perf_props = self.check_extract_processed_props()
+
+    def get_processed_instance_props_path(self, predict_eval_flag=None):
+        if predict_eval_flag is None:
+            predict_eval_flag = self.predict_eval_flag
+        return _get_processed_instance_props_path(self, predict_eval_flag=predict_eval_flag)
+
+    def check_extract_processed_props(self, predict_eval_flag=None):
+        if predict_eval_flag is None:
+            predict_eval_flag = self.predict_eval_flag
+        return _check_extract_processed_props(self, predict_eval_flag=predict_eval_flag)
 
     def get_3d_distortion_perf_props(self, distortion_ids=('res', 'blur', 'noise')):
         return self._3d_distortion_perf_props
+
+    def get_instance_hash(self):
+        return get_instance_hash(outputs=self.outputs, targets=self.targets)
 
     def __str__(self):
         if self.identifier:
@@ -309,6 +326,8 @@ class _PreProcessedDistortionPerformanceProps:
 
     def __repr__(self):
         return self.result_id
+
+
 
 
 

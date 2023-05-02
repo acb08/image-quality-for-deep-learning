@@ -6,3 +6,5 @@ identifier: v8l-fr-10e_fr_tst-batch-1
 flatten_axis_combinations: default
 flatten_axes: default
 fit_keys: default
+
+pre_processed_artifact: True

@@ -455,3 +455,8 @@ def load_dataset_and_result(run, result_id,
     dataset_dir, dataset = load_wandb_data_artifact(run, dataset_id, dataset_filename)
 
     return dataset, result, dataset_id
+
+
+def get_processed_props_artifact_id(result_id):
+    result_id = str(result_id)
+    return result_id.replace(':', '-')

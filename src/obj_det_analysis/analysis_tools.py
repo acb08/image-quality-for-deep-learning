@@ -1,12 +1,10 @@
 import numpy as np
-import matplotlib.pyplot as plt
+from hashlib import blake2b
 import matplotlib.patches as patches
 import scipy.optimize
 import random
 from pathlib import Path
-
 from matplotlib import pyplot as plt
-
 import src.utils.definitions as definitions
 
 # TODO: for images with no bounding boxes, my custom COCO(dataset) class adds a background annotation in the
@@ -40,6 +38,8 @@ DEFAULT_RANDOM_BOX_CONFIDENCE_LEVELS = (0.9, 0.7, 0.5, 0.3, 0.1)
 DEFAULT_DETECT_CONFIDENCE = 0.95
 
 NUM_CLASSES = 10
+
+NUM_OUTPUTS_TARGETS_FOR_HASH = 32
 
 
 class SimulatedDataset:
@@ -868,6 +868,26 @@ def sort_by_label(data):
                 sorted_box_data[label]['scores'] = filtered_scores
 
     return sorted_box_data
+
+
+def get_instance_hash(outputs, targets):
+    """
+    An ugly method to make sure that logged/cached distortion performance properties come from the same test
+    result.
+    """
+    keys = list(outputs.keys())
+    keys.sort()
+    keys = keys[:NUM_OUTPUTS_TARGETS_FOR_HASH]
+
+    data_mash = f'{len(outputs)}{len(targets)}'
+    for key in keys:
+        output = str(outputs[key])
+        target = str(targets[key])
+        data_mash += f'{output}{target}'
+
+    instance_hash = blake2b(data_mash.encode('utf-8')).hexdigest()
+
+    return instance_hash
 
 
 if __name__ == '__main__':

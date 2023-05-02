@@ -1,9 +1,9 @@
 import numpy as np
 import argparse
 from pathlib import Path
-
-from src.obj_det_analysis.classes import ModelDistortionPerformanceResultOD
-from src.utils.functions import get_config, load_dataset_and_result
+from src.obj_det_analysis.classes import ModelDistortionPerformanceResultOD, _PreProcessedDistortionPerformanceProps
+from src.utils.functions import get_config, load_dataset_and_result, get_processed_props_artifact_id, \
+    construct_artifact_id
 from src.utils import definitions
 import wandb
 from src.analysis import plot
@@ -13,11 +13,16 @@ from src.analysis.fit import fit, evaluate_fit, apply_fit
 
 def get_obj_det_distortion_perf_result(result_id=None, identifier=None, config=None,
                                        distortion_ids=('res', 'blur', 'noise'), make_dir=True, run=None,
-                                       report_time=False):
+                                       report_time=False,
+                                       pre_processed_artifact=False):
 
     if not result_id and not identifier:
         result_id = config['result_id']
         identifier = config['identifier']
+
+    pre_processed_artifact = False
+    if 'pre_processed_artifact' in config.keys():
+        pre_processed_artifact = config['pre_processed_artifact']
 
     output_dir = Path(definitions.ROOT_DIR, definitions.REL_PATHS['analysis'], result_id)
     if make_dir and not output_dir.is_dir():
@@ -25,20 +30,21 @@ def get_obj_det_distortion_perf_result(result_id=None, identifier=None, config=N
 
     if run is None:
         with wandb.init(project=definitions.WANDB_PID, job_type='analyze_test_result') as run:
-
             dataset, result, dataset_id = load_dataset_and_result(run=run, result_id=result_id)
-            distortion_performance_result = ModelDistortionPerformanceResultOD(
-                dataset=dataset,
-                result=result,
-                convert_to_std=True,
-                result_id=result_id,
-                identifier=identifier,
-                report_time=report_time
-                # manual_distortion_type_flags=distortion_ids
-            )
-
     else:
         dataset, result, dataset_id = load_dataset_and_result(run=run, result_id=result_id)
+
+    if pre_processed_artifact:
+        outputs = result['outputs']
+        targets = result['targets']
+        distortion_performance_result = load_processed_props(result_id=result_id,
+                                                             identifier=identifier,
+                                                             outputs=outputs,
+                                                             targets=targets)
+        return distortion_performance_result, output_dir
+
+    else:
+
         distortion_performance_result = ModelDistortionPerformanceResultOD(
             dataset=dataset,
             result=result,
@@ -46,10 +52,31 @@ def get_obj_det_distortion_perf_result(result_id=None, identifier=None, config=N
             result_id=result_id,
             identifier=identifier,
             report_time=report_time
-            # manual_distortion_type_flags=distortion_ids
+            )
+
+        return distortion_performance_result, output_dir
+
+
+def load_processed_props(result_id, outputs, targets, identifier=None, predict_eval_flag='predict'):
+
+    with wandb.init(project=definitions.WANDB_PID, job_type='load_performance_properties') as run:
+
+        artifact_id = get_processed_props_artifact_id(result_id)
+        artifact_id, stem = construct_artifact_id(artifact_id)
+        artifact = run.use_artifact(artifact_id)
+        artifact_dir = artifact.download()
+        full_artifact_path = Path(artifact_dir, definitions.STANDARD_PROCESSED_DISTORTION_PERFORMANCE_PROPS_FILENAME)
+
+        distortion_performance_result = _PreProcessedDistortionPerformanceProps(
+            processed_props_path=full_artifact_path,
+            result_id=result_id,
+            outputs=outputs,
+            targets=targets,
+            identifier=identifier,
+            predict_eval_flag=predict_eval_flag
         )
 
-    return distortion_performance_result, output_dir
+    return distortion_performance_result
 
 
 def flatten_axes_from_cfg(config):
@@ -148,7 +175,7 @@ if __name__ == '__main__':
 
     _REPORT_TIME = True
 
-    ide_config_name = None  # 'v8x_b-scan.yml'  # "v8l-fr-10e_fr90-test.yml"  # "v8x_b-scan.yml"  #
+    ide_config_name = 'v8l-fr-10e_fr90-m2-test.yml'
 
     if ide_config_name is None:
         config_name = 'distortion_analysis_config.yml'

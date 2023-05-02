@@ -3,17 +3,11 @@ Used to log distortion performance properties as a wandb artifact when test resu
 """
 
 from src.obj_det_analysis.distortion_performance_od import get_obj_det_distortion_perf_result
-from src.obj_det_analysis.classes import ModelDistortionPerformanceResultOD
-from src.utils.functions import get_config
+from src.utils.functions import get_config, get_processed_props_artifact_id
 from src.utils.definitions import WANDB_PID
 import argparse
 from pathlib import Path
 import wandb
-
-
-def _get_processed_props_artifact_id(result_id):
-    result_id = str(result_id)
-    return result_id.replace(':', '-')
 
 
 def log_props_artifact(config):
@@ -28,7 +22,7 @@ def log_props_artifact(config):
         distortion_performance_result.get_3d_distortion_perf_props()
         props_path = distortion_performance_result.get_processed_instance_props_path()
         result_id = distortion_performance_result.result_id
-        props_artifact_id = _get_processed_props_artifact_id(result_id)
+        props_artifact_id = get_processed_props_artifact_id(result_id)
 
         new_artifact = wandb.Artifact(props_artifact_id,
                                       type='processed_performance_properties',
@@ -46,5 +40,7 @@ if __name__ == '__main__':
                         help="configuration file directory")
     args_passed = parser.parse_args()
     run_config = get_config(args_passed)
+
+    run_config['pre_processed_artifact'] = False
 
     log_props_artifact(run_config)
