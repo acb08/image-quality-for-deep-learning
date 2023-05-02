@@ -155,7 +155,7 @@ def load_tune_model(config):
 
         num_epochs = config['num_epochs']
         batch_size = config['batch_size']
-        # num_workers = config['num_workers']
+        num_workers = config['num_workers']
 
         description = config['description']
         artifact_type = config['artifact_type']
@@ -209,7 +209,8 @@ def load_tune_model(config):
                     batch=batch_size,
                     project=output_dir,
                     device=device,
-                    lr0=learning_rate)
+                    lr0=learning_rate,
+                    workers=num_workers)
         if VERBOSE:
             print('training starting finished, ', round(time.time() - T0, 1), 's')
 
