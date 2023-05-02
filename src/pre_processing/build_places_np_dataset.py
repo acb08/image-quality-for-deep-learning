@@ -114,7 +114,8 @@ def transfer_to_numpy(parent_names_labels,
     :param images_per_file: int, number of images to include in each vector
     :param image_shape: list [h, w, c] (because json unable to handle tuples)
     :param datatype_key: numpy data type (e.g. np.uint8)
-    :param use_flag: str, 'train_vectors' or 'val_vectors'
+    :param use_flag: str, 'train_vectors' or 'val_vectors' (used imprecisely, sometimes set to pan or rgb, would
+    refactor if to be used much more in future)
     :param new_dataset_path: absolute path to parent directory for new files
     :param file_count_offset: optional. If function used in a loop, file_offset_count can be used to avoid overwriting
     previous iteration's files
@@ -200,6 +201,18 @@ def build_log_numpy(config):
     val_shuffle = config['val_shuffle']
     description = config['description']
 
+    if 'rgb' in config.keys():  # rgb throughout rather than pan
+        rgb = config['rgb']
+    else:
+        rgb = False
+
+    if rgb:
+        pan_rgb_flag = 'rgb'
+        convert_to_pan = False
+    else:
+        pan_rgb_flag = 'pan'
+        convert_to_pan = True
+
     parent_artifact_name = f'{parent_dataset_id}:latest'
 
     with wandb.init(project=WANDB_PID, job_type='transfer_dataset', tags=tags, notes=description,
@@ -234,7 +247,8 @@ def build_log_numpy(config):
                                                     image_shape,
                                                     datatype_key,
                                                     train_path_flag,
-                                                    new_dataset_abs_dir)
+                                                    new_dataset_abs_dir,
+                                                    convert_to_pan=convert_to_pan)
 
             # note: if num_images != 'all', the actual ratio of train images to validation images will not match
             # val_frac. val_frac sets the numbers of mages train_split and val_split
@@ -245,7 +259,8 @@ def build_log_numpy(config):
                                                   image_shape,
                                                   datatype_key,
                                                   val_path_flag,
-                                                  new_dataset_abs_dir)
+                                                  new_dataset_abs_dir,
+                                                  convert_to_pan=convert_to_pan)
 
             new_dataset = {
                 'train': dataset_train_split,
@@ -290,13 +305,14 @@ if __name__ == "__main__":
 
     wandb.login()
 
-    _description = 'test updated error handling'  # 'convert places train challenge dataset to numpy'
+    _description = 'test of converting places train challenge dataset to numpy rgb'
     _num_images = 1024
-    _images_per_file = 1024
-    _parent_dataset_id = 'val_256'
+    _images_per_file = 128
+    _parent_dataset_id = 'train_256_challenge'
 
     _pick_other_val_frac = False
     _other_val_frac = None
+
     if _parent_dataset_id == 'train_256_standard' and not _pick_other_val_frac:
         _val_frac = 0.05
     elif _parent_dataset_id == 'train_256_challenge' and not _pick_other_val_frac:
@@ -319,8 +335,9 @@ if __name__ == "__main__":
         'datatype_key': 'np.uint8',
         'artifact_filename': STANDARD_DATASET_FILENAME,
         'description': _description,
-        'tags': ['np', 'demo'],
-        'val_shuffle': False
+        'tags': ['np', 'rgb', 'checkout'],
+        'val_shuffle': False,
+        'rgb': True
     }
 
     _artifact = build_log_numpy(_config)
