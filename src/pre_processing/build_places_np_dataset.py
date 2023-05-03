@@ -305,9 +305,9 @@ if __name__ == "__main__":
 
     wandb.login()
 
-    _description = 'test of converting places train challenge dataset to numpy rgb'
-    _num_images = 1024
-    _images_per_file = 128
+    _description = 'creating places train challenge numpy rgb dataset'
+    _num_images = 'all'
+    _images_per_file = 2048
     _parent_dataset_id = 'train_256_challenge'
 
     _pick_other_val_frac = False
@@ -335,7 +335,7 @@ if __name__ == "__main__":
         'datatype_key': 'np.uint8',
         'artifact_filename': STANDARD_DATASET_FILENAME,
         'description': _description,
-        'tags': ['np', 'rgb', 'checkout'],
+        'tags': ['np', 'rgb'],
         'val_shuffle': False,
         'rgb': True
     }
