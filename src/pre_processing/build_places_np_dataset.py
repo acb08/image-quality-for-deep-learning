@@ -327,7 +327,7 @@ if __name__ == "__main__":
 
     _config = {
         'parent_dataset_id': _parent_dataset_id,
-        'artifact_type': 'test_dataset',
+        'artifact_type': 'train_dataset',
         'num_images': _num_images,
         'images_per_file': _images_per_file,
         'val_frac': _val_frac,
