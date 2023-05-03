@@ -336,7 +336,7 @@ if __name__ == "__main__":
         'artifact_filename': STANDARD_DATASET_FILENAME,
         'description': _description,
         'tags': ['np', 'rgb'],
-        'val_shuffle': False,
+        'val_shuffle': True,
         'rgb': True
     }
 
