@@ -1,0 +1,27 @@
+---
+
+train_dataset_id: 0023trn-coco_fr_train:v0
+train_dataset_artifact_alias: latest
+
+starting_model_id: 0057fasterrcnn-faster-rcnn-fr:v9
+starting_model_artifact_alias: latest
+distortion_tags: []
+
+num_epochs: 30
+batch_size: 4
+num_workers: 0
+
+optimizer_type: SGD
+lr: 0.005
+momentum: 0.9
+weight_decay: 0.0005
+
+status_interval: 1000
+
+description: training on coco full range dataset
+artifact_type: model
+
+device: 1
+
+name_string: faster-rcnn-fr
+
