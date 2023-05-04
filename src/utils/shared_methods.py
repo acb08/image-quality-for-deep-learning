@@ -11,6 +11,8 @@ from src.analysis.analysis_functions import build_3d_field
 
 
 def _get_processed_instance_props_path(_self, predict_eval_flag=None):
+    if hasattr(_self, 'processed_props_path'):
+        return _self.processed_props_path
     props_dir = Path(ROOT_DIR, REL_PATHS['_extracted_artifact_props'], _self.result_id)
     if predict_eval_flag:
         props_dir = Path(props_dir, predict_eval_flag)
@@ -28,16 +30,19 @@ def _check_extract_processed_props(_self, predict_eval_flag=None):
 
     processed_props = np.load(processed_props_path)
     processed_props_hash = processed_props['_instance_hash']
-    if _self.instance_hashes[predict_eval_flag] != processed_props_hash:
-        return False
 
-    if hasattr(_self, 'vc_hash_mash'):
-        if 'vc_hash_mash' not in processed_props.keys():
-            print('version control hash ont found in processed_props')
+    if not _self.ignore_vc_hashes:
+
+        if _self.instance_hashes[predict_eval_flag] != processed_props_hash:
             return False
-        elif processed_props['vc_hash_mash'] != _self.vc_hash_mash:
-            print('version control hash mismatch')
-            return False
+
+        if hasattr(_self, 'vc_hash_mash'):
+            if 'vc_hash_mash' not in processed_props.keys():
+                print('version control hash ont found in processed_props')
+                return False
+            elif processed_props['vc_hash_mash'] != _self.vc_hash_mash:
+                print('version control hash mismatch')
+                return False
 
     res_values = processed_props['res_values']
     blur_values = processed_props['blur_values']

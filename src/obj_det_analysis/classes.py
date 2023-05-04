@@ -25,6 +25,7 @@ class ModelDistortionPerformanceResultOD:
         self._t0 = time.time()
         self._result = result
         self._force_recalculate = force_recalculate
+        self.ignore_vc_hashes = False
         self.recalculation_completed = False  # allows double checking that recalculation has been performed
         self.vc_hash_mash = get_map_hash_mash()
 
@@ -291,7 +292,8 @@ class _PreProcessedDistortionPerformanceProps:
                  outputs,
                  targets,
                  identifier=None,
-                 predict_eval_flag='predict'):
+                 predict_eval_flag='predict',
+                 ignore_vc_hashes=False):
         self.processed_props_path = processed_props_path
         self.result_id = result_id
         self.identifier = identifier
@@ -299,6 +301,7 @@ class _PreProcessedDistortionPerformanceProps:
         self.outputs = outputs
         self.targets = targets
         self.vc_hash_mash = get_map_hash_mash()
+        self.ignore_vc_hashes = ignore_vc_hashes
         self.instance_hashes = {'predict': self.get_instance_hash()}
         self._3d_distortion_perf_props = self.check_extract_processed_props()
 

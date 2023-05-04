@@ -28,33 +28,37 @@ def get_obj_det_distortion_perf_result(result_id=None, identifier=None, config=N
     if make_dir and not output_dir.is_dir():
         Path.mkdir(output_dir, parents=True)
 
-    if run is None:
-        with wandb.init(project=definitions.WANDB_PID, job_type='analyze_test_result') as run:
-            dataset, result, dataset_id = load_dataset_and_result(run=run, result_id=result_id)
-    else:
-        dataset, result, dataset_id = load_dataset_and_result(run=run, result_id=result_id)
-
     if pre_processed_artifact:
-        outputs = result['outputs']
-        targets = result['targets']
+        print('loading pre-processed wandb artifact')
+        outputs = {}  # hack to running out of memory on faster-rcnn result
+        targets = {}
         distortion_performance_result = load_processed_props(result_id=result_id,
                                                              identifier=identifier,
                                                              outputs=outputs,
                                                              targets=targets)
         return distortion_performance_result, output_dir
 
+    if run is None:
+        with wandb.init(project=definitions.WANDB_PID, job_type='analyze_test_result') as run:
+            print('loading dataset and result (new wandb run)')
+            dataset, result, dataset_id = load_dataset_and_result(run=run, result_id=result_id)
     else:
+        print('loading dataset and result (existing wandb run)')
+        dataset, result, dataset_id = load_dataset_and_result(run=run, result_id=result_id)
 
-        distortion_performance_result = ModelDistortionPerformanceResultOD(
-            dataset=dataset,
-            result=result,
-            convert_to_std=True,
-            result_id=result_id,
-            identifier=identifier,
-            report_time=report_time
-            )
 
-        return distortion_performance_result, output_dir
+    # else:
+
+    distortion_performance_result = ModelDistortionPerformanceResultOD(
+        dataset=dataset,
+        result=result,
+        convert_to_std=True,
+        result_id=result_id,
+        identifier=identifier,
+        report_time=report_time
+        )
+
+    return distortion_performance_result, output_dir
 
 
 def load_processed_props(result_id, outputs, targets, identifier=None, predict_eval_flag='predict'):
@@ -73,7 +77,9 @@ def load_processed_props(result_id, outputs, targets, identifier=None, predict_e
             outputs=outputs,
             targets=targets,
             identifier=identifier,
-            predict_eval_flag=predict_eval_flag
+            predict_eval_flag=predict_eval_flag,
+            ignore_vc_hashes=True,
+
         )
 
     return distortion_performance_result
@@ -175,7 +181,7 @@ if __name__ == '__main__':
 
     _REPORT_TIME = True
 
-    ide_config_name = 'v8l-fr-10e_fr90-m2-test.yml'
+    ide_config_name = 'frcnn-fr_fr-90-test.yml'
 
     if ide_config_name is None:
         config_name = 'distortion_analysis_config.yml'
