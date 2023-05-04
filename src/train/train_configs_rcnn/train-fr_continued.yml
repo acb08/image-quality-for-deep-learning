@@ -23,5 +23,5 @@ artifact_type: model
 
 device: 1
 
-name_string: faster-rcnn-fr
+name_string: faster-rcnn-fr-ext
 
