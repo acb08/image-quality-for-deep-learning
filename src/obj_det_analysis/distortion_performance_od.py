@@ -20,9 +20,9 @@ def get_obj_det_distortion_perf_result(result_id=None, identifier=None, config=N
         result_id = config['result_id']
         identifier = config['identifier']
 
-    pre_processed_artifact = False
-    if 'pre_processed_artifact' in config.keys():
-        pre_processed_artifact = config['pre_processed_artifact']
+    if config is not None:
+        if 'pre_processed_artifact' in config.keys():
+            pre_processed_artifact = config['pre_processed_artifact']
 
     output_dir = Path(definitions.ROOT_DIR, definitions.REL_PATHS['analysis'], result_id)
     if make_dir and not output_dir.is_dir():

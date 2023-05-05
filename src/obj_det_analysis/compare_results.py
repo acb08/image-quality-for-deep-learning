@@ -12,6 +12,7 @@ from src.analysis.plot import plot_1d_from_3d, compare_2d_mean_views
 from src.analysis.analysis_functions import get_sub_dir_and_log_filename, build_3d_field
 from src.analysis.fit import fit, evaluate_fit, apply_fit
 from src.analysis import plot
+from src.analysis.aic import akaike_info_criterion
 
 
 def get_multiple_od_distortion_performance_results(result_id_pairs,
@@ -214,6 +215,12 @@ def main(config):
                                                fit_key=fit_key,
                                                add_bias=False,  # only applies to linear fits
                                                )
+                aic_score = akaike_info_criterion(acc=eval_performance_array,
+                                                  n_trials=None,  # only used for binomial distributions
+                                                  acc_predicted=eval_prediction,
+                                                  num_parameters=len(fit_coefficients),
+                                                  distribution='normal'
+                                                  )
                 plot.compare_2d_mean_views(f0=map3d_measured,
                                            f1=eval_prediction_3d,
                                            data_labels=('measured (eval)', 'fit'),
@@ -239,7 +246,9 @@ def main(config):
                 print(f'{fit_key} fit: \n', fit_coefficients, file=output_file)
                 print(f'{fit_key} predict (direct) fit correlation: ', predict_fit_correlation,
                       file=output_file)
-                print(f'{fit_key} eval fit correlation: ', fit_correlation, '\n',
+                print(f'{fit_key} eval fit correlation: ', fit_correlation,
+                      file=output_file)
+                print(f'{fit_key} fit aic score: ', aic_score, '\n',
                       file=output_file)
 
     if log_average_performances:

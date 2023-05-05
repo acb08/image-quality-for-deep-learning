@@ -10,19 +10,35 @@ from src.analysis.binomial_simulation import run_binomial_accuracy_experiment
 
 def akaike_info_criterion(acc, n_trials, acc_predicted, num_parameters, distribution='binomial'):
 
-    if distribution != 'binomial':
-        raise NotImplementedError
+    if distribution == 'binomial':
 
-    __, __, log_likelihood = binomial_likelihood(acc=acc,
-                                                 num_trials=n_trials,
-                                                 acc_predicted=acc_predicted)
+        __, __, log_likelihood = binomial_likelihood(acc=acc,
+                                                     num_trials=n_trials,
+                                                     acc_predicted=acc_predicted)
 
-    return 2 * num_parameters - 2 * log_likelihood
+        return 2 * num_parameters - 2 * log_likelihood
+
+    elif distribution == 'normal':
+        return normal_aic_ols(acc, acc_predicted, num_parameters)
+
+    else:
+        raise NotImplementedError('distribution must be either binomial or normal')
 
 
 def binomial(k, n, p):
     combinatoric_coeff = np.math.factorial(n) / (np.math.factorial(k) * np.math.factorial((n - k)))
     return combinatoric_coeff * p ** k * (1 - p) ** (n - k)
+
+
+def normal_aic_ols(acc, acc_predicted, num_parameters):
+
+    sq_errors = (acc_predicted - acc) ** 2
+    n = len(sq_errors)
+    sum_sq_errors = np.sum(sq_errors)
+
+    aic = n * np.log(sum_sq_errors / n) + 2 * (num_parameters + 1)
+
+    return aic
 
 
 def binomial_likelihood(acc, num_trials, acc_predicted, eps=1e-10):
