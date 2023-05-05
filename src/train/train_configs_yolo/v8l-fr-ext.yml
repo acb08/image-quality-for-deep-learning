@@ -1,10 +1,10 @@
 ---
 
-train_dataset_id: 0023trn-coco_fr_train:v0
+train_dataset_id: 0023trn-coco_fr_train
 train_dataset_artifact_alias: latest
 
 starting_model_id: 0023yolo-v8l-fr_best_loss:v0
-starting_model_artifact_alias: 'latest'
+starting_model_artifact_alias: latest
 distortion_tags: []
 
 num_epochs: 45
@@ -12,7 +12,7 @@ batch_size: 8
 num_workers: 4
 
 description: extending training on coco fr dataset
-artifact_type: 'model'
+artifact_type: model
 
 name_string: v8l-fr-ext
 
