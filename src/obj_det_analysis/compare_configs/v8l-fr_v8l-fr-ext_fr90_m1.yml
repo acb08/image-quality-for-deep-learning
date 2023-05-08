@@ -1,0 +1,19 @@
+---
+
+test_result_identifiers:
+
+  - ['0060rlt-0060yolo-v8l-fr-ext_best_loss-0054tst-coco_fr90:v0',
+     '50 epoch']
+  - ['0018rlt-0023yolo-v8l-fr_best_loss-0054tst-coco_fr90:v0',
+     '5 epoch']
+
+overwrite: False
+manual_name: v8l-train-epoch-compare
+flatten_axis_combinations: default # [[0, 1], [0, 2], [1, 2]]
+flatten_axes: default
+
+plot_together: True
+y_limits: null
+
+fit_keys: null
+show_plots: False
