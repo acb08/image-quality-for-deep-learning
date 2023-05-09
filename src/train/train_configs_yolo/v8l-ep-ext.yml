@@ -15,4 +15,4 @@ description: extending training on coco endpoint90 dataset
 artifact_type: 'model'
 
 name_string: v8l-ep-ext
-device: 1
+device: 0
