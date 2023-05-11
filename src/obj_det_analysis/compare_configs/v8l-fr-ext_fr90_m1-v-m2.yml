@@ -1,0 +1,20 @@
+---
+
+test_result_identifiers:
+
+  - ['0060rlt-0060yolo-v8l-fr-ext_best_loss-0054tst-coco_fr90:v0',
+     'megaset-1']
+  - ['0064rlt-0060yolo-v8l-fr-ext_best_loss-0055tst-coco_fr90_mega-2:v0',
+     'megaset-2']
+
+
+overwrite: False
+manual_name: v8l-fr-ext_fr90-m1-m2
+flatten_axis_combinations: default # [[0, 1], [0, 2], [1, 2]]
+flatten_axes: default
+
+plot_together: False
+y_limits: null
+
+fit_keys: default
+

@@ -1,0 +1,20 @@
+---
+
+test_result_identifiers:
+
+  - ['0060rlt-0060yolo-v8l-fr-ext_best_loss-0054tst-coco_fr90:v0',
+     'full range trained']
+  - ['0025rlt-yolov8l-0054tst-coco_fr90:v0',
+     'pre-trained']
+
+
+overwrite: False
+manual_name: v8l-pt-fr-ext_coco-fr90
+flatten_axis_combinations: default # [[0, 1], [0, 2], [1, 2]]
+flatten_axes: default
+
+plot_together: True
+y_limits: null
+
+show_plots: False
+

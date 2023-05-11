@@ -1,0 +1,16 @@
+---
+
+test_result_identifiers:
+
+  - ['0035rlt-yolov8l-0045tst-coco_r_scan_v2-res:v0',
+     'pre-trained']
+  - ['0053rlt-0023yolo-v8l-fr_best_loss-0045tst-coco_r_scan_v2-res:v0',
+     'full range (5 epochs)']
+  - ['0061rlt-0060yolo-v8l-fr-ext_best_loss-0045tst-coco_r_scan_v2-res:v0',
+     'full range (50 epochs)']
+
+
+overwrite: True 
+manual_name: yolo-pt-fr-fr-ext-res-scans
+flatten_axis_combinations: [[1, 2]]
+flatten_axes: null
