@@ -157,4 +157,6 @@ if __name__ == '__main__':
     run_config = get_config(args_passed)
     run_config['host'] = HOST
 
+    torch.multiprocessing.set_sharing_strategy('file_system')
+
     test_detection_model(run_config)
