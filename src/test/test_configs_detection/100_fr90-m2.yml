@@ -14,7 +14,7 @@ pin_memory: True
 
 status_interval: 1000  # images
 
-device: 0
+device: 7
 
 #rgb_flag: False
 #dataset_split_key: test  # used to get to correct level of dataset dict (to mirror 'train'/'val' splits)
