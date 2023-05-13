@@ -9,7 +9,7 @@ model_artifact_id: 0000yolo-v8l-oct001-ext_best_loss
 model_artifact_alias: latest
 
 batch_size: 8
-num_workers: 2
+num_workers: 0
 pin_memory: True
 
 status_interval: 1000  # images
