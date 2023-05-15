@@ -5,11 +5,11 @@ description: test of 50 epoch octant model on fr90-m2
 test_dataset_id: 0055tst-coco_fr90_mega-2:v0
 test_dataset_artifact_alias: latest
 
-model_artifact_id: # awaiting extended training
+model_artifact_id: 0067yolo-v8l-oct000-ext_best_loss
 model_artifact_alias: latest
 
 batch_size: 8
-num_workers: 2
+num_workers: 0
 pin_memory: True
 
 status_interval: 1000  # images
