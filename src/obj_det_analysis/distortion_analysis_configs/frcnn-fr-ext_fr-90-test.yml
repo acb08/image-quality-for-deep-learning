@@ -1,0 +1,9 @@
+---
+
+result_id: 0066rlt-0059fasterrcnn-faster-rcnn-fr-ext_best_loss-0054tst-coco_fr90:v0
+identifier: Faster-RCNN full range trained
+
+flatten_axis_combinations: default
+flatten_axes: default
+
+pre_processed_artifact: False
