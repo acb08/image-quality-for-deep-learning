@@ -24,6 +24,7 @@ class ModelDistortionPerformanceResultOD:
         self.report_time = report_time
         self._t0 = time.time()
         self._result = result
+        self.model_artifact_id = self._result['model_artifact_id']
         self._force_recalculate = force_recalculate
         self.ignore_vc_hashes = False
         self.recalculation_completed = False  # allows double checking that recalculation has been performed

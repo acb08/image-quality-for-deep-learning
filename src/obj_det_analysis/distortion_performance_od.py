@@ -181,7 +181,7 @@ if __name__ == '__main__':
 
     _REPORT_TIME = True
 
-    ide_config_name = 'frcnn-fr_fr-90-test.yml'
+    ide_config_name = '000-m1.yml'
 
     if ide_config_name is None:
         config_name = 'distortion_analysis_config.yml'

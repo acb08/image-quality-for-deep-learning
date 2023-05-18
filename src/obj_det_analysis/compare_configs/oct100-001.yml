@@ -1,0 +1,22 @@
+---
+
+test_result_identifiers:
+
+  - ['0004rlt-0001yolo-v8l-oct100-ext_best_loss-0054tst-coco_fr90:v0',
+     'octant-100']
+  - ['0000rlt-0000yolo-v8l-oct001-ext_best_loss-0054tst-coco_fr90:v0',
+     'octant-001']
+
+overwrite: False
+manual_name: oct100-001
+flatten_axis_combinations: default # [[0, 1], [0, 2], [1, 2]]
+flatten_axes: default
+
+fit_keys: null
+
+plot_together: True
+y_limits: null
+
+show_plots: False
+
+
