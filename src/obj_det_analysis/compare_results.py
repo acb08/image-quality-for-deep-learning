@@ -1,46 +1,16 @@
 import numpy as np
 import argparse
 from pathlib import Path
+from src.obj_det_analysis.load_multiple_od_results import get_multiple_od_distortion_performance_results
 from src.utils.functions import get_config, log_config
 from src.analysis.compare_correlate_results import get_compare_dir
-from src.obj_det_analysis.distortion_performance_od import get_obj_det_distortion_perf_result, \
-    flatten_axis_combinations_from_cfg, flatten_axes_from_cfg, fit_keys_from_cfg
-from src.utils.definitions import WANDB_PID
-from src.utils.functions import construct_artifact_id
+from src.obj_det_analysis.distortion_performance_od import flatten_axis_combinations_from_cfg, flatten_axes_from_cfg, fit_keys_from_cfg
 import wandb
 from src.analysis.plot import plot_1d_from_3d, compare_2d_mean_views
 from src.analysis.analysis_functions import get_sub_dir_and_log_filename, build_3d_field
 from src.analysis.fit import fit, evaluate_fit, apply_fit
 from src.analysis import plot
 from src.analysis.aic import akaike_info_criterion
-
-
-def get_multiple_od_distortion_performance_results(result_id_pairs,
-                                                   output_type='list'):
-
-    if output_type == 'list':
-        performance_results = []
-    elif output_type == 'dict':
-        performance_results = {}
-    else:
-        raise Exception('invalid output_type')
-
-    with wandb.init(project=WANDB_PID, job_type='analyze_test_result') as run:
-
-        for artifact_id, identifier in result_id_pairs:
-
-            artifact_id, __ = construct_artifact_id(artifact_id)
-            distortion_performance_result, __ = get_obj_det_distortion_perf_result(result_id=artifact_id,
-                                                                                   identifier=identifier,
-                                                                                   make_dir=False,
-                                                                                   run=run)
-
-            if output_type == 'list':
-                performance_results.append(distortion_performance_result)
-            elif output_type == 'dict':
-                performance_results[artifact_id] = distortion_performance_result
-
-    return performance_results
 
 
 def log_averages(performance_dict, output_dir):
@@ -259,7 +229,7 @@ def main(config):
 
 if __name__ == '__main__':
 
-    config_name = 'yolo-frcnn_n-scans.yml'
+    config_name = 'v8l-fr-ext_fr90_m1-v-m2.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_name, help='config filename to be used')

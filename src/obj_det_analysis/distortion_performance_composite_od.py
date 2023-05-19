@@ -1,10 +1,18 @@
-from src.obj_det_analysis.compare_results import get_multiple_od_distortion_performance_results
+from src.obj_det_analysis.load_multiple_od_results import get_multiple_od_distortion_performance_results
 from src.utils.functions import get_config
 import numpy as np
 import argparse
 from pathlib import Path
-from src.utils.definitions import DISTORTION_RANGE_90
+from src.utils.definitions import DISTORTION_RANGE_90, REL_PATHS
 import matplotlib.pyplot as plt
+from src.analysis.distortion_performance_composite import get_composite_performance_result_output_directory, \
+    get_composite_result_uid, check_cr_uid, read_existing_uid, log_uid
+from src.analysis.analysis_functions import get_sub_dir_and_log_filename, build_3d_field
+from src.analysis.fit import fit, evaluate_fit, apply_fit
+from src.analysis.aic import akaike_info_criterion
+from src.analysis import plot
+from src.obj_det_analysis.distortion_performance_od import flatten_axis_combinations_from_cfg, flatten_axes_from_cfg, \
+    fit_keys_from_cfg
 
 
 def oct_vec_to_int(oct_vec):
@@ -93,6 +101,13 @@ class CompositePerformanceResultOD:
         self.identifier = identifier
         self.distortion_ids = distortion_ids
 
+        self.performance_predict_result_ids = [pair[0] for pair in self.performance_prediction_result_id_pairs]
+        self.performance_eval_result_ids = [pair[0] for pair in self.performance_eval_result_id_pairs]
+        self.uid = get_composite_result_uid(
+            performance_prediction_result_ids=self.performance_predict_result_ids,
+            eval_result_ids=self.performance_eval_result_ids
+        )
+
         _predict_data = load_multiple_3d_perf_results(self.performance_prediction_result_id_pairs,
                                                       self.distortion_ids)
 
@@ -111,27 +126,27 @@ class CompositePerformanceResultOD:
         self.noise_vals = _eval_data[2]
         self._perf_3d_eval = _eval_data[3]
         self.distortion_array = _eval_data[4]
-        self.performance_arrays = _eval_data[5]
+        self._performance_arrays = _eval_data[5]
         _eval_model_artifact_ids = _eval_data[6]
         _eval_length = _eval_data[7]
         del _eval_data
 
-        assert self.performance_arrays.keys() == self.performance_arrays_predict.keys()
+        assert self._performance_arrays.keys() == self.performance_arrays_predict.keys()
         assert _eval_model_artifact_ids == self.model_artifact_id_set
-        assert set(self.performance_arrays.keys()) == self.model_artifact_id_set
+        assert set(self._performance_arrays.keys()) == self.model_artifact_id_set
         assert self.length == _eval_length
 
         self.model_artifact_ids = tuple(self.model_artifact_id_set)
         del self.model_artifact_id_set  # ensure that model id order is constant by using self.model_artifact_ids tuple
 
         self.res_boundary, self.blur_boundary, self.noise_boundary = self.get_octant_boundaries()
-        self.predict_oct_vectors, self.oct_vectors = self.assign_octant_vectors()
+        self._predict_oct_vectors, self._eval_oct_vectors = self.assign_octant_vectors()
 
-        self.predict_oct_labels = label_octant_array(self.predict_oct_vectors)
-        self.oct_labels = label_octant_array(self.oct_vectors)
+        self._predict_oct_labels = label_octant_array(self._predict_oct_vectors)
+        self._eval_oct_labels = label_octant_array(self._eval_oct_vectors)
 
-        self.oct_nums = np.unique(self.oct_labels)
-        assert np.array_equal(self.oct_nums, np.unique(self.predict_oct_labels))
+        self.oct_nums = np.unique(self._eval_oct_labels)
+        assert np.array_equal(self.oct_nums, np.unique(self._predict_oct_labels))
         self.oct_nums = tuple(self.oct_nums)  # make immutable just to be safe
 
         (self.predict_model_oct_performance, self.eval_model_oct_performance,  self.predict_model_oct_performance_dict,
@@ -140,10 +155,16 @@ class CompositePerformanceResultOD:
 
         self.predict_composite_performance, self.eval_composite_performance = self.composite_performance()
 
-        self._distortion_perf_props_3d = {}
+        self._3d_distortion_perf_props = {}
 
     def __len__(self):
         return self.length
+
+    def __str__(self):
+        return self.identifier
+
+    def __repr__(self):
+        return f'{self.__str__()}-{self.uid}'
 
     def get_octant_boundaries(self):
 
@@ -220,7 +241,7 @@ class CompositePerformanceResultOD:
 
         return predict_oct_ids, eval_oct_ids
 
-    def get_performance_by_octant(self, verbose=True):
+    def get_performance_by_octant(self, verbose=False):
 
         predict_oct_performances = {}
         eval_oct_performances = {}
@@ -235,7 +256,7 @@ class CompositePerformanceResultOD:
         for model_index, model_id in enumerate(self.model_artifact_ids):
 
             predict_performance_array = np.ravel(self.performance_arrays_predict[model_id])
-            eval_performance_array = np.ravel(self.performance_arrays[model_id])
+            eval_performance_array = np.ravel(self._performance_arrays[model_id])
             predict_extraction_total = 0
             eval_extraction_total = 0
 
@@ -243,10 +264,7 @@ class CompositePerformanceResultOD:
 
                 assert octant_index == oct_num
 
-                _predict_extractor = np.zeros_like(self.predict_oct_labels)
-                _predict_extractor[np.where(self.predict_oct_labels == oct_num)] = 1
                 predict_extractor = self.make_extractor(oct_num=oct_num, predict_eval_flag='predict')
-                assert np.array_equal(_predict_extractor, predict_extractor)
 
                 num_predict_points = np.sum(predict_extractor)
                 predict_extraction_total += num_predict_points
@@ -264,11 +282,7 @@ class CompositePerformanceResultOD:
                 else:
                     predict_oct_performances[model_id][oct_num] = predict_oct_avg_performance
 
-                _eval_extractor = np.zeros_like(self.oct_labels)
-                _eval_extractor[np.where(self.predict_oct_labels == oct_num)] = 1
                 eval_extractor = self.make_extractor(oct_num=oct_num, predict_eval_flag='eval')
-                assert np.array_equal(_eval_extractor, eval_extractor)
-
                 num_eval_points = np.sum(eval_extractor)
                 eval_extraction_total += num_eval_points
 
@@ -322,8 +336,8 @@ class CompositePerformanceResultOD:
 
     def composite_performance(self):
 
-        predict_composite_performance = -1 * np.ones(self.length)
-        eval_composite_performance = -1 * np.ones(self.length)
+        predict_composite_performance = -1 * np.ones(self.length, dtype=np.float32)
+        eval_composite_performance = -1 * np.ones(self.length, dtype=np.float32)
 
         predict_points_total = 0
         eval_points_total = 0
@@ -339,7 +353,7 @@ class CompositePerformanceResultOD:
             eval_points_total += num_eval_points
 
             predict_performance_array = np.ravel(self.performance_arrays_predict[model_id])
-            eval_performance_array = np.ravel(self.performance_arrays[model_id])
+            eval_performance_array = np.ravel(self._performance_arrays[model_id])
 
             predict_composite_performance[predict_extract_inds] = predict_performance_array[predict_extract_inds]
             eval_composite_performance[eval_extract_inds] = eval_performance_array[eval_extract_inds]
@@ -347,14 +361,17 @@ class CompositePerformanceResultOD:
         assert -1 not in predict_composite_performance
         assert -1 not in eval_composite_performance
 
+        predict_composite_performance = np.atleast_2d(predict_composite_performance).T
+        eval_composite_performance = np.atleast_2d(eval_composite_performance).T
+
         return predict_composite_performance, eval_composite_performance
 
     def make_extractor(self, oct_num, predict_eval_flag):
 
         if predict_eval_flag == 'predict':
-            oct_labels = self.predict_oct_labels
+            oct_labels = self._predict_oct_labels
         elif predict_eval_flag == 'eval':
-            oct_labels = self.oct_labels
+            oct_labels = self._eval_oct_labels
         else:
             raise Exception("predict eval flag must be either 'predict' or 'eval'")
 
@@ -367,9 +384,9 @@ class CompositePerformanceResultOD:
     def get_extraction_indices(self, oct_num, predict_eval_flag):
 
         if predict_eval_flag == 'predict':
-            oct_labels = self.predict_oct_labels
+            oct_labels = self._predict_oct_labels
         elif predict_eval_flag == 'eval':
-            oct_labels = self.oct_labels
+            oct_labels = self._eval_oct_labels
         else:
             raise Exception("predict eval flag must be either 'predict' or 'eval'")
 
@@ -408,6 +425,35 @@ class CompositePerformanceResultOD:
         plt.title('eval')
         plt.show()
 
+    def archive(self):
+        pass
+
+    def get_3d_distortion_perf_props(self, predict_eval_flag='eval'):
+        """
+        Shares name with equivalent methods in ModelDistortionPerformanceResult, CompositePerformanceResult, and
+        ModelDistortionPerformanceOD but implemented differently
+        """
+
+        if predict_eval_flag in self._3d_distortion_perf_props.keys():
+            return self._3d_distortion_perf_props[predict_eval_flag]
+
+        if predict_eval_flag == 'predict':
+            distortion_array = self.distortion_array_predict
+            performance_array = self.predict_composite_performance
+        elif predict_eval_flag == 'eval':
+            distortion_array = self.distortion_array
+            performance_array = self.eval_composite_performance
+        else:
+            raise ValueError("predict_eval_flag must be either 'predict' or 'eval'")
+
+        res, blur, noise = distortion_array[:, 0], distortion_array[:, 1], distortion_array[:, 2]
+        map_3d = build_3d_field(x=res, y=blur, z=noise, f=performance_array, data_dump=False)
+
+        self._3d_distortion_perf_props[predict_eval_flag] = (self.res_vals, self.blur_vals, self.noise_vals,
+                                                             map_3d, distortion_array, performance_array, None)
+
+        return self._3d_distortion_perf_props[predict_eval_flag]
+
 
 def get_composite_performance_result_od(config):
 
@@ -420,6 +466,120 @@ def get_composite_performance_result_od(config):
         performance_eval_result_id_pairs=performance_eval_result_id_pairs,
         identifier=identifier
     )
+
+    composite_result_id = str(composite_performance_od)
+    uid = composite_performance_od.uid
+    output_dir = get_composite_performance_result_output_directory(composite_result_id, uid)
+
+    return composite_performance_od, output_dir
+
+
+def main(config):
+
+    composite_performance_od, output_dir = get_composite_performance_result_od(config)
+    
+    # flatten_axes = flatten_axes_from_cfg(config)
+    flatten_axis_combinations = flatten_axis_combinations_from_cfg(config)
+    fit_keys = fit_keys_from_cfg(config)
+
+    if 'plot_together' in config.keys():
+        plot_together = config['plot_together']
+    else:
+        plot_together = True 
+
+    predict_data = composite_performance_od.get_3d_distortion_perf_props(predict_eval_flag='predict')
+    eval_data = composite_performance_od.get_3d_distortion_perf_props(predict_eval_flag='eval')
+
+    res_vals, blur_vals, noise_vals, map_3d_predict, predict_param_array, predict_perf_array, __ = predict_data
+    __, __, __, map3d_measured, eval_parameter_array, eval_performance_array, __ = eval_data
+    
+    sub_dir, log_filename = get_sub_dir_and_log_filename(output_dir, '3d')
+    add_bias_in_fits = False  # only applies to linear fits (all fits here nonlinear)
+
+    with open(Path(sub_dir, log_filename), 'w') as output_file:
+
+        for fit_key in fit_keys:
+
+            fit_sub_dir, __ = get_sub_dir_and_log_filename(sub_dir, fit_key)
+            fit_coefficients = fit(predict_param_array, predict_perf_array,
+                                   distortion_ids=('res', 'blur', 'noise'),
+                                   fit_key=fit_key,
+                                   add_bias=False  # only applies to linear fits
+                                   )
+            eval_prediction = apply_fit(fit_coefficients,
+                                        eval_parameter_array,
+                                        distortion_ids=('res', 'blur', 'noise'),
+                                        fit_key=fit_key,
+                                        add_bias=False  # only applies to linear fits
+                                        )
+            eval_prediction_3d = build_3d_field(eval_parameter_array[:, 0],
+                                                eval_parameter_array[:, 1],
+                                                eval_parameter_array[:, 2],
+                                                eval_prediction,
+                                                data_dump=add_bias_in_fits
+                                                )
+            predict_fit_correlation = evaluate_fit(fit_coefficients,
+                                                   predict_param_array,
+                                                   predict_perf_array,
+                                                   distortion_ids=('res', 'blur', 'noise'),
+                                                   fit_key=fit_key,
+                                                   add_bias=add_bias_in_fits,
+                                                   )
+            fit_correlation = evaluate_fit(fit_coefficients,
+                                           eval_parameter_array,
+                                           eval_performance_array,
+                                           distortion_ids=('res', 'blur', 'noise'),
+                                           fit_key=fit_key,
+                                           add_bias=False,  # only applies to linear fits
+                                           )
+
+            aic_score = akaike_info_criterion(acc=eval_performance_array,
+                                              n_trials=None,  # only used for binomial distributions
+                                              acc_predicted=eval_prediction,
+                                              num_parameters=len(fit_coefficients),
+                                              distribution='normal'
+                                              )
+            
+            plot.compare_2d_mean_views(f0=map3d_measured,
+                                       f1=eval_prediction_3d,
+                                       data_labels=('measured (eval)', 'fit'),
+                                       x_vals=res_vals, y_vals=blur_vals, z_vals=noise_vals,
+                                       distortion_ids=('res', 'blur', 'noise'),
+                                       directory=fit_sub_dir,
+                                       perf_metric='mAP',
+                                       az_el_combinations='all',
+                                       show_plots=False)
+
+            # plot.compare_2d_mean_views(f0=map_3d_predict,
+            #                            f1=map3d_measured,
+            #                            data_labels=('measured (predict)', 'measured (eval)'),
+            #                            x_vals=res_vals, y_vals=blur_vals, z_vals=noise_vals,
+            #                            distortion_ids=('res', 'blur', 'noise'),
+            #                            directory=fit_sub_dir,
+            #                            perf_metric='mAP',
+            #                            az_el_combinations='all',
+            #                            show_plots=False,
+            #                            result_id='predict')
+
+            plot.compare_1d_views(f0=map3d_measured,
+                                  f1=eval_prediction_3d,
+                                  data_labels=('measured (eval)', 'fit'),
+                                  x_vals=res_vals, y_vals=blur_vals, z_vals=noise_vals,
+                                  flatten_axis_combinations=flatten_axis_combinations,
+                                  distortion_ids=('res', 'blur', 'noise'),
+                                  directory=fit_sub_dir,
+                                  result_id='3d_1d_projection',
+                                  show_plots=False,
+                                  ylabel='mAP',
+                                  plot_together=plot_together)
+
+            print(f'{fit_key} fit: \n', fit_coefficients, file=output_file)
+            print(f'{fit_key} predict (direct) fit correlation: ', predict_fit_correlation,
+                  file=output_file)
+            print(f'{fit_key} eval fit correlation: ', fit_correlation,
+                  file=output_file)
+            print(f'{fit_key} fit aic score: ', aic_score, '\n',
+                  file=output_file)
 
     return composite_performance_od
 
@@ -434,4 +594,4 @@ if __name__ == '__main__':
     args_passed = parser.parse_args()
     run_config = get_config(args_passed)
 
-    _c_perf_od = get_composite_performance_result_od(run_config)
+    _composite_performance_od = main(run_config)
