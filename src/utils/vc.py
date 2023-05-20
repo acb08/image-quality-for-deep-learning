@@ -20,8 +20,12 @@ _mAP_CODE_PATHS = (
     'src/obj_det_analysis/analysis_tools.py'
 )
 
+_DISTORTION_PERFORMANCE_COMPOSITE_OD_PATHS = (
+    'distortion_performance_composite_od.py',
+)
 
-def get_map_hash_mash():
+
+def get_map_hash_mash(_code_paths=_mAP_CODE_PATHS):
 
     hash_mash = str()
 
@@ -33,6 +37,11 @@ def get_map_hash_mash():
             hash_mash += hash_val
 
     return hash_mash
+
+
+def get_od_composite_hash_mash():
+    paths = _mAP_CODE_PATHS + _DISTORTION_PERFORMANCE_COMPOSITE_OD_PATHS
+    return get_map_hash_mash(_code_paths=paths)
 
 
 if __name__ == '__main__':

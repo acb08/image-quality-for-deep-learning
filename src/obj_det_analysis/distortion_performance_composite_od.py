@@ -1,18 +1,24 @@
+import copy
+
 from src.obj_det_analysis.load_multiple_od_results import get_multiple_od_distortion_performance_results
 from src.utils.functions import get_config
 import numpy as np
 import argparse
 from pathlib import Path
-from src.utils.definitions import DISTORTION_RANGE_90, REL_PATHS
+from src.utils.definitions import DISTORTION_RANGE_90
 import matplotlib.pyplot as plt
 from src.analysis.distortion_performance_composite import get_composite_performance_result_output_directory, \
-    get_composite_result_uid, check_cr_uid, read_existing_uid, log_uid
+    get_composite_result_uid
 from src.analysis.analysis_functions import get_sub_dir_and_log_filename, build_3d_field
 from src.analysis.fit import fit, evaluate_fit, apply_fit
 from src.analysis.aic import akaike_info_criterion
 from src.analysis import plot
-from src.obj_det_analysis.distortion_performance_od import flatten_axis_combinations_from_cfg, flatten_axes_from_cfg, \
-    fit_keys_from_cfg
+from src.obj_det_analysis.distortion_performance_od import flatten_axis_combinations_from_cfg, fit_keys_from_cfg, \
+    flatten_axes_from_cfg
+from src.utils.shared_methods import _get_processed_instance_props_path, _archive_processed_props, \
+    _check_extract_processed_props
+from src.utils.vc import get_od_composite_hash_mash
+from hashlib import blake2b
 
 
 def oct_vec_to_int(oct_vec):
@@ -94,7 +100,10 @@ class CompositePerformanceResultOD:
     """
 
     def __init__(self, performance_prediction_result_id_pairs, performance_eval_result_id_pairs, identifier,
-                 distortion_ids=('res', 'blur', 'noise')):
+                 distortion_ids=('res', 'blur', 'noise'), res_boundary_weights=None, ignore_vc_hashes=False):
+
+        if res_boundary_weights is None:
+            res_boundary_weights = (1, 1)
 
         self.performance_prediction_result_id_pairs = performance_prediction_result_id_pairs
         self.performance_eval_result_id_pairs = performance_eval_result_id_pairs
@@ -103,62 +112,79 @@ class CompositePerformanceResultOD:
 
         self.performance_predict_result_ids = [pair[0] for pair in self.performance_prediction_result_id_pairs]
         self.performance_eval_result_ids = [pair[0] for pair in self.performance_eval_result_id_pairs]
+
+        perf_predict_uid_hash_data = copy.deepcopy(self.performance_predict_result_ids)
+        perf_predict_uid_hash_data.append(str(res_boundary_weights))
         self.uid = get_composite_result_uid(
-            performance_prediction_result_ids=self.performance_predict_result_ids,
+            performance_prediction_result_ids=perf_predict_uid_hash_data,
             eval_result_ids=self.performance_eval_result_ids
         )
 
-        _predict_data = load_multiple_3d_perf_results(self.performance_prediction_result_id_pairs,
-                                                      self.distortion_ids)
+        predict_hash, eval_hash = self._get_instance_hashes()
+        self.instance_hashes = {'predict': predict_hash, 'eval': eval_hash}
+        self.ignore_vc_hashes = ignore_vc_hashes
 
-        self._perf_3d_predict = _predict_data[3]  # perf_results_3d, parameter_array, perf_arrays
-        self.distortion_array_predict = _predict_data[4]
-        self.performance_arrays_predict = _predict_data[5]
-        self.model_artifact_id_set = _predict_data[6]
-        self.length = _predict_data[7]
-        del _predict_data
-
-        _eval_data = load_multiple_3d_perf_results(self.performance_eval_result_id_pairs,
-                                                   self.distortion_ids)
-
-        self.res_vals = _eval_data[0]
-        self.blur_vals = _eval_data[1]
-        self.noise_vals = _eval_data[2]
-        self._perf_3d_eval = _eval_data[3]
-        self.distortion_array = _eval_data[4]
-        self._performance_arrays = _eval_data[5]
-        _eval_model_artifact_ids = _eval_data[6]
-        _eval_length = _eval_data[7]
-        del _eval_data
-
-        assert self._performance_arrays.keys() == self.performance_arrays_predict.keys()
-        assert _eval_model_artifact_ids == self.model_artifact_id_set
-        assert set(self._performance_arrays.keys()) == self.model_artifact_id_set
-        assert self.length == _eval_length
-
-        self.model_artifact_ids = tuple(self.model_artifact_id_set)
-        del self.model_artifact_id_set  # ensure that model id order is constant by using self.model_artifact_ids tuple
-
-        self.res_boundary, self.blur_boundary, self.noise_boundary = self.get_octant_boundaries()
-        self._predict_oct_vectors, self._eval_oct_vectors = self.assign_octant_vectors()
-
-        self._predict_oct_labels = label_octant_array(self._predict_oct_vectors)
-        self._eval_oct_labels = label_octant_array(self._eval_oct_vectors)
-
-        self.oct_nums = np.unique(self._eval_oct_labels)
-        assert np.array_equal(self.oct_nums, np.unique(self._predict_oct_labels))
-        self.oct_nums = tuple(self.oct_nums)  # make immutable just to be safe
-
-        (self.predict_model_oct_performance, self.eval_model_oct_performance,  self.predict_model_oct_performance_dict,
-         self.eval_model_oct_performance_dict) = self.get_performance_by_octant()
-        self.octant_model_map = self.assign_best_models_to_octants()
-
-        self.predict_composite_performance, self.eval_composite_performance = self.composite_performance()
+        self.result_id = self.__repr__()
+        self._res_lower_weight, self._res_upper_weight = res_boundary_weights
+        self.vc_hash_mash = get_od_composite_hash_mash()
 
         self._3d_distortion_perf_props = {}
 
+        predict_extract = self.check_extract_processed_props(predict_eval_flag='predict')
+        eval_extract = self.check_extract_processed_props(predict_eval_flag='eval')
+        if predict_extract and eval_extract:
+            self._3d_distortion_perf_props = {'predict': predict_extract, 'eval': eval_extract}
+            print('loaded cached composite performance props')
+        else:
+            _predict_data = load_multiple_3d_perf_results(self.performance_prediction_result_id_pairs,
+                                                          self.distortion_ids)
+            self._perf_3d_predict = _predict_data[3]  # perf_results_3d, parameter_array, perf_arrays
+            self._distortion_array_predict = _predict_data[4]
+            self._performance_arrays_predict = _predict_data[5]
+            self._model_artifact_id_set = _predict_data[6]
+            self._length = _predict_data[7]
+            del _predict_data
+
+            _eval_data = load_multiple_3d_perf_results(self.performance_eval_result_id_pairs,
+                                                       self.distortion_ids)
+
+            self.res_vals = _eval_data[0]
+            self.blur_vals = _eval_data[1]
+            self.noise_vals = _eval_data[2]
+            self._perf_3d_eval = _eval_data[3]
+            self._distortion_array = _eval_data[4]
+            self._performance_arrays = _eval_data[5]
+            _eval_model_artifact_ids = _eval_data[6]
+            _eval_length = _eval_data[7]
+            del _eval_data
+
+            assert self._performance_arrays.keys() == self._performance_arrays_predict.keys()
+            assert _eval_model_artifact_ids == self._model_artifact_id_set
+            assert set(self._performance_arrays.keys()) == self._model_artifact_id_set
+            assert self._length == _eval_length
+
+            self._model_artifact_ids = tuple(self._model_artifact_id_set)
+            del self._model_artifact_id_set  # ensure constant model id order by using self.model_artifact_ids tuple
+
+            self.res_boundary, self.blur_boundary, self.noise_boundary = self._get_octant_boundaries()
+            self._predict_oct_vectors, self._eval_oct_vectors = self._assign_octant_vectors()
+
+            self._predict_oct_labels = label_octant_array(self._predict_oct_vectors)
+            self._eval_oct_labels = label_octant_array(self._eval_oct_vectors)
+
+            self._oct_nums = np.unique(self._eval_oct_labels)
+            assert np.array_equal(self._oct_nums, np.unique(self._predict_oct_labels))
+            self._oct_nums = tuple(self._oct_nums)  # make immutable just to be safe
+
+            (self._predict_model_oct_performance, self._eval_model_oct_performance,
+             self._predict_model_oct_performance_dict,
+             self._eval_model_oct_performance_dict) = self._get_performance_by_octant()
+            self._octant_model_map = self._assign_best_models_to_octants()
+
+            self._predict_composite_performance, self._eval_composite_performance = self._composite_performance()
+
     def __len__(self):
-        return self.length
+        return self._length
 
     def __str__(self):
         return self.identifier
@@ -166,7 +192,17 @@ class CompositePerformanceResultOD:
     def __repr__(self):
         return f'{self.__str__()}-{self.uid}'
 
-    def get_octant_boundaries(self):
+    def _get_instance_hashes(self):
+
+        predict_hash_string = f'{self.uid}-predict'
+        eval_hash_string = f'{self.uid}-eval'
+
+        predict_hash = blake2b(predict_hash_string.encode('utf8')).hexdigest()
+        eval_hash = blake2b(eval_hash_string.encode('utf8')).hexdigest()
+
+        return predict_hash, eval_hash
+
+    def _get_octant_boundaries(self):
 
         distortion_range = DISTORTION_RANGE_90['coco']
         res_vals = distortion_range['res']
@@ -181,19 +217,35 @@ class CompositePerformanceResultOD:
         blur_min, blur_max = np.min(blur_vals), np.max(blur_vals)
         noise_min, noise_max = np.min(noise_vals), np.max(noise_vals)
 
-        res_boundary = (4 * res_min + res_max) / 5  # TODO: put back to simple midpoint
+        res_weighting_total = self._res_lower_weight + self._res_upper_weight
+        res_boundary = (self._res_lower_weight * res_min + self._res_upper_weight * res_max) / res_weighting_total
         blur_boundary = (blur_min + blur_max) / 2
         noise_boundary = (noise_min + noise_max) / 2
 
         return res_boundary, blur_boundary, noise_boundary
 
-    def assign_octant_vectors(self):
+    def get_processed_instance_props_path(self, predict_eval_flag):
+        return _get_processed_instance_props_path(self, predict_eval_flag=predict_eval_flag)
 
-        predict_oct_ids = -1 * np.ones_like(self.distortion_array_predict)
+    def archive_processed_props(self, predict_eval_flag: object) -> object:
 
-        res_predict = self.distortion_array_predict[:, 0]
-        blur_predict = self.distortion_array_predict[:, 1]
-        noise_predict = self.distortion_array_predict[:, 2]
+        data = self.get_3d_distortion_perf_props(predict_eval_flag=predict_eval_flag)
+        res_vals, blur_vals, noise_vals, map_3d, distortion_array, performance_array, __ = data
+
+        return _archive_processed_props(self, res_values=res_vals, blur_values=blur_vals, noise_values=noise_vals,
+                                        perf_3d=map_3d, distortion_array=distortion_array, perf_array=performance_array,
+                                        predict_eval_flag=predict_eval_flag, vc_hash_mash=self.vc_hash_mash)
+
+    def check_extract_processed_props(self, predict_eval_flag):
+        return _check_extract_processed_props(self, predict_eval_flag=predict_eval_flag)
+
+    def _assign_octant_vectors(self):
+
+        predict_oct_ids = -1 * np.ones_like(self._distortion_array_predict)
+
+        res_predict = self._distortion_array_predict[:, 0]
+        blur_predict = self._distortion_array_predict[:, 1]
+        noise_predict = self._distortion_array_predict[:, 2]
 
         predict_res_labels = -1 * np.ones_like(res_predict)
         predict_res_labels[np.where(res_predict >= self.res_boundary)] = 0
@@ -214,10 +266,10 @@ class CompositePerformanceResultOD:
         predict_oct_ids[:, 1] = predict_blur_labels
         predict_oct_ids[:, 2] = predict_noise_labels
 
-        eval_oct_ids = -1 * np.ones_like(self.distortion_array)
-        res = self.distortion_array[:, 0]
-        blur = self.distortion_array[:, 1]
-        noise = self.distortion_array[:, 2]
+        eval_oct_ids = -1 * np.ones_like(self._distortion_array)
+        res = self._distortion_array[:, 0]
+        blur = self._distortion_array[:, 1]
+        noise = self._distortion_array[:, 2]
 
         res_labels = -1 * np.ones_like(res)
         res_labels[np.where(res >= self.res_boundary)] = 0
@@ -241,36 +293,36 @@ class CompositePerformanceResultOD:
 
         return predict_oct_ids, eval_oct_ids
 
-    def get_performance_by_octant(self, verbose=False):
+    def _get_performance_by_octant(self, verbose=False):
 
         predict_oct_performances = {}
         eval_oct_performances = {}
 
-        num_models = len(self.model_artifact_ids)
-        num_octants = len(self.oct_nums)
+        num_models = len(self._model_artifact_ids)
+        num_octants = len(self._oct_nums)
         assert num_octants == 8
 
         predict_oct_performance_array = -1 * np.ones((num_models, num_octants))
         eval_oct_performance_array = -1 * np.ones((num_models, num_octants))
 
-        for model_index, model_id in enumerate(self.model_artifact_ids):
+        for model_index, model_id in enumerate(self._model_artifact_ids):
 
-            predict_performance_array = np.ravel(self.performance_arrays_predict[model_id])
+            predict_performance_array = np.ravel(self._performance_arrays_predict[model_id])
             eval_performance_array = np.ravel(self._performance_arrays[model_id])
             predict_extraction_total = 0
             eval_extraction_total = 0
 
-            for octant_index, oct_num in enumerate(self.oct_nums):
+            for octant_index, oct_num in enumerate(self._oct_nums):
 
                 assert octant_index == oct_num
 
-                predict_extractor = self.make_extractor(oct_num=oct_num, predict_eval_flag='predict')
+                predict_extractor = self._make_extractor(oct_num=oct_num, predict_eval_flag='predict')
 
                 num_predict_points = np.sum(predict_extractor)
                 predict_extraction_total += num_predict_points
 
                 predict_oct_avg_performance = np.sum(predict_extractor * predict_performance_array) / num_predict_points
-                self.update_oct_performance_array(
+                self._update_oct_performance_array(
                     oct_performance_array=predict_oct_performance_array,
                     val=predict_oct_avg_performance,
                     model_index=model_index,
@@ -282,12 +334,12 @@ class CompositePerformanceResultOD:
                 else:
                     predict_oct_performances[model_id][oct_num] = predict_oct_avg_performance
 
-                eval_extractor = self.make_extractor(oct_num=oct_num, predict_eval_flag='eval')
+                eval_extractor = self._make_extractor(oct_num=oct_num, predict_eval_flag='eval')
                 num_eval_points = np.sum(eval_extractor)
                 eval_extraction_total += num_eval_points
 
                 eval_oct_avg_performance = np.sum(eval_extractor * eval_performance_array) / num_eval_points
-                self.update_oct_performance_array(
+                self._update_oct_performance_array(
                     oct_performance_array=eval_oct_performance_array,
                     val=eval_oct_avg_performance,
                     model_index=model_index,
@@ -299,7 +351,7 @@ class CompositePerformanceResultOD:
                 else:
                     eval_oct_performances[model_id][oct_num] = eval_oct_avg_performance
 
-            assert predict_extraction_total == eval_extraction_total == self.length
+            assert predict_extraction_total == eval_extraction_total == self._length
 
         assert -1 not in predict_oct_performance_array
         assert -1 not in eval_oct_performance_array
@@ -312,47 +364,47 @@ class CompositePerformanceResultOD:
             eval_oct_performances
 
     @ staticmethod
-    def update_oct_performance_array(oct_performance_array, val, model_index, octant_index):
+    def _update_oct_performance_array(oct_performance_array, val, model_index, octant_index):
         oct_performance_array[model_index, octant_index] = val
 
     @staticmethod
-    def extract_oct_performance_val(oct_performance_array, model_index, octant_index):
+    def _extract_oct_performance_val(oct_performance_array, model_index, octant_index):
         return oct_performance_array[model_index, octant_index]
 
-    def assign_best_models_to_octants(self):
+    def _assign_best_models_to_octants(self):
 
         octant_model_map = {}
 
-        for octant_index, oct_num in enumerate(self.oct_nums):
+        for octant_index, oct_num in enumerate(self._oct_nums):
 
             assert octant_index == oct_num
 
-            predict_performances = self.predict_model_oct_performance[:, octant_index]
+            predict_performances = self._predict_model_oct_performance[:, octant_index]
             best_model_index = np.argmax(predict_performances)
-            best_model_id = self.model_artifact_ids[int(best_model_index)]
+            best_model_id = self._model_artifact_ids[int(best_model_index)]
             octant_model_map[oct_num] = (best_model_index, best_model_id)
 
         return octant_model_map
 
-    def composite_performance(self):
+    def _composite_performance(self):
 
-        predict_composite_performance = -1 * np.ones(self.length, dtype=np.float32)
-        eval_composite_performance = -1 * np.ones(self.length, dtype=np.float32)
+        predict_composite_performance = -1 * np.ones(self._length, dtype=np.float32)
+        eval_composite_performance = -1 * np.ones(self._length, dtype=np.float32)
 
         predict_points_total = 0
         eval_points_total = 0
 
-        for oct_num, (best_model_index, model_id) in self.octant_model_map.items():
+        for oct_num, (best_model_index, model_id) in self._octant_model_map.items():
 
-            predict_extract_inds = self.get_extraction_indices(oct_num=oct_num, predict_eval_flag='predict')
-            eval_extract_inds = self.get_extraction_indices(oct_num=oct_num, predict_eval_flag='eval')
+            predict_extract_inds = self._get_extraction_indices(oct_num=oct_num, predict_eval_flag='predict')
+            eval_extract_inds = self._get_extraction_indices(oct_num=oct_num, predict_eval_flag='eval')
 
             num_predict_points = len(predict_extract_inds[0])
             predict_points_total += num_predict_points
             num_eval_points = len(eval_extract_inds[0])
             eval_points_total += num_eval_points
 
-            predict_performance_array = np.ravel(self.performance_arrays_predict[model_id])
+            predict_performance_array = np.ravel(self._performance_arrays_predict[model_id])
             eval_performance_array = np.ravel(self._performance_arrays[model_id])
 
             predict_composite_performance[predict_extract_inds] = predict_performance_array[predict_extract_inds]
@@ -366,7 +418,7 @@ class CompositePerformanceResultOD:
 
         return predict_composite_performance, eval_composite_performance
 
-    def make_extractor(self, oct_num, predict_eval_flag):
+    def _make_extractor(self, oct_num, predict_eval_flag):
 
         if predict_eval_flag == 'predict':
             oct_labels = self._predict_oct_labels
@@ -375,13 +427,13 @@ class CompositePerformanceResultOD:
         else:
             raise Exception("predict eval flag must be either 'predict' or 'eval'")
 
-        extraction_indices = self.get_extraction_indices(oct_num=oct_num, predict_eval_flag=predict_eval_flag)
+        extraction_indices = self._get_extraction_indices(oct_num=oct_num, predict_eval_flag=predict_eval_flag)
         extractor = np.zeros_like(oct_labels)
         extractor[extraction_indices] = 1
 
         return extractor
 
-    def get_extraction_indices(self, oct_num, predict_eval_flag):
+    def _get_extraction_indices(self, oct_num, predict_eval_flag):
 
         if predict_eval_flag == 'predict':
             oct_labels = self._predict_oct_labels
@@ -400,16 +452,16 @@ class CompositePerformanceResultOD:
         eval_model_performances = []
         ordered_model_ids = []
 
-        for model_index, model_id in enumerate(self.model_artifact_ids):
-            predict_model_oct_performance = self.predict_model_oct_performance[model_index, :]
-            eval_model_oct_performance = self.eval_model_oct_performance[model_index, :]
+        for model_index, model_id in enumerate(self._model_artifact_ids):
+            predict_model_oct_performance = self._predict_model_oct_performance[model_index, :]
+            eval_model_oct_performance = self._eval_model_oct_performance[model_index, :]
             predict_model_performances.append(predict_model_oct_performance)
             eval_model_performances.append(eval_model_oct_performance)
             ordered_model_ids.append(model_id)
 
         plt.figure()
         for i, predict_model_oct_performance in enumerate(predict_model_performances):
-            plt.plot(self.oct_nums, predict_model_oct_performance, label=ordered_model_ids[i])
+            plt.plot(self._oct_nums, predict_model_oct_performance, label=ordered_model_ids[i])
         plt.xlabel('octant number')
         plt.ylabel('mAP')
         plt.legend()
@@ -418,17 +470,14 @@ class CompositePerformanceResultOD:
 
         plt.figure()
         for i, eval_model_oct_performance in enumerate(eval_model_performances):
-            plt.plot(self.oct_nums, eval_model_oct_performance, label=ordered_model_ids[i])
+            plt.plot(self._oct_nums, eval_model_oct_performance, label=ordered_model_ids[i])
         plt.xlabel('octant number')
         plt.ylabel('mAP')
         plt.legend()
         plt.title('eval')
         plt.show()
 
-    def archive(self):
-        pass
-
-    def get_3d_distortion_perf_props(self, predict_eval_flag='eval'):
+    def get_3d_distortion_perf_props(self, predict_eval_flag='eval', distortion_ids=None):
         """
         Shares name with equivalent methods in ModelDistortionPerformanceResult, CompositePerformanceResult, and
         ModelDistortionPerformanceOD but implemented differently
@@ -438,11 +487,11 @@ class CompositePerformanceResultOD:
             return self._3d_distortion_perf_props[predict_eval_flag]
 
         if predict_eval_flag == 'predict':
-            distortion_array = self.distortion_array_predict
-            performance_array = self.predict_composite_performance
+            distortion_array = self._distortion_array_predict
+            performance_array = self._predict_composite_performance
         elif predict_eval_flag == 'eval':
-            distortion_array = self.distortion_array
-            performance_array = self.eval_composite_performance
+            distortion_array = self._distortion_array
+            performance_array = self._eval_composite_performance
         else:
             raise ValueError("predict_eval_flag must be either 'predict' or 'eval'")
 
@@ -451,6 +500,9 @@ class CompositePerformanceResultOD:
 
         self._3d_distortion_perf_props[predict_eval_flag] = (self.res_vals, self.blur_vals, self.noise_vals,
                                                              map_3d, distortion_array, performance_array, None)
+
+        self.archive_processed_props(predict_eval_flag=predict_eval_flag)
+        print(f'archived processed {predict_eval_flag} performance props')
 
         return self._3d_distortion_perf_props[predict_eval_flag]
 
@@ -461,10 +513,16 @@ def get_composite_performance_result_od(config):
     performance_eval_result_id_pairs = config['performance_eval_result_ids_pairs']
     identifier = config['identifier']
 
+    if 'res_boundary_weights' in config.keys():
+        res_boundary_weights = config['res_boundary_weights']
+    else:
+        res_boundary_weights = None
+
     composite_performance_od = CompositePerformanceResultOD(
         performance_prediction_result_id_pairs=performance_prediction_result_id_pairs,
         performance_eval_result_id_pairs=performance_eval_result_id_pairs,
-        identifier=identifier
+        identifier=identifier,
+        res_boundary_weights=res_boundary_weights
     )
 
     composite_result_id = str(composite_performance_od)
@@ -478,7 +536,7 @@ def main(config):
 
     composite_performance_od, output_dir = get_composite_performance_result_od(config)
     
-    # flatten_axes = flatten_axes_from_cfg(config)
+    flatten_axes = flatten_axes_from_cfg(config)
     flatten_axis_combinations = flatten_axis_combinations_from_cfg(config)
     fit_keys = fit_keys_from_cfg(config)
 
@@ -548,18 +606,8 @@ def main(config):
                                        directory=fit_sub_dir,
                                        perf_metric='mAP',
                                        az_el_combinations='all',
-                                       show_plots=False)
-
-            # plot.compare_2d_mean_views(f0=map_3d_predict,
-            #                            f1=map3d_measured,
-            #                            data_labels=('measured (predict)', 'measured (eval)'),
-            #                            x_vals=res_vals, y_vals=blur_vals, z_vals=noise_vals,
-            #                            distortion_ids=('res', 'blur', 'noise'),
-            #                            directory=fit_sub_dir,
-            #                            perf_metric='mAP',
-            #                            az_el_combinations='all',
-            #                            show_plots=False,
-            #                            result_id='predict')
+                                       show_plots=False,
+                                       flatten_axes=flatten_axes)
 
             plot.compare_1d_views(f0=map3d_measured,
                                   f1=eval_prediction_3d,

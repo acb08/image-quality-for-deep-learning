@@ -1,6 +1,6 @@
 ---
 
-identifier: composite
+identifier: composite_4-1-res-boundary-weight
 
 performance_prediction_result_id_pairs:
   - [0014rlt-0067yolo-v8l-oct000-ext_best_loss-0054tst-coco_fr90:v0, oct000-m1]
@@ -21,3 +21,5 @@ performance_eval_result_ids_pairs:
   - [0009rlt-0000yolo-v8l-oct101-ext_best_loss-0055tst-coco_fr90_mega-2:v0, oct101-m2]
   - [0011rlt-0000yolo-v8l-oct110-ext_best_loss-0055tst-coco_fr90_mega-2:v0, oct110-m2]
   - [0008rlt-0000yolo-v8l-oct111-ext_best_loss-0055tst-coco_fr90_mega-2:v0, oct111-m2]
+
+res_boundary_weights: [4, 1]

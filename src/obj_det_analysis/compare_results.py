@@ -11,6 +11,8 @@ from src.analysis.analysis_functions import get_sub_dir_and_log_filename, build_
 from src.analysis.fit import fit, evaluate_fit, apply_fit
 from src.analysis import plot
 from src.analysis.aic import akaike_info_criterion
+from src.obj_det_analysis.distortion_performance_composite_od import get_composite_performance_result_od
+from src.utils.classes import PseudoArgs
 
 
 def log_averages(performance_dict, output_dir):
@@ -63,6 +65,19 @@ def main(config):
         allow_differing_distortions = config['allow_differing_distortions']
     else:
         allow_differing_distortions = False
+
+    if 'composite_config_filenames' in config.keys():
+        composite_config_filenames = config['composite_config_filenames']
+
+        for composite_config_filename in composite_config_filenames:
+            pseudo_args = PseudoArgs(config_dir=config['composite_config_dir'],
+                                     config_name=composite_config_filename)
+            composite_config = get_config(pseudo_args)
+            composite_performance_result_od, __ = get_composite_performance_result_od(composite_config)
+            try:
+                distortion_performance_results.append(composite_performance_result_od)
+            except AttributeError:
+                distortion_performance_results[str(composite_performance_result_od)] = composite_performance_result_od
 
     output_dir = get_compare_dir(test_result_identifiers, manual_name=config['manual_name'])
     log_config(output_dir=output_dir, config=config)
@@ -236,7 +251,13 @@ if __name__ == '__main__':
     parser.add_argument('--config_dir',
                         default=Path(Path(__file__).parents[0], 'compare_configs'),
                         help="configuration file directory")
+    parser.add_argument('--composite_config_dir',
+                        default=Path(Path(__file__).parents[0], 'composite_performance_configs'),
+                        help="configuration file directory")
     args_passed = parser.parse_args()
+    composite_config_dir = str(args_passed.composite_config_dir)
+
     run_config = get_config(args_passed)
+    run_config['composite_config_dir'] = composite_config_dir
 
     main(run_config)
