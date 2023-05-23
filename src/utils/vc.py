@@ -21,7 +21,7 @@ _mAP_CODE_PATHS = (
 )
 
 _DISTORTION_PERFORMANCE_COMPOSITE_OD_PATHS = (
-    'distortion_performance_composite_od.py',
+    'src/obj_det_analysis/distortion_performance_composite_od.py',
 )
 
 
@@ -29,7 +29,7 @@ def get_map_hash_mash(_code_paths=_mAP_CODE_PATHS):
 
     hash_mash = str()
 
-    for code_path in _mAP_CODE_PATHS:
+    for code_path in _code_paths:
 
         with open(Path(CODE_ROOT, code_path), 'r') as f:
             data = f.read()

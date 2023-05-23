@@ -1,5 +1,5 @@
 import copy
-
+import json
 from src.obj_det_analysis.load_multiple_od_results import get_multiple_od_distortion_performance_results
 from src.utils.functions import get_config
 import numpy as np
@@ -179,7 +179,7 @@ class CompositePerformanceResultOD:
             (self._predict_model_oct_performance, self._eval_model_oct_performance,
              self._predict_model_oct_performance_dict,
              self._eval_model_oct_performance_dict) = self._get_performance_by_octant()
-            self._octant_model_map = self._assign_best_models_to_octants()
+            self.octant_model_map = self._assign_best_models_to_octants()
 
             self._predict_composite_performance, self._eval_composite_performance = self._composite_performance()
 
@@ -394,7 +394,7 @@ class CompositePerformanceResultOD:
         predict_points_total = 0
         eval_points_total = 0
 
-        for oct_num, (best_model_index, model_id) in self._octant_model_map.items():
+        for oct_num, (best_model_index, model_id) in self.octant_model_map.items():
 
             predict_extract_inds = self._get_extraction_indices(oct_num=oct_num, predict_eval_flag='predict')
             eval_extract_inds = self._get_extraction_indices(oct_num=oct_num, predict_eval_flag='eval')
@@ -532,6 +532,16 @@ def get_composite_performance_result_od(config):
     return composite_performance_od, output_dir
 
 
+def log_octant_model_map(composite_performance_od, output_file):
+
+    if hasattr(composite_performance_od, 'octant_model_map'):
+        octant_model_map = copy.deepcopy(composite_performance_od.octant_model_map)
+        octant_model_map = {int(key): str(val) for key, val in octant_model_map.items()}
+        print('octant-model map: \n', file=output_file)
+        print(json.dumps(octant_model_map, indent=3), file=output_file)
+        print('\n', file=output_file)
+
+
 def main(config):
 
     composite_performance_od, output_dir = get_composite_performance_result_od(config)
@@ -555,6 +565,9 @@ def main(config):
     add_bias_in_fits = False  # only applies to linear fits (all fits here nonlinear)
 
     with open(Path(sub_dir, log_filename), 'w') as output_file:
+
+        log_octant_model_map(composite_performance_od=composite_performance_od,
+                             output_file=output_file)
 
         for fit_key in fit_keys:
 

@@ -3,7 +3,6 @@ An exploration on how to simulate Poisson noise in re-processed images.
 """
 
 import numpy as np
-
 from src.pre_processing.distortion_tools import image_to_electrons, electrons_to_image, \
     apply_partial_poisson_distribution
 from src.pre_processing.distortions import get_kernel_size
@@ -14,6 +13,9 @@ from scipy import interpolate
 from src.utils.definitions import ROOT_DIR, REL_PATHS, WELL_DEPTH
 from pathlib import Path
 from src.utils.functions import id_from_tags
+import matplotlib
+
+matplotlib.use('TkAgg')
 
 
 def apply_blur(img, std):
@@ -21,7 +23,7 @@ def apply_blur(img, std):
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img)
 
 
-def initial_electrons_and_image(fill_fraction=0.5, shape=(64, 64), poisson_noise=True):
+def initial_electrons_and_image(fill_fraction=0.5, shape=(128, 128), poisson_noise=True):
 
     assert 1 >= fill_fraction >= 0
 
