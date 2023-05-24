@@ -1,7 +1,6 @@
 import copy
 import numpy as np
 from PIL import Image
-
 from src.utils.definitions import WELL_DEPTH
 
 FRAGILE_ANNOTATION_KEYS = ['area', 'segmentation']

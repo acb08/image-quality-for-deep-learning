@@ -1,6 +1,6 @@
 ---
 
-identifier: oct-models-mega-1-mega-2_abbrev
+identifier: fr-ext-m1-m2
 
 performance_prediction_result_id_pairs:
   - ['0060rlt-0060yolo-v8l-fr-ext_best_loss-0054tst-coco_fr90:v0', 'megaset-1' ]

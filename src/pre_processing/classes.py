@@ -179,7 +179,7 @@ class PseudoSensor:
     """
     def __init__(self, read_noise_values, input_image_well_depth):
         self._dc_fraction_estimator = None
-        self.read_noise_values = read_noise_values
+        self.read_noise_value = read_noise_values
         self.input_image_well_depth = input_image_well_depth
 
     def convert_scale_electrons(self, image, res_frac):
@@ -187,20 +187,38 @@ class PseudoSensor:
         scaled_electrons = electrons * (1 / res_frac) ** 2
         return scaled_electrons
 
-    def apply_read_noise(self):
-        read_noise_value = random.choice(self.read_noise_values)
-        pass
+    def apply_read_noise(self, electrons):
+        noise = np.random.randn(*np.shape(electrons)) * self.read_noise_value
+        return electrons + noise
 
     def estimate_dc_fraction(self, sigma_blur):
         if self._dc_fraction_estimator is None:
             return 0
         else:
-            return self._dc_fraction_estimator(sigma_blur)
+            raise NotImplementedError
+            # return self._dc_fraction_estimator(sigma_blur)
+
+    def output_image_well_depth(self, res_frac):
+        """
+        Scales well depth by the ratio of output pixels area to input pixel area
+        """
+        return self.input_image_well_depth / res_frac ** 2
 
     def __call__(self, image, res_frac, sigma_blur):
-        dc_fraction = self.estimate_dc_fraction(sigma_blur)
+
         electrons = self.convert_scale_electrons(image, res_frac)
+        dc_fraction = self.estimate_dc_fraction(sigma_blur)
         electrons = apply_partial_poisson_distribution(electrons, dc_fraction=dc_fraction)
+        electrons = self.apply_read_noise(electrons)
+        output_well_depth = self.output_image_well_depth(res_frac=res_frac)
+
+        image = electrons_to_image(electrons=electrons, well_depth=output_well_depth)
+
+        return image, self.read_noise_value
+
+
+
+
 
 
 

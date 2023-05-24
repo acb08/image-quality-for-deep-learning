@@ -183,6 +183,15 @@ class CompositePerformanceResultOD:
 
             self._predict_composite_performance, self._eval_composite_performance = self._composite_performance()
 
+        if 'predict' in self._3d_distortion_perf_props.keys():
+            self._map3d_predict = self._3d_distortion_perf_props['predict'][3]
+        else:
+            self._map3d_predict = None
+        if 'eval' in self._3d_distortion_perf_props.keys():
+            self._map3d_eval = self._3d_distortion_perf_props['eval'][3]
+        else:
+            self._map3d_eval = None
+
     def __len__(self):
         return self._length
 
@@ -191,6 +200,20 @@ class CompositePerformanceResultOD:
 
     def __repr__(self):
         return f'{self.__str__()}-{self.uid}'
+
+    def mean_performance(self):
+        if self._map3d_eval is not None:
+            return float(np.mean(self._map3d_eval))
+        else:
+            self._map3d_eval = self.get_3d_distortion_perf_props(predict_eval_flag='eval')[3]
+            return self.mean_performance()
+
+    def mean_predict_performance(self):
+        if self._map3d_predict is not None:
+            return float(np.mean(self._map3d_predict))
+        else:
+            self._map3d_predict = self.get_3d_distortion_perf_props(predict_eval_flag='predict')[3]
+            return self.mean_predict_performance()
 
     def _get_instance_hashes(self):
 
@@ -227,7 +250,7 @@ class CompositePerformanceResultOD:
     def get_processed_instance_props_path(self, predict_eval_flag):
         return _get_processed_instance_props_path(self, predict_eval_flag=predict_eval_flag)
 
-    def archive_processed_props(self, predict_eval_flag: object) -> object:
+    def archive_processed_props(self, predict_eval_flag):
 
         data = self.get_3d_distortion_perf_props(predict_eval_flag=predict_eval_flag)
         res_vals, blur_vals, noise_vals, map_3d, distortion_array, performance_array, __ = data
@@ -518,11 +541,17 @@ def get_composite_performance_result_od(config):
     else:
         res_boundary_weights = None
 
+    if 'ignore_vc_hashes' in config.keys():
+        ignore_vc_hashes = config['ignore_vc_hashes']
+    else:
+        ignore_vc_hashes = False
+
     composite_performance_od = CompositePerformanceResultOD(
         performance_prediction_result_id_pairs=performance_prediction_result_id_pairs,
         performance_eval_result_id_pairs=performance_eval_result_id_pairs,
         identifier=identifier,
-        res_boundary_weights=res_boundary_weights
+        res_boundary_weights=res_boundary_weights,
+        ignore_vc_hashes=ignore_vc_hashes
     )
 
     composite_result_id = str(composite_performance_od)
@@ -568,6 +597,19 @@ def main(config):
 
         log_octant_model_map(composite_performance_od=composite_performance_od,
                              output_file=output_file)
+
+        mean_predict_performance = composite_performance_od.mean_predict_performance()
+        mean_eval_performance = composite_performance_od.mean_performance()
+
+        print(f'mean predict performance: {mean_predict_performance}', file=output_file)
+        print(f'mean eval performance: {mean_eval_performance}', file=output_file)
+
+        if hasattr(composite_performance_od, 'res_boundary'):
+            print(f'res boundary: {composite_performance_od.res_boundary}', file=output_file)
+        if hasattr(composite_performance_od, 'blur_boundary'):
+            print(f'blur boundary: {composite_performance_od.blur_boundary}', file=output_file)
+        if hasattr(composite_performance_od, 'noise_boundary'):
+            print(f'noise boundary: {composite_performance_od.noise_boundary}', file=output_file)
 
         for fit_key in fit_keys:
 
