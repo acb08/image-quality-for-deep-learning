@@ -3,10 +3,21 @@ from PIL import Image
 import numpy as np
 from torchvision import transforms
 from src.utils.definitions import DISTORTION_RANGE, NATIVE_RESOLUTION, DISTORTION_RANGE_90, \
-    COCO_OCT_DISTORTION_BOUNDS, COCO_MP_90, COCO_EP_90
-from src.pre_processing.classes import VariableCOCOResize, VariableImageResize
+    COCO_OCT_DISTORTION_BOUNDS, COCO_MP_90, COCO_EP_90, WELL_DEPTH
+from src.pre_processing.classes import VariableCOCOResize, VariableImageResize, PseudoSensor
 
 RNG = np.random.default_rng()
+
+PSEUDO_SENSOR_NOISE_VALUES = {'low': int(0.001 * WELL_DEPTH),
+                              'medium': int(0.01 * WELL_DEPTH),
+                              'high': int(0.1 * WELL_DEPTH)}
+
+pseudo_sensor_low_noise = PseudoSensor(read_noise_value=PSEUDO_SENSOR_NOISE_VALUES['low'],
+                                       input_image_well_depth=WELL_DEPTH)
+pseudo_sensor_med_noise = PseudoSensor(read_noise_value=PSEUDO_SENSOR_NOISE_VALUES['medium'],
+                                       input_image_well_depth=WELL_DEPTH)
+pseudo_sensor_high_noise = PseudoSensor(read_noise_value=PSEUDO_SENSOR_NOISE_VALUES['high'],
+                                        input_image_well_depth=WELL_DEPTH)
 
 
 def get_kernel_size(std):
@@ -992,4 +1003,7 @@ coco_tag_to_image_distortions = {  # coco distortion functions return distortion
     'r_low_debug_coco': r_low_debug_coco,
     'b_large_debug_coco': b_large_debug_coco,
 
+    'ps_ln': pseudo_sensor_low_noise,
+    'ps_mn': pseudo_sensor_med_noise,
+    'ps_hn': pseudo_sensor_high_noise,
 }

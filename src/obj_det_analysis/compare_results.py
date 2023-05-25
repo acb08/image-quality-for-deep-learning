@@ -30,6 +30,9 @@ def main(config):
     wandb.login()
 
     test_result_identifiers = config['test_result_identifiers']
+
+    all_results = []
+
     distortion_performance_results = get_multiple_od_distortion_performance_results(
         result_id_pairs=test_result_identifiers)
     flatten_axes = flatten_axes_from_cfg(config)
@@ -69,15 +72,18 @@ def main(config):
     if 'composite_config_filenames' in config.keys():
         composite_config_filenames = config['composite_config_filenames']
 
+        composite_results = []
+
         for composite_config_filename in composite_config_filenames:
             pseudo_args = PseudoArgs(config_dir=config['composite_config_dir'],
                                      config_name=composite_config_filename)
             composite_config = get_config(pseudo_args)
             composite_performance_result_od, __ = get_composite_performance_result_od(composite_config)
-            try:
-                distortion_performance_results.append(composite_performance_result_od)
-            except AttributeError:
-                distortion_performance_results[str(composite_performance_result_od)] = composite_performance_result_od
+            composite_results.append(composite_performance_result_od)
+
+        all_results.extend(composite_results)
+
+    all_results.extend(distortion_performance_results)
 
     output_dir = get_compare_dir(test_result_identifiers, manual_name=config['manual_name'])
     log_config(output_dir=output_dir, config=config)
@@ -98,11 +104,11 @@ def main(config):
     else:
         single_legend = True
 
-    for distortion_performance_result in distortion_performance_results:
+    for result in all_results:
 
         _res_vals, _blur_vals, _noise_vals, _map3d, _parameter_array, _perf_array, _full_extract = (
-            distortion_performance_result.get_3d_distortion_perf_props(distortion_ids=('res', 'blur', 'noise')))
-        key = str(distortion_performance_result)
+            result.get_3d_distortion_perf_props(distortion_ids=('res', 'blur', 'noise')))
+        key = str(result)
         performance_dict_3d[key] = _map3d
 
         if fitting_arrays is not None:
@@ -244,7 +250,7 @@ def main(config):
 
 if __name__ == '__main__':
 
-    config_name = 'v8l-fr-ext_fr90_m1-v-m2.yml'
+    config_name = 'v8l-fr-ext-m2_composite-res-4-1.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_name, help='config filename to be used')

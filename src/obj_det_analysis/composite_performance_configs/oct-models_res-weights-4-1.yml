@@ -1,6 +1,6 @@
 ---
 
-identifier: composite_4-1-res-boundary-weight
+identifier: composite
 
 performance_prediction_result_id_pairs:
   - [0014rlt-0067yolo-v8l-oct000-ext_best_loss-0054tst-coco_fr90:v0, oct000-m1]

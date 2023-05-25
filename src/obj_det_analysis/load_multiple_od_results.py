@@ -14,8 +14,6 @@ def get_multiple_od_distortion_performance_results(result_id_pairs,
 
     if output_type == 'list':
         performance_results = []
-    elif output_type == 'dict':
-        performance_results = {}
     else:
         raise Exception('invalid output_type')
 
@@ -31,7 +29,5 @@ def get_multiple_od_distortion_performance_results(result_id_pairs,
 
             if output_type == 'list':
                 performance_results.append(distortion_performance_result)
-            elif output_type == 'dict':
-                performance_results[artifact_id] = distortion_performance_result
 
     return performance_results

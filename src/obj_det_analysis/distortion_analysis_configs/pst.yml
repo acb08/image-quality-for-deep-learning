@@ -1,0 +1,7 @@
+---
+
+result_id: 0058rlt-0060yolo-v8l-fr-ext_best_loss-0058tst-pseudo-sensor-fr-test:v0
+identifier: pseudo-sensor
+
+flatten_axis_combinations: [[0, 2], [1, 2]]
+flatten_axes: [0, 1]

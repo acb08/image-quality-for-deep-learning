@@ -5,8 +5,7 @@ import torch
 from PIL import Image
 
 from torchvision import transforms
-from src.pre_processing.distortion_tools import image_to_electrons, electrons_to_image, \
-    apply_partial_poisson_distribution
+from src.pre_processing.distortion_tools import image_to_electrons, electrons_to_image
 
 
 class VariableResolution:
@@ -177,40 +176,49 @@ class PseudoSensor:
     """
     Scales signal and noise properties of an input image based on its associated blur and resolution metadata
     """
-    def __init__(self, read_noise_values, input_image_well_depth):
+    def __init__(self, read_noise_value, input_image_well_depth):
         self._dc_fraction_estimator = None
-        self.read_noise_value = read_noise_values
+        self.read_noise_value = read_noise_value
         self.input_image_well_depth = input_image_well_depth
 
     def convert_scale_electrons(self, image, res_frac):
         electrons = image_to_electrons(image, self.input_image_well_depth)
-        scaled_electrons = electrons * (1 / res_frac) ** 2
+        scaled_electrons = self.rescale(value=electrons, res_frac=res_frac)
         return scaled_electrons
 
     def apply_read_noise(self, electrons):
         noise = np.random.randn(*np.shape(electrons)) * self.read_noise_value
-        return electrons + noise
-
-    def estimate_dc_fraction(self, sigma_blur):
-        if self._dc_fraction_estimator is None:
-            return 0
-        else:
-            raise NotImplementedError
-            # return self._dc_fraction_estimator(sigma_blur)
+        noise = np.round(noise, 0)
+        electrons = electrons + noise
+        return electrons
 
     def output_image_well_depth(self, res_frac):
         """
         Scales well depth by the ratio of output pixels area to input pixel area
         """
-        return self.input_image_well_depth / res_frac ** 2
+        return self.rescale(value=self.input_image_well_depth, res_frac=res_frac)
 
-    def __call__(self, image, res_frac, sigma_blur):
+    @staticmethod
+    def apply_poisson_distribution(electrons):
+        return np.random.poisson(electrons)
+
+    @staticmethod
+    def rescale(value, res_frac):
+        scale = (1 / res_frac) ** 2
+        return scale * value
+
+    @staticmethod
+    def clip_electrons(electrons, well_depth):
+        return np.clip(electrons, 0, well_depth)
+
+    def __call__(self, image, res_frac):
+
+        output_well_depth = self.output_image_well_depth(res_frac=res_frac)
 
         electrons = self.convert_scale_electrons(image, res_frac)
-        dc_fraction = self.estimate_dc_fraction(sigma_blur)
-        electrons = apply_partial_poisson_distribution(electrons, dc_fraction=dc_fraction)
+        electrons = self.apply_poisson_distribution(electrons)
         electrons = self.apply_read_noise(electrons)
-        output_well_depth = self.output_image_well_depth(res_frac=res_frac)
+        electrons = self.clip_electrons(electrons, well_depth=output_well_depth)
 
         image = electrons_to_image(electrons=electrons, well_depth=output_well_depth)
 

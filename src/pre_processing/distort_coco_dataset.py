@@ -96,6 +96,9 @@ def apply_distortions(image, distortion_functions, mapped_annotations, updated_i
 
     for distortion_func in distortion_functions:
 
+        if hasattr(distortion_func, 'input_image_well_depth'):  # use noise functions that scale signal for res
+            pass
+
         image, __, distortion_type_flag, distortion_value = distortion_func(image)
 
         if distortion_type_flag == 'res':
@@ -279,64 +282,6 @@ def distort_coco(image_directory, instances, iterations, distortion_tags, output
     new_instances['annotations'] = annotations
 
     return new_instances
-
-
-# def get_dataset_split_keys(artifact_type):
-#     if artifact_type == 'train_dataset':
-#         return 'train', 'val'
-#     elif artifact_type == 'test_dataset':
-#         return 'test'
-#     else:
-#         return None
-
-
-# def directory_sub_structure(artifact_type):
-#
-#     if artifact_type == 'train_dataset':
-#         dataset_split_keys = ('train', 'val')
-#     elif artifact_type == 'test_dataset':
-#         dataset_split_keys = ('test', )
-#     else:
-#         raise ValueError('directory_sub_structure only defined for train and test datasets')
-#
-#     dataset_sub_struct = REL_PATHS['dataset_sub_struct']
-#
-#     return dataset_split_keys, {key: dataset_sub_struct[key] for key in dataset_split_keys}\
-
-
-# def find_yolo_labels(image_dir, image_suffixes=('.png', '.jpg'), intermediate_sub_dir='labels'):
-#
-#     image_suffixes = set(image_suffixes)
-#     image_names = get_relevant_filenames(image_dir, extensions=image_suffixes)
-#     image_names = set(image_names)
-#
-#     yolo_label_filenames = [image_to_yolo_label_filename(name) for name in image_names]
-#     yolo_label_filenames = set(yolo_label_filenames)
-#
-#     target_sub_dir_name = Path(image_dir).parts[-1]
-#
-#     found = False
-#     search_dir = Path(image_dir)
-#     searched_to_home_dir = False
-#
-#     while not found and not searched_to_home_dir:
-#
-#         if Path(search_dir, target_sub_dir_name).is_dir():
-#             pass
-#
-#
-# def check_matching_filenames(directory, target_filenames):
-#     directory = Path(directory)
-#
-#
-# def get_relevant_filenames(directory, extensions):
-#
-#     extensions = set(extensions)
-#     file_paths = list(Path(directory).iterdir())
-#     file_names = [file_path.name for file_path in file_paths if file_path.suffix in extensions]
-#
-#     return file_names
-#
 
 
 def image_dir_to_yolo_label_dir(image_path):

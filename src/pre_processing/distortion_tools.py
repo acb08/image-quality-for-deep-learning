@@ -91,3 +91,7 @@ def apply_partial_poisson_distribution(signal, dc_fraction=0):
     poisson_component = signal - dc_component
 
     return dc_component + np.random.poisson(poisson_component)
+
+
+def apply_poisson_distribution(signal):
+    return np.random.poisson(signal)
