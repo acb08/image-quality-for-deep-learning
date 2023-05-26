@@ -37,7 +37,7 @@ if __name__ == '__main__':
         res_fractions.append(res_frac)
 
         for key, func in noise_functions.items():
-            sim_image, __ = func(image=image, res_frac=res_frac)
+            sim_image, __, __, __ = func(image=image, res_frac=res_frac)
             snr = estimate_snr(sim_image)
             std = np.std(sim_image)
             snrs[key].append(snr)

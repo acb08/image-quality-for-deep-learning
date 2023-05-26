@@ -1,11 +1,12 @@
 import random
-
 import numpy as np
 import torch
 from PIL import Image
-
 from torchvision import transforms
 from src.pre_processing.distortion_tools import image_to_electrons, electrons_to_image
+
+
+RNG = np.random.default_rng()
 
 
 class VariableResolution:
@@ -222,7 +223,7 @@ class PseudoSensor:
 
         image = electrons_to_image(electrons=electrons, well_depth=output_well_depth)
 
-        return image, self.read_noise_value
+        return image, None, 'noise', self.read_noise_value
 
 
 

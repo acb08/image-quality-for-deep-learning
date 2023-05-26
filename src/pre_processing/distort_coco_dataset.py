@@ -97,9 +97,11 @@ def apply_distortions(image, distortion_functions, mapped_annotations, updated_i
     for distortion_func in distortion_functions:
 
         if hasattr(distortion_func, 'input_image_well_depth'):  # use noise functions that scale signal for res
-            pass
+            res_frac = distortion_data['res']
+            image, __, distortion_type_flag, distortion_value = distortion_func(image, res_frac)
 
-        image, __, distortion_type_flag, distortion_value = distortion_func(image)
+        else:
+            image, __, distortion_type_flag, distortion_value = distortion_func(image)
 
         if distortion_type_flag == 'res':
             res = distortion_value
