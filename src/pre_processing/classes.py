@@ -228,10 +228,10 @@ class PseudoSensor:
 
 class PseudoSensorVariedSNR:
     """
-    Simulates imaging in varied SNR regimes with variable resolution / pixel size . Globally scales input signal,
+    Simulates imaging in varied SNR regimes with variable resolution / pixel size. Globally scales input signal,
     applies fixed read noise and dark current that is inversely proportional to signal scaling (i.e. the dark current
     increases to account for longer integration times when signal is lower).  Scales signal up with when resolution
-    decreases / pixel size increases, where signal scaling is inversely proportional to the square of resolution
+    decreases / pixel size increases, with signal scaling that is inversely proportional to the square of resolution
     fraction / directly proportional to pixel area ratio.
     """
     def __init__(self, signal_fraction, read_noise, input_image_well_depth, baseline_dark_current):

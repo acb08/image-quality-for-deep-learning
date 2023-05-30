@@ -10,7 +10,7 @@ RNG = np.random.default_rng()
 
 PSEUDO_SENSOR_NOISE_VALUES = {'low': int(0.001 * WELL_DEPTH),
                               'medium': int(0.01 * WELL_DEPTH),
-                              'high': int(0.1 * WELL_DEPTH)}
+                              'high': int(0.15 * WELL_DEPTH)}
 
 pseudo_sensor_low_noise = PseudoSensor(read_noise_value=PSEUDO_SENSOR_NOISE_VALUES['low'],
                                        input_image_well_depth=WELL_DEPTH)
