@@ -2,7 +2,7 @@
 
 description: create pseudo-sensor high noise dataset
 
-parent_dataset_id: val2017
+parent_dataset_id: coco128
 parent_artifact_alias: latest
 parent_artifact_filename: standard  # standard functions as a flag to use definitions.STANDARD_ARTIFACT_FILENAME
 
@@ -11,7 +11,7 @@ val_frac: null
 
 distortion_tags: ['b_fr90_coco', 'r_fr90_coco', 'ps_hn']
 distortion_type_flags: ['blur', 'res', 'noise']  # specifies distortion_tags associated distortion types
-iterations: 20
+iterations: 1
 artifact_type: test_dataset
 #dataset_split_key: test  # used to mirror 'train'/'val' split in data structure
 artifact_filename: standard

@@ -1,0 +1,10 @@
+---
+
+result_id: 0083rlt-yolov8l-0060tst-pseudo-sensor-high-noise:v0
+identifier: ps-hn-v8l-pt
+
+flatten_axis_combinations: [[0, 2], [1, 2]]
+flatten_axes: [2]
+
+fit_keys: null
+basic_plots: True

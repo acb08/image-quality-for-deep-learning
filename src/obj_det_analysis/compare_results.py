@@ -153,7 +153,8 @@ def main(config):
                               directory=output_dir,
                               perf_metric='mAP',
                               show_plots=show_plots,
-                              az_el_combinations='all')
+                              az_el_combinations='all',
+                              flatten_axes=flatten_axes)
 
     if fit_keys is not None:
 

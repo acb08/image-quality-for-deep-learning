@@ -1,0 +1,10 @@
+---
+
+result_id:
+identifier:
+
+flatten_axis_combinations: [[0, 2], [1, 2]]
+flatten_axes: [2]
+
+fit_keys: null
+basic_plots: True

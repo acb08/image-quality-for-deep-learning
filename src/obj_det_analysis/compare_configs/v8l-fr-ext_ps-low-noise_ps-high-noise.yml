@@ -1,0 +1,24 @@
+---
+
+test_result_identifiers:
+
+  - [ '0076rlt-0060yolo-v8l-fr-ext_best_loss-0058tst-pseudo-sensor-low-noise:v0',
+      'full-range, low noise dataset' ]
+  - [ '0084rlt-0060yolo-v8l-fr-ext_best_loss-0060tst-pseudo-sensor-high-noise:v0',
+      'full-range, high noise dataset']
+
+overwrite: False
+manual_name: pseudo-sensor-low-noise_high-noise_fr-ext
+
+flatten_axis_combinations: [[0, 2], [1, 2]]
+flatten_axes: [2]
+
+fit_keys: null
+
+plot_together: True
+y_limits: null
+
+show_plots: False
+basic_plots: True
+
+allow_differing_distortions: True
