@@ -4,7 +4,7 @@ import numpy as np
 from torchvision import transforms
 from src.utils.definitions import DISTORTION_RANGE, NATIVE_RESOLUTION, DISTORTION_RANGE_90, \
     COCO_OCT_DISTORTION_BOUNDS, COCO_MP_90, COCO_EP_90, WELL_DEPTH
-from src.pre_processing.classes import VariableCOCOResize, VariableImageResize, PseudoSensor
+from src.pre_processing.classes import VariableCOCOResize, VariableImageResize, PseudoSensor, PseudoSensorVariedSNR
 
 RNG = np.random.default_rng()
 
@@ -18,6 +18,30 @@ pseudo_sensor_med_noise = PseudoSensor(read_noise_value=PSEUDO_SENSOR_NOISE_VALU
                                        input_image_well_depth=WELL_DEPTH)
 pseudo_sensor_high_noise = PseudoSensor(read_noise_value=PSEUDO_SENSOR_NOISE_VALUES['high'],
                                         input_image_well_depth=WELL_DEPTH)
+
+BASELINE_READ_NOISE = 10
+BASELINE_DARK_CURRENT = 1
+
+LOW_SNR_SIGNAL_FRAC = 10 / WELL_DEPTH
+
+PSEUDO_SENSOR_VARIED_SNR_SIGNAL_FRACTIONS = {'low_snr': 0.0025,
+                                             'med_snr': 0.1,
+                                             'high_snr': 1}
+
+pseudo_sensor_low_snr = PseudoSensorVariedSNR(signal_fraction=PSEUDO_SENSOR_VARIED_SNR_SIGNAL_FRACTIONS['low_snr'],
+                                              read_noise=BASELINE_READ_NOISE,
+                                              input_image_well_depth=WELL_DEPTH,
+                                              baseline_dark_current=BASELINE_DARK_CURRENT)
+
+pseudo_sensor_med_snr = PseudoSensorVariedSNR(signal_fraction=PSEUDO_SENSOR_VARIED_SNR_SIGNAL_FRACTIONS['med_snr'],
+                                              read_noise=BASELINE_READ_NOISE,
+                                              input_image_well_depth=WELL_DEPTH,
+                                              baseline_dark_current=BASELINE_DARK_CURRENT)
+
+pseudo_sensor_high_snr = PseudoSensorVariedSNR(signal_fraction=PSEUDO_SENSOR_VARIED_SNR_SIGNAL_FRACTIONS['high_snr'],
+                                               read_noise=BASELINE_READ_NOISE,
+                                               input_image_well_depth=WELL_DEPTH,
+                                               baseline_dark_current=BASELINE_DARK_CURRENT)
 
 
 def get_kernel_size(std):
@@ -1006,4 +1030,8 @@ coco_tag_to_image_distortions = {  # coco distortion functions return distortion
     'ps_ln': pseudo_sensor_low_noise,
     'ps_mn': pseudo_sensor_med_noise,
     'ps_hn': pseudo_sensor_high_noise,
+
+    'ps_high_snr': pseudo_sensor_high_snr,
+    'ps_med_snr': pseudo_sensor_med_snr,
+    'ps_low_snr': pseudo_sensor_low_snr
 }

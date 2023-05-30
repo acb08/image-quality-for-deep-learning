@@ -226,6 +226,124 @@ class PseudoSensor:
         return image, None, 'noise', self.read_noise_value
 
 
+class PseudoSensorVariedSNR:
+    """
+    Simulates imaging in varied SNR regimes with variable resolution / pixel size . Globally scales input signal,
+    applies fixed read noise and dark current that is inversely proportional to signal scaling (i.e. the dark current
+    increases to account for longer integration times when signal is lower).  Scales signal up with when resolution
+    decreases / pixel size increases, where signal scaling is inversely proportional to the square of resolution
+    fraction / directly proportional to pixel area ratio.
+    """
+    def __init__(self, signal_fraction, read_noise, input_image_well_depth, baseline_dark_current):
+        """
+
+        :param signal_fraction: float, scale factor input signal
+        :param read_noise:
+        :param input_image_well_depth:
+        :param baseline_dark_current:
+        """
+        self.signal_fraction = signal_fraction
+        self.read_noise = read_noise
+        self.input_image_well_depth = input_image_well_depth
+
+        self.min_output_well_depth = self.set_min_output_well_depth()
+        self._baseline_dark_current = baseline_dark_current
+
+        self.avg_dark_current = self.get_dark_current()
+
+    def set_min_output_well_depth(self):
+        """
+        Assumes that all input images all come from sensors with the same well depth.  To avoid downstream
+        normalization issues from images that do not fill the full dynamic range, the PseudoSensorVariedSNR class
+        scales well depth with signal attenuation, so that input and output images of differing SNR still have
+        similar dynamic ranges.
+        """
+        return self.signal_fraction * self.input_image_well_depth
+
+    def get_dark_current(self):
+        """
+        Assumes that the best SNR scenario corresponds to a minimum integration time that yields a low baseline dark
+        current.  When the signal level is attenuated, the integration time and dark current are assumed to increase
+        inversely.
+        """
+        return self._baseline_dark_current / self.signal_fraction
+
+    def apply_read_noise(self, electrons):
+        noise = np.random.randn(*np.shape(electrons)) * self.read_noise
+        noise = np.round(noise, 0)
+        electrons = electrons + noise
+        return electrons
+
+    def apply_dark_current(self, electrons):
+        dark_electrons = RNG.poisson(lam=self.avg_dark_current, size=np.shape(electrons))
+        return electrons + dark_electrons
+
+    def attenuate(self, electrons):
+        return self.signal_fraction * electrons
+
+    @staticmethod
+    def pix_rescale(value, res_frac):
+        scale = (1 / res_frac) ** 2
+        return scale * value
+
+    @staticmethod
+    def apply_poisson_distribution(signal):
+        return RNG.poisson(lam=signal)
+
+    @staticmethod
+    def clip_electrons(electrons, well_depth):
+        return np.clip(electrons, 0, well_depth)
+
+    @staticmethod
+    def quantization_noise(well_depth):
+        quantization_step = well_depth / 2 ** 8
+        quantization_variance = quantization_step ** 2 / 12
+        return np.std(quantization_variance)
+
+    def subtract_dark_offset(self, electrons):
+        """
+        Effectively zero-centers the dark current Poisson distribution. Used to avoid normalization issues that could
+        arise from significant dc bias in the images
+        """
+        return electrons - self.avg_dark_current
+
+    def output_image_well_depth(self, res_frac):
+        """
+        Scales well depth by the ratio of output pixel area to input pixel area
+        """
+        return self.pix_rescale(value=self.min_output_well_depth, res_frac=res_frac)
+
+    def __call__(self, image, res_frac):
+
+        output_well_depth = self.output_image_well_depth(res_frac=res_frac)
+
+        electrons = image_to_electrons(image, self.input_image_well_depth)
+        initial_mean = np.mean(electrons)
+        electrons = self.attenuate(electrons)
+        attenuated_mean = np.mean(electrons)
+
+        electrons = self.pix_rescale(value=electrons, res_frac=res_frac)
+
+        approx_signal = np.max(electrons) - np.min(electrons)  # very rudimentary
+
+        noisy_electrons = self.apply_poisson_distribution(electrons)
+        noisy_electrons = self.apply_read_noise(noisy_electrons)
+        noisy_electrons = self.apply_dark_current(noisy_electrons)
+        noisy_electrons = self.subtract_dark_offset(noisy_electrons)
+        noisy_electrons = self.clip_electrons(noisy_electrons, well_depth=output_well_depth)
+
+        electron_noise = np.std(noisy_electrons - electrons)
+        quantization_noise = self.quantization_noise(well_depth=output_well_depth)
+        approx_noise = np.sqrt(electron_noise ** 2 + quantization_noise ** 2)
+
+        approx_snr = approx_signal / approx_noise
+
+        output_image = electrons_to_image(electrons=noisy_electrons, well_depth=output_well_depth)
+
+        print(round(float(initial_mean), 0), round(float(attenuated_mean), 0), round(attenuated_mean / initial_mean, 2))
+        print(approx_snr, '\n')
+
+        return output_image, approx_snr, 'noise', approx_noise
 
 
 

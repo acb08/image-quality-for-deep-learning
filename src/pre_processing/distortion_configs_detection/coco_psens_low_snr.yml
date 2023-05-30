@@ -1,0 +1,22 @@
+---
+
+description: create pseudo-sensor high snr dataset
+
+parent_dataset_id: coco128
+parent_artifact_alias: latest
+parent_artifact_filename: standard  # standard functions as a flag to use definitions.STANDARD_ARTIFACT_FILENAME
+
+num_images: all
+val_frac: null
+
+distortion_tags: ['b_fr90_coco', 'r_fr90_coco', 'ps_low_snr']
+distortion_type_flags: ['blur', 'res', 'noise']  # specifies distortion_tags associated distortion types
+iterations: 3
+artifact_type: test_dataset
+#dataset_split_key: test  # used to mirror 'train'/'val' split in data structure
+artifact_filename: standard
+datatype_key: np.uint8
+
+image_shape: null
+
+name_string: pseudo-sensor-low-snr

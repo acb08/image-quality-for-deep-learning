@@ -227,7 +227,8 @@ if __name__ == '__main__':
                                    directory=_output_dir,
                                    perf_metric='mAP',
                                    az_el_combinations='all',
-                                   show_plots=True)
+                                   show_plots=True,
+                                   flatten_axes=_flatten_axes)
 
     if basic_plots and _flatten_axis_combinations is not None:
 
