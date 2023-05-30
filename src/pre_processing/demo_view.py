@@ -342,11 +342,18 @@ if __name__ == '__main__':
     # ]
 
     # _local_root = r'/home/acb6595/places/datasets/test/0006tst-pl-rgb'
+    # _input_directories = [
+    #     r'/home/acb6595/places/datasets/test/0006tst-pl-rgb/rgb',
+    #     r'/home/acb6595/places/datasets/test/0006tst-pl-rgb/1-res',
+    #     r'/home/acb6595/places/datasets/test/0006tst-pl-rgb/2-blur',
+    #     r'/home/acb6595/places/datasets/test/0006tst-pl-rgb/3-noise'
+    # ]
+
     _input_directories = [
-        r'/home/acb6595/places/datasets/test/0006tst-pl-rgb/rgb',
-        r'/home/acb6595/places/datasets/test/0006tst-pl-rgb/1-res',
-        r'/home/acb6595/places/datasets/test/0006tst-pl-rgb/2-blur',
-        r'/home/acb6595/places/datasets/test/0006tst-pl-rgb/3-noise'
+        r'/home/acb6595/places/datasets/test/0007tst-pl-rgb-fr90-cp/rgb',
+        r'/home/acb6595/places/datasets/test/0007tst-pl-rgb-fr90-cp/1-res',
+        r'/home/acb6595/places/datasets/test/0007tst-pl-rgb-fr90-cp/2-blur',
+        r'/home/acb6595/places/datasets/test/0007tst-pl-rgb-fr90-cp/3-noise'
     ]
 
     # _input_directories = [Path(_local_root, sub_dir) for sub_dir in _input_directories]
@@ -358,7 +365,7 @@ if __name__ == '__main__':
     # _output_directory_name = 'ep_image_chain_rgb'
     # _output_directory_name = 'upsplash_mp90_image_chain_rgb'
     # _output_directory_name = 'blur_slice_7-2_compare'
-    _output_directory_name = 'pl-rgb-checkout'
+    _output_directory_name = 'pl-rgb-fr90-cp'
 
     _image_strip_output_dir = Path(definitions.ROOT_DIR, definitions.REL_PATHS['demo_images'], _output_directory_name)
 

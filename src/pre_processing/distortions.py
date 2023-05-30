@@ -474,6 +474,21 @@ def b_fr90_coco(img):
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'blur', std
 
 
+def b_fr90_pl_cp(img):
+
+    """
+    Places365 equivalent of coco fr90 blur transform b_fr90_coco() to be used in generating Places365 RGB
+    comparison test dataset
+    """
+
+    sigma_range = DISTORTION_RANGE_90['coco']['blur']
+    std = np.random.choice(sigma_range)
+
+    kernel_size = get_kernel_size(std)
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
+
+
 _MP90_COCO_KERNEL_SIZE = get_kernel_size(COCO_MP_90['blur'])
 
 
@@ -609,6 +624,20 @@ def n_fr90_coco(img):
     return img_out, None, 'noise', lambda_poisson
 
 
+def n_fr90_pl_cp(img):
+    """
+    Places365 equivalent of coco fr90 noise transform n_fr90_coco() to be used in generating Places365 RGB
+    comparison test dataset
+    """
+
+    sigma_vals = DISTORTION_RANGE_90['coco']['noise']
+    sigma_poisson = np.random.choice(sigma_vals)
+    lambda_poisson = int(sigma_poisson ** 2)  # convert from np.int64 to regular int for json serialization
+    img_out = _add_zero_centered_poisson_noise(img, lambda_poisson)
+
+    return img_out, 'lambda_poisson', lambda_poisson
+
+
 def n_mp90_coco(img):
 
     sigma_poisson = COCO_MP_90['noise']
@@ -683,6 +712,23 @@ def r_fr90_coco(img):
     img_out = VariableCOCOResize()(img, res_frac)
 
     return img_out, None, 'res', res_frac
+
+
+def r_fr90_pl_cp():
+
+    """
+    Places365 equivalent of coco fr90 resolution transform r_fr90_coco() to be used in generating Places365 RGB
+    comparison test dataset
+    """
+
+    max_size = 256
+
+    res_fractions = DISTORTION_RANGE_90['coco']['res']
+    sizes = [int(res_frac * max_size) for res_frac in res_fractions]
+
+    transform = VariableImageResize(sizes)
+
+    return transform
 
 
 def r_mp90_coco(img):
@@ -978,7 +1024,11 @@ tag_to_image_distortion = {
     'n_ep90_pl': n_ep90_pl,
     'n_mp_s6': n_mp_s6,
     'n_mp_pl': n_mp_pl,
-    'n_mp90_pl': n_mp90_pl
+    'n_mp90_pl': n_mp90_pl,
+
+    'r_fr90_pl_cp': r_fr90_pl_cp,
+    'b_fr90_pl_cp': b_fr90_pl_cp,
+    'n_fr90_pl_cp': n_fr90_pl_cp,
 }
 
 
