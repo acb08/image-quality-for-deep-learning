@@ -66,5 +66,8 @@
 #result_id: 0155-rlt-0035-resnet18-endpoint-90_best_loss-0012-tst-full_range_90_mega_set_1_noise:v0
 #identifier: RN18-endpoint
 
-result_id: 0189-rlt-resnet18_pretrained-0012-tst-full_range_90_mega_set_1_noise:v0
-identifier: RN18-pretrained
+#result_id: 0189-rlt-resnet18_pretrained-0012-tst-full_range_90_mega_set_1_noise:v0
+#identifier: RN18-pretrained
+
+result_id: 0207rlt-densenet161_pretrained-0020tst-pl-rgb-fr90-cp-megaset_noise:v0
+identifier: DN161-pretrained-rgb-cp
