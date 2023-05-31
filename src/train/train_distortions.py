@@ -1,4 +1,5 @@
-from src.pre_processing.classes import VariableResolution, VariablePoissonNoiseChannelReplicated
+from src.pre_processing.classes import VariableResolution, VariablePoissonNoiseChannelReplicated, \
+    VariablePoissonNoiseIndependentChannel
 import numpy as np
 from src.utils.definitions import DISTORTION_RANGE, NATIVE_RESOLUTION, DISTORTION_RANGE_90
 from torchvision import transforms
@@ -412,6 +413,18 @@ def bt_fr_pl():
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)
 
 
+def bt_fr_pl_cp():
+    """
+    Variable blur transform to parallel COCO full range training
+    """
+    kernel_size = 31
+    std_min = DISTORTION_RANGE['coco']['blur'][0]
+    std_max = DISTORTION_RANGE['coco']['blur'][1]
+    std = (std_min, std_max)
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)
+
+
 def bt_0_pl():
     """
     variable blur transform covering the lower half of the place blur range
@@ -496,6 +509,18 @@ def nt_fr_pl():
     return VariablePoissonNoiseChannelReplicated(sigma_poisson_range, clamp)
 
 
+def nt_fr_pl_cp():
+    """
+    returns a custom transform that adds zero-centered, channel-replicated Poisson noise from the sat6 nose range scaled
+    by 1 /255 and clamps the final output tensor to fall on [0, 1], where output_tensor = input_tensor + Poisson noise.
+
+    Intended to be used in dataloader via Transforms.compose().
+    """
+    sigma_poisson_range = DISTORTION_RANGE['coco']['noise']
+    clamp = True
+    return VariablePoissonNoiseChannelReplicated(sigma_poisson_range, clamp)
+
+
 def nt_0_pl():
     """
     returns a custom transform that adds zero-centered, channel-replicated Poisson noise from the lower half of the
@@ -509,7 +534,7 @@ def nt_0_pl():
     sigma_poisson_max = int((sigma_poisson_min_fr + sigma_poisson_max_fr) / 2)
     sigma_poisson_range = (sigma_poisson_min, sigma_poisson_max)
     clamp = True
-    return VariablePoissonNoiseChannelReplicated(sigma_poisson_range, clamp)
+    return VariablePoissonNoiseIndependentChannel(sigma_poisson_range, clamp)
 
 
 def nt_1_pl():
@@ -618,5 +643,10 @@ tag_to_transform = {
     'nt_ep_pl': nt_ep_pl,
     'nt_ep90_pl': nt_ep90_pl,
     'nt_mp_pl': nt_mp_pl,
-    'nt_mp90_pl': nt_mp90_pl
+    'nt_mp90_pl': nt_mp90_pl,
+
+    'rt_fr_pl_cp': rt_fr_pl_cp,
+    'bt_fr_pl_cp': bt_fr_pl_cp,
+    'nt_fr_pl_cp': nt_fr_pl_cp,
+
 }
