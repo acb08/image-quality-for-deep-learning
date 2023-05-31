@@ -2,7 +2,7 @@
 
 description: test of v8l pre-trained on pseudo-sensor high noise dataset
 
-test_dataset_id: 0060tst-pseudo-sensor-high-noise:v0
+test_dataset_id: 0060tst-pseudo-sensor-high-noise
 test_dataset_artifact_alias: latest
 
 model_artifact_id: yolov8l
