@@ -268,6 +268,27 @@ def rt_fr_pl():
     return VariableResolution(sizes, interpolation_mode='bilinear', antialias=False)
 
 
+def rt_fr_pl_cp():
+
+    """
+    Resolution transform for to parallel COCO full range training
+
+    Intended for use in a dataloader.
+    """
+
+    min_res = DISTORTION_RANGE['coco']['res'][0]
+    min_size = int(min_res * NATIVE_RESOLUTION)
+    max_res = DISTORTION_RANGE['coco']['res'][1]
+    max_size = int(max_res * NATIVE_RESOLUTION)
+
+    if max_size != 256:
+        raise Exception('mismatch between max size and native resolution in project config')
+
+    sizes = list(np.arange(min_size, max_size + 1))
+
+    return VariableResolution(sizes, interpolation_mode='bilinear', antialias=False)
+
+
 def rt_1_pl():
 
     """

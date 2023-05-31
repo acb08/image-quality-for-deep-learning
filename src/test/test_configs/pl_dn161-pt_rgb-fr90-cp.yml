@@ -6,7 +6,7 @@ descriptive_tags:
 test_dataset_id: 0020tst-pl-rgb-fr90-cp-megaset_noise:v0
 test_dataset_artifact_alias: latest
 
-model_artifact_id: densenet161_places365_as_downloaded
+model_artifact_id: densenet161_pretrained
 model_artifact_alias: latest
 
 batch_size: 32
