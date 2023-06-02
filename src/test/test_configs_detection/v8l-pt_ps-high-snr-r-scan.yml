@@ -2,7 +2,7 @@
 
 description: test of v8l-pt on pseudo-sensor high snr resolution scan dataset
 
-test_dataset_id: 0064tst-pseudo-sensor-high-snr-r-scan:v0
+test_dataset_id: 0067tst-pseudo-sensor-high-snr-r-scan:v0
 test_dataset_artifact_alias: latest
 
 model_artifact_id: yolov8l

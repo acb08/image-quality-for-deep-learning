@@ -2,7 +2,7 @@
 
 description: test of v8l-fr-ext on pseudo-sensor low snr resolution scan dataset
 
-test_dataset_id: 0062tst-pseudo-sensor-low-snr-r-scan:v0
+test_dataset_id: 0065tst-pseudo-sensor-low-snr-r-scan:v0
 test_dataset_artifact_alias: latest
 
 model_artifact_id: 0060yolo-v8l-fr-ext_best_loss:v0
