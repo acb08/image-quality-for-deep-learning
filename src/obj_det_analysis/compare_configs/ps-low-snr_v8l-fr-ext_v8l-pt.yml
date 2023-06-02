@@ -1,0 +1,19 @@
+---
+
+test_result_identifiers:
+
+  - ['0088rlt-yolov8l-0061tst-pseudo-sensor-low-snr-no-blur-max-res:v0',
+     'v8l-pre-trained, pseudo-sensor-low-snr']
+  - [ '0087rlt-0060yolo-v8l-fr-ext_best_loss-0061tst-pseudo-sensor-low-snr-no-blur-max-res:v0',
+      'v8l-fr-ext, pseudo-sensor-low-snr' ]
+
+overwrite: True
+manual_name: ps-low-snr-noise-only_v8l-pt_v8l-fr-ext
+show_plots: False
+plot_together: False
+flatten_axis_combinations: null
+flatten_axes: null
+
+log_average_performances: True
+
+allow_differing_distortions: True
