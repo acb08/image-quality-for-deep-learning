@@ -52,7 +52,7 @@ def image_to_electrons(image, well_depth=WELL_DEPTH):
     image = np.asarray(image, dtype=np.uint8)
     image = normalize(image)
     electrons = image * well_depth
-    electrons = np.asarray(electrons, dtype=np.int32)
+    # electrons = np.asarray(electrons, dtype=np.int32)
 
     return electrons
 

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 import copy
 import json
-
 from src.pre_processing.distortion_tools import update_annotations
 from src.utils.functions import load_wandb_data_artifact, id_from_tags, get_config, \
     log_config
-from src.utils.definitions import REL_PATHS, STANDARD_DATASET_FILENAME, WANDB_PID, ROOT_DIR
-from src.pre_processing.distortions import coco_tag_to_image_distortions
+from src.utils.definitions import REL_PATHS, STANDARD_DATASET_FILENAME, WANDB_PID, ROOT_DIR, WELL_DEPTH, \
+    PSEUDO_SENSOR_SIGNAL_FRACTIONS
+from src.pre_processing.distortions import coco_tag_to_image_distortions, PSEUDO_SENSOR_KEYS
 import numpy as np
 from PIL import Image
 import argparse
@@ -96,7 +96,7 @@ def apply_distortions(image, distortion_functions, mapped_annotations, updated_i
 
     for distortion_func in distortion_functions:
 
-        if hasattr(distortion_func, 'input_image_well_depth'):  # use noise functions that scale signal for res
+        if hasattr(distortion_func, 'signal_fraction'):  # use noise functions that scale signal for res
             res_frac = distortion_data['res']
             image, __, distortion_type_flag, distortion_value = distortion_func(image, res_frac)
 
@@ -315,6 +315,17 @@ def image_dir_yolo_text_file(text_file_path, max_lines=100):
     return str(Path(line).parent)
 
 
+def check_pseudo_sensor_use(distortion_tags):
+
+    using_pseudo_sensor = False
+
+    for tag in distortion_tags:
+        if tag in PSEUDO_SENSOR_KEYS:
+            using_pseudo_sensor = True
+
+    return using_pseudo_sensor
+
+
 def distort_log_coco(config):
 
     parent_dataset_id = config['parent_dataset_id']
@@ -332,6 +343,14 @@ def distort_log_coco(config):
     distortion_type_flags = config['distortion_type_flags']
     iterations = config['iterations']
     description = config['description']
+
+    using_pseudo_sensor = check_pseudo_sensor_use(distortion_tags)
+    if using_pseudo_sensor:
+        updates = {
+            'assumed_input_well_depth': WELL_DEPTH,
+            'pseudo_sensor_signal_fractions': PSEUDO_SENSOR_SIGNAL_FRACTIONS
+        }
+        config.update(updates)
 
     if artifact_type == 'train_dataset':
         val_frac = config['val_frac']

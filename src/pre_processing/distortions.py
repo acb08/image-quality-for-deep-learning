@@ -3,45 +3,41 @@ from PIL import Image
 import numpy as np
 from torchvision import transforms
 from src.utils.definitions import DISTORTION_RANGE, NATIVE_RESOLUTION, DISTORTION_RANGE_90, \
-    COCO_OCT_DISTORTION_BOUNDS, COCO_MP_90, COCO_EP_90, WELL_DEPTH
-from src.pre_processing.classes import VariableCOCOResize, VariableImageResize, PseudoSensor, PseudoSensorVariedSNR
+    COCO_OCT_DISTORTION_BOUNDS, COCO_MP_90, COCO_EP_90, WELL_DEPTH, PSEUDO_SENSOR_SIGNAL_FRACTIONS
+from src.pre_processing.classes import VariableCOCOResize, VariableImageResize, PseudoSensorFixedWell, PseudoSensor
 
 RNG = np.random.default_rng()
 
-PSEUDO_SENSOR_NOISE_VALUES = {'low': int(0.001 * WELL_DEPTH),
-                              'medium': int(0.01 * WELL_DEPTH),
-                              'high': int(0.15 * WELL_DEPTH)}
-
-pseudo_sensor_low_noise = PseudoSensor(read_noise_value=PSEUDO_SENSOR_NOISE_VALUES['low'],
-                                       input_image_well_depth=WELL_DEPTH)
-pseudo_sensor_med_noise = PseudoSensor(read_noise_value=PSEUDO_SENSOR_NOISE_VALUES['medium'],
-                                       input_image_well_depth=WELL_DEPTH)
-pseudo_sensor_high_noise = PseudoSensor(read_noise_value=PSEUDO_SENSOR_NOISE_VALUES['high'],
-                                        input_image_well_depth=WELL_DEPTH)
+# PSEUDO_SENSOR_NOISE_VALUES = {'low': int(0.001 * WELL_DEPTH),
+#                               'medium': int(0.01 * WELL_DEPTH),
+#                               'high': int(0.15 * WELL_DEPTH)}
+#
+# pseudo_sensor_low_noise = PseudoSensorFixedWell(read_noise_value=PSEUDO_SENSOR_NOISE_VALUES['low'],
+#                                                 input_image_well_depth=WELL_DEPTH)
+# pseudo_sensor_med_noise = PseudoSensorFixedWell(read_noise_value=PSEUDO_SENSOR_NOISE_VALUES['medium'],
+#                                                 input_image_well_depth=WELL_DEPTH)
+# pseudo_sensor_high_noise = PseudoSensorFixedWell(read_noise_value=PSEUDO_SENSOR_NOISE_VALUES['high'],
+#                                                  input_image_well_depth=WELL_DEPTH)
 
 BASELINE_READ_NOISE = 10
 BASELINE_DARK_CURRENT = 1
 
 LOW_SNR_SIGNAL_FRAC = 10 / WELL_DEPTH
 
-PSEUDO_SENSOR_VARIED_SNR_SIGNAL_FRACTIONS = {'low_snr': 0.0025,
-                                             'med_snr': 0.1,
-                                             'high_snr': 1}
+pseudo_sensor_low_snr = PseudoSensor(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['low'],
+                                     read_noise=BASELINE_READ_NOISE,
+                                     input_image_well_depth=WELL_DEPTH,
+                                     baseline_dark_current=BASELINE_DARK_CURRENT)
 
-pseudo_sensor_low_snr = PseudoSensorVariedSNR(signal_fraction=PSEUDO_SENSOR_VARIED_SNR_SIGNAL_FRACTIONS['low_snr'],
-                                              read_noise=BASELINE_READ_NOISE,
-                                              input_image_well_depth=WELL_DEPTH,
-                                              baseline_dark_current=BASELINE_DARK_CURRENT)
+pseudo_sensor_med_snr = PseudoSensor(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['med'],
+                                     read_noise=BASELINE_READ_NOISE,
+                                     input_image_well_depth=WELL_DEPTH,
+                                     baseline_dark_current=BASELINE_DARK_CURRENT)
 
-pseudo_sensor_med_snr = PseudoSensorVariedSNR(signal_fraction=PSEUDO_SENSOR_VARIED_SNR_SIGNAL_FRACTIONS['med_snr'],
-                                              read_noise=BASELINE_READ_NOISE,
-                                              input_image_well_depth=WELL_DEPTH,
-                                              baseline_dark_current=BASELINE_DARK_CURRENT)
-
-pseudo_sensor_high_snr = PseudoSensorVariedSNR(signal_fraction=PSEUDO_SENSOR_VARIED_SNR_SIGNAL_FRACTIONS['high_snr'],
-                                               read_noise=BASELINE_READ_NOISE,
-                                               input_image_well_depth=WELL_DEPTH,
-                                               baseline_dark_current=BASELINE_DARK_CURRENT)
+pseudo_sensor_high_snr = PseudoSensor(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['high'],
+                                      read_noise=BASELINE_READ_NOISE,
+                                      input_image_well_depth=WELL_DEPTH,
+                                      baseline_dark_current=BASELINE_DARK_CURRENT)
 
 
 def get_kernel_size(std):
@@ -714,6 +710,18 @@ def r_fr90_coco(img):
     return img_out, None, 'res', res_frac
 
 
+def _r100_coco(img):
+    """
+    For debugging
+    """
+
+    res_frac = 1
+    img_out = VariableCOCOResize()(img, res_frac)
+
+    return img_out, None, 'res', res_frac
+
+
+
 def r_fr90_pl_cp():
 
     """
@@ -1077,11 +1085,16 @@ coco_tag_to_image_distortions = {  # coco distortion functions return distortion
     'r_low_debug_coco': r_low_debug_coco,
     'b_large_debug_coco': b_large_debug_coco,
 
-    'ps_ln': pseudo_sensor_low_noise,
-    'ps_mn': pseudo_sensor_med_noise,
-    'ps_hn': pseudo_sensor_high_noise,
+    # 'ps_ln': pseudo_sensor_low_noise,
+    # 'ps_mn': pseudo_sensor_med_noise,
+    # 'ps_hn': pseudo_sensor_high_noise,
 
     'ps_high_snr': pseudo_sensor_high_snr,
     'ps_med_snr': pseudo_sensor_med_snr,
-    'ps_low_snr': pseudo_sensor_low_snr
+    'ps_low_snr': pseudo_sensor_low_snr,
+
+    '_r100_coco': _r100_coco,
 }
+
+
+PSEUDO_SENSOR_KEYS = {'ps_low_snr', 'ps_high_snr', 'ps_med_snr'}

@@ -203,7 +203,7 @@ class VariablePoissonNoiseIndependentChannel:
         return noisy_tensor
 
 
-class PseudoSensor:
+class PseudoSensorFixedWell:
     """
     Scales signal and noise properties of an input image based on its associated blur and resolution metadata
     """
@@ -256,7 +256,7 @@ class PseudoSensor:
         return image, None, 'noise', self.read_noise_value
 
 
-class PseudoSensorVariedSNR:
+class PseudoSensor:
     """
     Simulates imaging in varied SNR regimes with variable resolution / pixel size. Globally scales input signal,
     applies fixed read noise and dark current that is inversely proportional to signal scaling (i.e. the dark current
@@ -274,29 +274,11 @@ class PseudoSensorVariedSNR:
         """
         self.signal_fraction = signal_fraction
         self.read_noise = read_noise
-        self.input_image_well_depth = input_image_well_depth
 
-        self.min_output_well_depth = self.set_min_output_well_depth()
-        self._baseline_dark_current = baseline_dark_current
+        self.min_well_depth = self.signal_fraction * input_image_well_depth
+        self.dark_current = baseline_dark_current / signal_fraction
 
-        self.avg_dark_current = self.get_dark_current()
-
-    def set_min_output_well_depth(self):
-        """
-        Assumes that all input images all come from sensors with the same well depth.  To avoid downstream
-        normalization issues from images that do not fill the full dynamic range, the PseudoSensorVariedSNR class
-        scales well depth with signal attenuation, so that input and output images of differing SNR still have
-        similar dynamic ranges.
-        """
-        return self.signal_fraction * self.input_image_well_depth
-
-    def get_dark_current(self):
-        """
-        Assumes that the best SNR scenario corresponds to a minimum integration time that yields a low baseline dark
-        current.  When the signal level is attenuated, the integration time and dark current are assumed to increase
-        inversely.
-        """
-        return self._baseline_dark_current / self.signal_fraction
+        self._assumed_input_well_depth = input_image_well_depth  # diagnostic
 
     def apply_read_noise(self, electrons):
         noise = np.random.randn(*np.shape(electrons)) * self.read_noise
@@ -305,14 +287,14 @@ class PseudoSensorVariedSNR:
         return electrons
 
     def apply_dark_current(self, electrons):
-        dark_electrons = RNG.poisson(lam=self.avg_dark_current, size=np.shape(electrons))
+        dark_electrons = RNG.poisson(lam=self.dark_current, size=np.shape(electrons))
         return electrons + dark_electrons
 
     def attenuate(self, electrons):
         return self.signal_fraction * electrons
 
     @staticmethod
-    def pix_rescale(value, res_frac):
+    def scale_for_pix_size(value, res_frac):
         scale = (1 / res_frac) ** 2
         return scale * value
 
@@ -328,33 +310,52 @@ class PseudoSensorVariedSNR:
     def quantization_noise(well_depth):
         quantization_step = well_depth / 2 ** 8
         quantization_variance = quantization_step ** 2 / 12
-        return np.std(quantization_variance)
+        return np.sqrt(quantization_variance)
 
     def subtract_dark_offset(self, electrons):
         """
         Effectively zero-centers the dark current Poisson distribution. Used to avoid normalization issues that could
         arise from significant dc bias in the images
         """
-        return electrons - self.avg_dark_current
+        return electrons - self.dark_current
 
     def output_image_well_depth(self, res_frac):
         """
         Scales well depth by the ratio of output pixel area to input pixel area
         """
-        return self.pix_rescale(value=self.min_output_well_depth, res_frac=res_frac)
+        return self.scale_for_pix_size(value=self.min_well_depth, res_frac=res_frac)
 
-    def __call__(self, image, res_frac):
+    def __call__(self, image, res_frac, verbose=False, log_file=None, eps=0.01, signal_est_method='range'):
 
         output_well_depth = self.output_image_well_depth(res_frac=res_frac)
 
-        electrons = image_to_electrons(image, self.input_image_well_depth)
-        initial_mean = np.mean(electrons)
-        electrons = self.attenuate(electrons)
-        attenuated_mean = np.mean(electrons)
+        electrons = image_to_electrons(image, output_well_depth)
 
-        electrons = self.pix_rescale(value=electrons, res_frac=res_frac)
+        max_res_electrons = image_to_electrons(image, self.min_well_depth)
+        scaled_electrons = self.scale_for_pix_size(value=max_res_electrons, res_frac=res_frac)
 
-        approx_signal = np.max(electrons) - np.min(electrons)  # very rudimentary
+        assert np.abs(np.mean(electrons - scaled_electrons)) < eps
+
+        if verbose:
+            full_signal_electrons = image_to_electrons(image, self._assumed_input_well_depth)
+            initial_mean_electrons = np.mean(full_signal_electrons)
+            attenuated_electrons = self.attenuate(full_signal_electrons)
+            attenuated_mean = np.mean(attenuated_electrons)
+            mean_electrons = np.mean(electrons)
+
+            print('res_frac:', res_frac, file=log_file)
+            print('initial (input) mean electrons:', round(float(initial_mean_electrons), 0), file=log_file)
+            print('attenuated electrons / mean electrons:', round(float(attenuated_mean), 0), ' / ',
+                  round(float(mean_electrons), 0), file=log_file)
+            print('attenuated / initial mean electrons:', round(attenuated_mean / initial_mean_electrons, 4),
+                  file=log_file)
+
+        if signal_est_method == 'range':
+            approx_signal = np.max(electrons) - np.min(electrons)  # very rudimentary
+        elif signal_est_method == 'mean':
+            approx_signal = np.mean(electrons)
+        else:
+            raise ValueError("signal_est_method must be either 'range' or 'mean'")
 
         noisy_electrons = self.apply_poisson_distribution(electrons)
         noisy_electrons = self.apply_read_noise(noisy_electrons)
@@ -370,14 +371,8 @@ class PseudoSensorVariedSNR:
 
         output_image = electrons_to_image(electrons=noisy_electrons, well_depth=output_well_depth)
 
-        print(round(float(initial_mean), 0), round(float(attenuated_mean), 0), round(attenuated_mean / initial_mean, 2))
-        print(approx_snr, '\n')
+        if verbose:
+            print('approx snr:', approx_snr, '\n', file=log_file)
 
         return output_image, approx_snr, 'noise', approx_noise
-
-
-
-
-
-
 

@@ -82,6 +82,7 @@ REL_PATHS = {
     'yolo_last_weights': 'weights/last.pt',
 
     'poisson_sim': 'analysis/poisson_sim',
+    'pseudo_sensor_checkout': 'analysis/pseudo_sensor_checkout',
 
     'dataset_sub_struct': {  # keys correct to dataset_split_key variable
         'train': ('images/train', 'labels/train'),
@@ -97,7 +98,11 @@ with open(Path(ROOT_DIR, REL_PATHS['project_config'], _project_config_filename),
 WANDB_PID = _config['PROJECT_ID']
 NATIVE_RESOLUTION = _config['NATIVE_RESOLUTION']  # kept in config file so can be used in multi-project functions
 
-WELL_DEPTH = 10_000
+WELL_DEPTH = 1_500
+
+PSEUDO_SENSOR_SIGNAL_FRACTIONS = {'low': 0.01,
+                                  'med': 0.1,
+                                  'high': 1}
 
 DISTORTION_RANGE = {
     'sat6': {
@@ -156,6 +161,15 @@ DISTORTION_RANGE_90 = {
     }
 }
 
+_COCO_PSEUDO_SENSOR_RES = (1, 0.2)
+_COCO_PSEUDO_SENSOR_BLUR = (0.5, 4.5)
+
+PSEUDO_SENOR_DISTORTION_RANGE = {
+    'coco': {
+
+    }
+}
+
 _check = {  # coco values specified rather than range to avoid extra function calls for each image
         'res': np.linspace(0.25, 1, num=16),
         'blur': np.linspace(0.5, 4.5, num=17),
@@ -189,7 +203,8 @@ ARTIFACT_TYPE_TAGS = {
     'test_result': r'rlt',
     'entropy_properties': r'ent',
     'demo_dataset': r'demo',
-    'poisson_sim': 'poisson_sim'
+    'poisson_sim': 'poisson_sim',
+    'pseudo_sensor_checkout': 'psc',
 }
 
 # enables storing data types as strings that are json serializable
