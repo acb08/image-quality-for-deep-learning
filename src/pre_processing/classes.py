@@ -325,6 +325,13 @@ class PseudoSensor:
         """
         return self.scale_for_pix_size(value=self.min_well_depth, res_frac=res_frac)
 
+    @staticmethod
+    def electron_noise_to_dn(noise_electrons, well_depth):
+        normed_noise = noise_electrons / well_depth
+        assert 0 <= normed_noise <= 1
+        noise_dn = int((2 ** 8 - 1) * normed_noise)
+        return noise_dn
+
     def __call__(self, image, res_frac, verbose=False, log_file=None, eps=0.01, signal_est_method='range'):
 
         output_well_depth = self.output_image_well_depth(res_frac=res_frac)
@@ -351,9 +358,9 @@ class PseudoSensor:
                   file=log_file)
 
         if signal_est_method == 'range':
-            approx_signal = np.max(electrons) - np.min(electrons)  # very rudimentary
+            approx_signal_electrons = np.max(electrons) - np.min(electrons)  # very rudimentary
         elif signal_est_method == 'mean':
-            approx_signal = np.mean(electrons)
+            approx_signal_electrons = np.mean(electrons)
         else:
             raise ValueError("signal_est_method must be either 'range' or 'mean'")
 
@@ -365,14 +372,16 @@ class PseudoSensor:
 
         electron_noise = np.std(noisy_electrons - electrons)
         quantization_noise = self.quantization_noise(well_depth=output_well_depth)
-        approx_noise = np.sqrt(electron_noise ** 2 + quantization_noise ** 2)
+        approx_noise_electrons = np.sqrt(electron_noise ** 2 + quantization_noise ** 2)
+        approx_snr = approx_signal_electrons / approx_noise_electrons
 
-        approx_snr = approx_signal / approx_noise
+        approx_noise_dn = self.electron_noise_to_dn(noise_electrons=approx_noise_electrons,
+                                                    well_depth=output_well_depth)
 
         output_image = electrons_to_image(electrons=noisy_electrons, well_depth=output_well_depth)
 
         if verbose:
             print('approx snr:', approx_snr, '\n', file=log_file)
 
-        return output_image, approx_snr, 'noise', approx_noise
+        return output_image, approx_snr, 'noise', approx_noise_dn
 

@@ -1,0 +1,11 @@
+---
+
+result_id: 0093rlt-0060yolo-v8l-fr-ext_best_loss-0063tst-pseudo-sensor-med-snr-r-scan:v0
+identifier: v8l-fr-ext-ps-med-snr-r-scan
+
+flatten_axis_combinations: [[1, 2]]
+flatten_axes: null
+
+basic_plots: True
+
+fit_keys: null

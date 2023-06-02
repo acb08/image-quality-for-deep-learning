@@ -98,7 +98,9 @@ def apply_distortions(image, distortion_functions, mapped_annotations, updated_i
 
         if hasattr(distortion_func, 'signal_fraction'):  # use noise functions that scale signal for res
             res_frac = distortion_data['res']
-            image, __, distortion_type_flag, distortion_value = distortion_func(image, res_frac)
+            image, estimated_snr, distortion_type_flag, distortion_value = distortion_func(image, res_frac,
+                                                                                           signal_est_method='range')
+            distortion_data['estimated_snr'] = estimated_snr
 
         else:
             image, __, distortion_type_flag, distortion_value = distortion_func(image)
