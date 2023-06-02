@@ -2,8 +2,8 @@ import random
 import numpy as np
 from torchvision import transforms
 from src.utils.definitions import DISTORTION_RANGE, NATIVE_RESOLUTION, DISTORTION_RANGE_90, \
-    COCO_OCT_DISTORTION_BOUNDS, COCO_MP_90, COCO_EP_90, WELL_DEPTH, PSEUDO_SENSOR_SIGNAL_FRACTIONS, BASELINE_READ_NOISE, \
-    BASELINE_DARK_CURRENT
+    COCO_OCT_DISTORTION_BOUNDS, COCO_MP_90, COCO_EP_90, WELL_DEPTH, PSEUDO_SENSOR_SIGNAL_FRACTIONS, \
+    BASELINE_READ_NOISE, BASELINE_DARK_CURRENT
 from src.pre_processing.classes import VariableCOCOResize, VariableImageResize, PseudoSensor
 
 RNG = np.random.default_rng()
