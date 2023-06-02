@@ -381,7 +381,8 @@ class PseudoSensor:
         output_image = electrons_to_image(electrons=noisy_electrons, well_depth=output_well_depth)
 
         if verbose:
-            print('approx snr:', approx_snr, '\n', file=log_file)
+            print('approx snr:', approx_snr, file=log_file)
+            print('approx noise (DN):', approx_noise_dn, '\n', file=log_file)
 
         return output_image, approx_snr, 'noise', approx_noise_dn
 

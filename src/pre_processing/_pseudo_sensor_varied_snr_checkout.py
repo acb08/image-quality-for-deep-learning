@@ -87,10 +87,10 @@ def main(config):
             res_fraction_used.append(res_frac)
 
             for key, func in noise_functions.items():
-                sim_image, sensor_estimated_snr, __, __ = func(image=image, res_frac=res_frac,
-                                                               verbose=verbose,
-                                                               log_file=log_file,
-                                                               signal_est_method='mean')
+                sim_image, sensor_estimated_snr, __, approx_noise_dn = func(image=image, res_frac=res_frac,
+                                                                            verbose=verbose,
+                                                                            log_file=log_file,
+                                                                            signal_est_method='mean')
                 snr = float(estimate_snr(sim_image))
                 std = float(np.std(sim_image))
                 mean = float(np.mean(sim_image))
