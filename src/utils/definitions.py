@@ -98,6 +98,9 @@ with open(Path(ROOT_DIR, REL_PATHS['project_config'], _project_config_filename),
 WANDB_PID = _config['PROJECT_ID']
 NATIVE_RESOLUTION = _config['NATIVE_RESOLUTION']  # kept in config file so can be used in multi-project functions
 
+BASELINE_READ_NOISE = 10
+BASELINE_DARK_CURRENT = 1
+
 WELL_DEPTH = 1_500
 
 PSEUDO_SENSOR_SIGNAL_FRACTIONS = {'low': 0.01,
@@ -437,3 +440,4 @@ elif WANDB_PID == 'coco':
 
 else:
     raise Exception('Invalid WANDB_PID')
+

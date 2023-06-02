@@ -1,28 +1,12 @@
 import random
-from PIL import Image
 import numpy as np
 from torchvision import transforms
 from src.utils.definitions import DISTORTION_RANGE, NATIVE_RESOLUTION, DISTORTION_RANGE_90, \
-    COCO_OCT_DISTORTION_BOUNDS, COCO_MP_90, COCO_EP_90, WELL_DEPTH, PSEUDO_SENSOR_SIGNAL_FRACTIONS
-from src.pre_processing.classes import VariableCOCOResize, VariableImageResize, PseudoSensorFixedWell, PseudoSensor
+    COCO_OCT_DISTORTION_BOUNDS, COCO_MP_90, COCO_EP_90, WELL_DEPTH, PSEUDO_SENSOR_SIGNAL_FRACTIONS, BASELINE_READ_NOISE, \
+    BASELINE_DARK_CURRENT
+from src.pre_processing.classes import VariableCOCOResize, VariableImageResize, PseudoSensor
 
 RNG = np.random.default_rng()
-
-# PSEUDO_SENSOR_NOISE_VALUES = {'low': int(0.001 * WELL_DEPTH),
-#                               'medium': int(0.01 * WELL_DEPTH),
-#                               'high': int(0.15 * WELL_DEPTH)}
-#
-# pseudo_sensor_low_noise = PseudoSensorFixedWell(read_noise_value=PSEUDO_SENSOR_NOISE_VALUES['low'],
-#                                                 input_image_well_depth=WELL_DEPTH)
-# pseudo_sensor_med_noise = PseudoSensorFixedWell(read_noise_value=PSEUDO_SENSOR_NOISE_VALUES['medium'],
-#                                                 input_image_well_depth=WELL_DEPTH)
-# pseudo_sensor_high_noise = PseudoSensorFixedWell(read_noise_value=PSEUDO_SENSOR_NOISE_VALUES['high'],
-#                                                  input_image_well_depth=WELL_DEPTH)
-
-BASELINE_READ_NOISE = 10
-BASELINE_DARK_CURRENT = 1
-
-LOW_SNR_SIGNAL_FRAC = 10 / WELL_DEPTH
 
 pseudo_sensor_low_snr = PseudoSensor(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['low'],
                                      read_noise=BASELINE_READ_NOISE,
