@@ -3,7 +3,7 @@
 train_dataset_id: '0004trn-np-rgb:v0'
 train_dataset_artifact_alias: latest
 
-starting_model_id: 'densenet161_pretrained'
+starting_model_id: '0037densenet161-full_range_cp_trial_best_loss:v0'
 starting_model_artifact_alias: 'latest'
 
 crop_flag: False
