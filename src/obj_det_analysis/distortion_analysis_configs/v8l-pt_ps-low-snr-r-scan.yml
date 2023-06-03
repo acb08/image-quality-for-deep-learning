@@ -1,6 +1,6 @@
 ---
 
-result_id: 0095rlt-yolov8l-0062tst-pseudo-sensor-low-snr-r-scan:v0
+result_id: 0101rlt-yolov8l-0065tst-pseudo-sensor-low-snr-r-scan:v0
 identifier: v8l-pt-ps-low-snr-r-scan
 
 flatten_axis_combinations: [[1, 2]]
@@ -9,3 +9,5 @@ flatten_axes: null
 basic_plots: True
 
 fit_keys: null
+
+distortions_ignore: ['noise']

@@ -104,6 +104,7 @@ BASELINE_DARK_CURRENT = 1
 WELL_DEPTH = 1_500
 
 PSEUDO_SENSOR_SIGNAL_FRACTIONS = {'low': 0.01,
+                                  'low_pls': 0.02,
                                   'med': 0.1,
                                   'high': 1}
 
@@ -165,11 +166,12 @@ DISTORTION_RANGE_90 = {
 }
 
 _COCO_PSEUDO_SENSOR_RES = (1, 0.2)
-_COCO_PSEUDO_SENSOR_BLUR = (0.5, 4.5)
+_COCO_PSEUDO_SENSOR_BLUR = (0.5, 5)
 
 PSEUDO_SENOR_DISTORTION_RANGE = {
     'coco': {
-
+        'res': np.linspace(_COCO_PSEUDO_SENSOR_RES[1], _COCO_PSEUDO_SENSOR_RES[0], num=17),
+        'blur': np.linspace(_COCO_PSEUDO_SENSOR_BLUR[0], _COCO_PSEUDO_SENSOR_BLUR[1], num=10),
     }
 }
 

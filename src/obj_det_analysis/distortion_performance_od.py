@@ -14,7 +14,8 @@ from src.analysis.fit import fit, evaluate_fit, apply_fit
 def get_obj_det_distortion_perf_result(result_id=None, identifier=None, config=None,
                                        distortion_ids=('res', 'blur', 'noise'), make_dir=True, run=None,
                                        report_time=False,
-                                       pre_processed_artifact=False):
+                                       pre_processed_artifact=False,
+                                       distortions_ignore=()):
 
     if not result_id and not identifier:
         result_id = config['result_id']
@@ -23,6 +24,8 @@ def get_obj_det_distortion_perf_result(result_id=None, identifier=None, config=N
     if config is not None:
         if 'pre_processed_artifact' in config.keys():
             pre_processed_artifact = config['pre_processed_artifact']
+        if 'distortions_ignore' in config.keys():
+            distortions_ignore = tuple(config['distortions_ignore'])
 
     output_dir = Path(definitions.ROOT_DIR, definitions.REL_PATHS['analysis'], result_id)
     if make_dir and not output_dir.is_dir():
@@ -46,16 +49,14 @@ def get_obj_det_distortion_perf_result(result_id=None, identifier=None, config=N
         print('loading dataset and result (existing wandb run)')
         dataset, result, dataset_id = load_dataset_and_result(run=run, result_id=result_id)
 
-
-    # else:
-
     distortion_performance_result = ModelDistortionPerformanceResultOD(
         dataset=dataset,
         result=result,
         convert_to_std=True,
         result_id=result_id,
         identifier=identifier,
-        report_time=report_time
+        report_time=report_time,
+        distortions_ignore=distortions_ignore
         )
 
     return distortion_performance_result, output_dir
@@ -181,7 +182,7 @@ if __name__ == '__main__':
 
     _REPORT_TIME = True
 
-    ide_config_name = 'v8l-fr-ext_ps-med-snr-r-scan.yml'
+    ide_config_name = 'v8l-fr-ext_ps-high-snr-r-scan.yml'
 
     if ide_config_name is None:
         config_name = 'distortion_analysis_config.yml'

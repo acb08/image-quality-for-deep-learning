@@ -13,7 +13,8 @@ from src.obj_det_analysis.analysis_tools import get_instance_hash
 class ModelDistortionPerformanceResultOD:
 
     def __init__(self, dataset, result, convert_to_std, result_id, identifier=None, load_local=False,
-                 manual_distortion_type_flags=None, report_time=False, force_recalculate=False):
+                 manual_distortion_type_flags=None, report_time=False, force_recalculate=False,
+                 distortions_ignore=()):
 
         self.convert_to_std = convert_to_std
         self.result_id = result_id
@@ -28,6 +29,7 @@ class ModelDistortionPerformanceResultOD:
         self._force_recalculate = force_recalculate
         self.ignore_vc_hashes = False
         self.recalculation_completed = False  # allows double checking that recalculation has been performed
+        self.distortions_ignore = distortions_ignore
         self.vc_hash_mash = get_map_hash_mash()
 
         self.distortion_tags = dataset['distortion_tags']
@@ -41,15 +43,9 @@ class ModelDistortionPerformanceResultOD:
             self.distortion_type_flags = manual_distortion_type_flags
         self.convert_to_std = convert_to_std
 
-        # self.images = self.dataset['instances']['images']
-        # self._annotations = self.dataset['instances']['annotations']
         images = dataset['instances']['images']
         self.image_ids = detection_functions.get_image_ids(images)
-        # image_ids = detection_functions.get_image_ids(images)
-        # self.mapped_boxes_labels = detection_functions.map_boxes_labels(self._annotations, self.image_ids)
-        # mapped_boxes_labels = detection_functions.map_boxes_labels(_annotations, self.image_ids)
         self.distortions = self.build_distortion_vectors(images)
-        # _annotations = dataset['instances']['annotations']
 
         del images  # free up memory
 
@@ -57,20 +53,21 @@ class ModelDistortionPerformanceResultOD:
         if self.load_local:
             raise NotImplementedError
 
-        if 'res' in self.distortions.keys():
+        # distortions_ignore helpful if not all distortion permutations present (e.g. when res and noise are coupled)
+        if 'res' in self.distortions.keys() and 'res' not in distortions_ignore:
             self.res = self.distortions['res']
         else:
             self.res = np.ones(len(self.image_ids))
             # self.res = np.ones(len(image_ids))
             self.distortions['res'] = self.res
 
-        if 'blur' in self.distortions.keys():
+        if 'blur' in self.distortions.keys() and 'blur' not in distortions_ignore:
             self.blur = self.distortions['blur']
         else:
             self.blur = np.zeros(len(self.image_ids))
             self.distortions['blur'] = self.blur
 
-        if 'noise' in self.distortions.keys():
+        if 'noise' in self.distortions.keys() and 'noise' not in distortions_ignore:
             self.noise = self.distortions['noise']
         else:
             self.noise = np.zeros(len(self.image_ids))

@@ -308,6 +308,9 @@ class PseudoSensor:
 
     @staticmethod
     def quantization_noise(well_depth):
+        """
+        Estimates quantization noise in units of electrons
+        """
         quantization_step = well_depth / 2 ** 8
         quantization_variance = quantization_step ** 2 / 12
         return np.sqrt(quantization_variance)
@@ -357,12 +360,8 @@ class PseudoSensor:
             print('attenuated / initial mean electrons:', round(attenuated_mean / initial_mean_electrons, 4),
                   file=log_file)
 
-        if signal_est_method == 'range':
-            approx_signal_electrons = np.max(electrons) - np.min(electrons)  # very rudimentary
-        elif signal_est_method == 'mean':
-            approx_signal_electrons = np.mean(electrons)
-        else:
-            raise ValueError("signal_est_method must be either 'range' or 'mean'")
+        signal_range_electrons = np.max(electrons) - np.min(electrons)  # very rudimentary
+        signal_mean_electrons = np.mean(electrons)
 
         noisy_electrons = self.apply_poisson_distribution(electrons)
         noisy_electrons = self.apply_read_noise(noisy_electrons)
@@ -371,18 +370,17 @@ class PseudoSensor:
         noisy_electrons = self.clip_electrons(noisy_electrons, well_depth=output_well_depth)
 
         electron_noise = np.std(noisy_electrons - electrons)
-        quantization_noise = self.quantization_noise(well_depth=output_well_depth)
+        quantization_noise = self.quantization_noise(well_depth=output_well_depth)  # in units of electrons
         approx_noise_electrons = np.sqrt(electron_noise ** 2 + quantization_noise ** 2)
-        approx_snr = approx_signal_electrons / approx_noise_electrons
 
-        approx_noise_dn = self.electron_noise_to_dn(noise_electrons=approx_noise_electrons,
-                                                    well_depth=output_well_depth)
-
+        signale_range_snr = signal_range_electrons / approx_noise_electrons
+        signal_mean_snr = signal_mean_electrons / approx_noise_electrons
+        
         output_image = electrons_to_image(electrons=noisy_electrons, well_depth=output_well_depth)
 
         if verbose:
-            print('approx snr:', approx_snr, file=log_file)
-            print('approx noise (DN):', approx_noise_dn, '\n', file=log_file)
+            print('approx signal range snr:', signale_range_snr, file=log_file)
+            print('approx signal mean SNR:', signal_mean_snr, '\n', file=log_file)
 
-        return output_image, approx_snr, 'noise', approx_noise_dn
+        return output_image, signale_range_snr, 'snr', signal_mean_snr
 

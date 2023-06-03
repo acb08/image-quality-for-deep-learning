@@ -3,15 +3,22 @@ import numpy as np
 from torchvision import transforms
 from src.utils.definitions import DISTORTION_RANGE, NATIVE_RESOLUTION, DISTORTION_RANGE_90, \
     COCO_OCT_DISTORTION_BOUNDS, COCO_MP_90, COCO_EP_90, WELL_DEPTH, PSEUDO_SENSOR_SIGNAL_FRACTIONS, \
-    BASELINE_READ_NOISE, BASELINE_DARK_CURRENT
+    BASELINE_READ_NOISE, BASELINE_DARK_CURRENT, PSEUDO_SENOR_DISTORTION_RANGE
 from src.pre_processing.classes import VariableCOCOResize, VariableImageResize, PseudoSensor
 
 RNG = np.random.default_rng()
+
+PSEUDO_SENSOR_KEYS = {'ps_low_snr', 'ps_low_pls_snr', 'ps_high_snr', 'ps_med_snr'}
 
 pseudo_sensor_low_snr = PseudoSensor(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['low'],
                                      read_noise=BASELINE_READ_NOISE,
                                      input_image_well_depth=WELL_DEPTH,
                                      baseline_dark_current=BASELINE_DARK_CURRENT)
+
+pseudo_sensor_low_pls_snr = PseudoSensor(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['low_pls'],
+                                         read_noise=BASELINE_READ_NOISE,
+                                         input_image_well_depth=WELL_DEPTH,
+                                         baseline_dark_current=BASELINE_DARK_CURRENT)
 
 pseudo_sensor_med_snr = PseudoSensor(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['med'],
                                      read_noise=BASELINE_READ_NOISE,
@@ -454,6 +461,16 @@ def b_fr90_coco(img):
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'blur', std
 
 
+def b_fr_ps_coco(img):
+
+    sigma_range = PSEUDO_SENOR_DISTORTION_RANGE['coco']['blur']
+    std = np.random.choice(sigma_range)
+
+    kernel_size = get_kernel_size(std)
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'blur', std
+
+
 def b_fr90_pl_cp(img):
 
     """
@@ -694,6 +711,15 @@ def r_fr90_coco(img):
     return img_out, None, 'res', res_frac
 
 
+def r_fr_ps_coco(img):
+
+    res_fractions = PSEUDO_SENOR_DISTORTION_RANGE['coco']['res']
+    res_frac = random.choice(res_fractions)
+    img_out = VariableCOCOResize()(img, res_frac)
+
+    return img_out, None, 'res', res_frac
+
+
 def _r100_coco(img):
     """
     For debugging
@@ -703,7 +729,6 @@ def _r100_coco(img):
     img_out = VariableCOCOResize()(img, res_frac)
 
     return img_out, None, 'res', res_frac
-
 
 
 def r_fr90_pl_cp():
@@ -1069,16 +1094,15 @@ coco_tag_to_image_distortions = {  # coco distortion functions return distortion
     'r_low_debug_coco': r_low_debug_coco,
     'b_large_debug_coco': b_large_debug_coco,
 
-    # 'ps_ln': pseudo_sensor_low_noise,
-    # 'ps_mn': pseudo_sensor_med_noise,
-    # 'ps_hn': pseudo_sensor_high_noise,
-
     'ps_high_snr': pseudo_sensor_high_snr,
     'ps_med_snr': pseudo_sensor_med_snr,
     'ps_low_snr': pseudo_sensor_low_snr,
+    'ps_low_pls_snr': pseudo_sensor_low_pls_snr,
+
+    'r_fr_ps_coco': r_fr_ps_coco,
+    'b_fr_ps_coco': b_fr_ps_coco,
 
     '_r100_coco': _r100_coco,
 }
 
 
-PSEUDO_SENSOR_KEYS = {'ps_low_snr', 'ps_high_snr', 'ps_med_snr'}

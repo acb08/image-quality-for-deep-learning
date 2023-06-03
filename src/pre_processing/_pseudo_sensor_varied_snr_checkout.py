@@ -11,12 +11,14 @@ from src.utils.definitions import REL_PATHS, ROOT_DIR, WELL_DEPTH, PSEUDO_SENSOR
 
 MARKERS = {
     'ps_low_snr': '.',
+    'ps_low_pls_snr': '+',
     'ps_med_snr': 'v',
     'ps_high_snr': '2'
 }
 
 LABELS = {
     'ps_low_snr': 'low snr',
+    'ps_low_pls_snr': 'low-plus snr',
     'ps_med_snr': 'mid snr',
     'ps_high_snr': 'high snr'
 }
@@ -87,10 +89,10 @@ def main(config):
             res_fraction_used.append(res_frac)
 
             for key, func in noise_functions.items():
-                sim_image, sensor_estimated_snr, __, approx_noise_dn = func(image=image, res_frac=res_frac,
-                                                                            verbose=verbose,
-                                                                            log_file=log_file,
-                                                                            signal_est_method='mean')
+                sim_image, signal_range_snr, __, sensor_estimated_snr = func(image=image, res_frac=res_frac,
+                                                                             verbose=verbose,
+                                                                             log_file=log_file,
+                                                                             signal_est_method='mean')
                 snr = float(estimate_snr(sim_image))
                 std = float(np.std(sim_image))
                 mean = float(np.mean(sim_image))
