@@ -1,0 +1,22 @@
+---
+
+description: test of v8l-fr-ext on pseudo-sensor low snr fr megaset
+
+test_dataset_id: 0068tst-pseudo-sensor-fr-low-snr-megaset:v0
+test_dataset_artifact_alias: latest
+
+model_artifact_id: 0060yolo-v8l-fr-ext_best_loss:v0
+model_artifact_alias: latest
+
+batch_size: 8
+num_workers: 0
+pin_memory: True
+
+status_interval: 1000  # images
+
+device: 0
+
+#rgb_flag: False
+#dataset_split_key: test  # used to get to correct level of dataset dict (to mirror 'train'/'val' splits)
+#last_distortion_type_flag: noise  # normally should be 'noise'
+#loss_func: CrossEntropyLoss
