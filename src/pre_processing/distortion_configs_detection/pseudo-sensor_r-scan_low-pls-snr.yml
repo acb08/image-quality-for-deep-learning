@@ -19,4 +19,4 @@ datatype_key: np.uint8
 
 image_shape: null
 
-name_string: pseudo-sensor-low-snr-r-scan
+name_string: pseudo-sensor-low-pls-snr-r-scan
