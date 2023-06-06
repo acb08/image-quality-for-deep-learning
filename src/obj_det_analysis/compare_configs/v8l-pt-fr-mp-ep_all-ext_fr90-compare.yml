@@ -6,9 +6,9 @@ test_result_identifiers:
      'full range trained']
   - ['0025rlt-yolov8l-0054tst-coco_fr90:v0',
      'pre-trained']
-  - ['',
+  - ['0017rlt-0062yolo-v8l-mp-ext_best_loss-0054tst-coco_fr90:v0',
      'midpoint trained']
-  - ['',
+  - ['0016rlt-0066yolo-v8l-ep-ext_best_loss-0054tst-coco_fr90:v0',
      'endpoint trained']
 
 

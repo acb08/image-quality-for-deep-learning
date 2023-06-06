@@ -1,0 +1,9 @@
+---
+
+result_id: 0075rlt-0062yolo-v8l-mp-ext_best_loss-val2017:v0
+identifier: v8l-mp-ext_val2017
+
+flatten_axis_combinations: default
+flatten_axes: default
+
+fit_keys: null

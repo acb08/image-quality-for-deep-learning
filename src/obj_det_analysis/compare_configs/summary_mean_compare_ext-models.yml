@@ -1,0 +1,53 @@
+---
+
+test_result_identifiers:
+
+  - ['0074rlt-0060yolo-v8l-fr-ext_best_loss-val2017:v0',
+     'v8l-fr-ext, val2017']
+  - [ '0049rlt-yolov8l-val2017:v0',
+      'v8l-pre-trained, val2017' ]
+  - ['0075rlt-0062yolo-v8l-mp-ext_best_loss-val2017:v0',
+    'v8l-mp-ext, val2017']
+  - ['0050rlt-0039yolo-v8l-ep_best_loss-val2017:v0',
+     'v8l-ep, val2017']
+
+  - [ '0071rlt-0060yolo-v8l-fr-ext_best_loss-0056tst-coco_mp90:v0',
+      'v8l-fr, mp90' ]
+  - [ '0045rlt-yolov8l-0056tst-coco_mp90:v0',
+      'v8l-pre-trained, mp90' ]
+  - ['0072rlt-0038yolo-v8l-mp_best_loss-0056tst-coco_mp90:v0',
+     'v8l-mp-ext, mp90']
+  - ['0046rlt-0039yolo-v8l-ep_best_loss-0056tst-coco_mp90:v0',
+    'v8l-ep, mp90']
+
+  - [ '0068rlt-0060yolo-v8l-fr-ext_best_loss-0057tst-coco_ep90:v0',
+      'v8l-fr-ext, ep90' ]
+  - [ '0041rlt-yolov8l-0057tst-coco_ep90:v0',
+      'v8l-pre-trained, ep90' ]
+  - ['0044rlt-0038yolo-v8l-mp_best_loss-0057tst-coco_ep90:v0',
+     'v8l-mp, ep90']
+  - [ '0042rlt-0039yolo-v8l-ep_best_loss-0057tst-coco_ep90:v0',
+      'v8l-ep, ep90' ]
+
+
+  - ['0060rlt-0060yolo-v8l-fr-ext_best_loss-0054tst-coco_fr90:v0',
+     'v8l-fr-ext, fr90']
+  - ['0025rlt-yolov8l-0054tst-coco_fr90:v0',
+     'v8l-pre-trained, fr90']
+  - ['0056rlt-0038yolo-v8l-mp_best_loss-0054tst-coco_fr90:v0',
+     'v8l-mp, fr90']
+  - ['0057rlt-0039yolo-v8l-ep_best_loss-0054tst-coco_fr90:v0',
+     'vl-ep, fr90']
+
+
+
+overwrite: True
+manual_name: summary-mean-compare
+show_plots: False
+plot_together: False
+flatten_axis_combinations: null
+flatten_axes: null
+
+log_average_performances: True
+
+allow_differing_distortions: True

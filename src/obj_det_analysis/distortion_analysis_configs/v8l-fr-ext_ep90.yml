@@ -1,0 +1,9 @@
+---
+
+result_id: 0068rlt-0060yolo-v8l-fr-ext_best_loss-0057tst-coco_ep90:v0
+identifier: v8l-fr-ext_ep90
+
+flatten_axis_combinations: default
+flatten_axes: default
+
+fit_keys: null

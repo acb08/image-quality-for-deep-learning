@@ -1,0 +1,9 @@
+---
+
+result_id: 0072rlt-0038yolo-v8l-mp_best_loss-0056tst-coco_mp90:v0
+identifier: v8l-mp-ext_mp90
+
+flatten_axis_combinations: default
+flatten_axes: default
+
+fit_keys: null
