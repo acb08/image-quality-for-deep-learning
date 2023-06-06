@@ -110,7 +110,8 @@ class ModelDistortionPerformanceResultOD:
         distortions = {}
         try:
             for flag in self.distortion_type_flags:
-                distortions[flag] = np.asarray([image[flag] for image in images])
+                if flag not in self.distortions_ignore:
+                    distortions[flag] = np.asarray([image[flag] for image in images])
         except TypeError:  # occurs when distortion_type_flags is None (i.e. on dataset without distortions)
             pass
         return distortions

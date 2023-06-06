@@ -1,0 +1,13 @@
+---
+
+result_id: 0109rlt-yolov8l-0069tst-pseudo-sensor-fr-low-pls-snr-megaset:v0
+identifier: v8l-pt_ps-low-pls-snr-fr
+
+flatten_axis_combinations: [[0 , 2], [1, 2]]
+flatten_axes: [2]
+
+basic_plots: True
+
+fit_keys: null
+
+distortions_ignore: ['noise']
