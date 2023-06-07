@@ -1,0 +1,13 @@
+---
+
+result_id: 0112rlt-yolov8l-0072tst-pseudo-sensor-low-pls-snr-r-scan:v0
+identifier: v8l-pt-ps-low-pls-snr-r-scan
+
+flatten_axis_combinations: [[1, 2]]
+flatten_axes: null
+
+basic_plots: True
+
+fit_keys: null
+
+distortions_ignore: ['noise']

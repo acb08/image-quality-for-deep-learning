@@ -865,13 +865,20 @@ def plot_1d_from_3d(perf_dict_3d, x_vals, y_vals, z_vals, distortion_ids=('res',
                     legend=False,
                     y_lim_bottom=None,
                     y_lim_top=None,
-                    single_legend=True):
+                    single_legend=True,
+                    subfig_width=None,
+                    subfig_height=None):
+
+    if subfig_width is None:
+        subfig_width = 4
+    if subfig_height is None:
+        subfig_height = 3.4
 
     num_combinations = len(flatten_axis_combinations)
 
     if plot_together:
-        fig_width = 4 * num_combinations
-        fig, axes = plt.subplots(nrows=1, ncols=num_combinations, sharey=True, figsize=(fig_width, 3.4))
+        fig_width = subfig_width * num_combinations
+        fig, axes = plt.subplots(nrows=1, ncols=num_combinations, sharey=True, figsize=(fig_width, subfig_height))
         if not hasattr(axes, '__len__'):
             axes = (axes, )
         save_dir_individual = None

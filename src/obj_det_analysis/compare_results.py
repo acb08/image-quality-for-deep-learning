@@ -30,11 +30,16 @@ def main(config):
     wandb.login()
 
     test_result_identifiers = config['test_result_identifiers']
+    distortions_ignore = ()
+    if 'distortions_ignore' in config.keys():
+        distortions_ignore = config['distortions_ignore']
 
     all_results = []
 
     distortion_performance_results = get_multiple_od_distortion_performance_results(
-        result_id_pairs=test_result_identifiers)
+        result_id_pairs=test_result_identifiers,
+        distortions_ignore=distortions_ignore
+    )
     flatten_axes = flatten_axes_from_cfg(config)
     flatten_axis_combinations = flatten_axis_combinations_from_cfg(config)
 
@@ -82,6 +87,13 @@ def main(config):
             composite_results.append(composite_performance_result_od)
 
         all_results.extend(composite_results)
+
+    subfig_height = None
+    subfig_width = None
+    if 'subfig_height' in config.keys():
+        subfig_height = config['subfig_height']
+    if 'subfig_width' in config.keys():
+        subfig_width = config['subfig_width']
 
     all_results.extend(distortion_performance_results)
 
@@ -142,7 +154,9 @@ def main(config):
                         legend=True,
                         y_lim_bottom=y_lim_bottom,
                         y_lim_top=y_lim_top,
-                        single_legend=single_legend
+                        single_legend=single_legend,
+                        subfig_width=subfig_width,
+                        subfig_height=subfig_height
                         )
 
     if flatten_axes is not None:

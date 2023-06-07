@@ -10,8 +10,8 @@ from src.utils.functions import construct_artifact_id
 
 
 def get_multiple_od_distortion_performance_results(result_id_pairs,
-                                                   output_type='list'):
-
+                                                   output_type='list',
+                                                   distortions_ignore=()):
     if output_type == 'list':
         performance_results = []
     else:
@@ -22,10 +22,11 @@ def get_multiple_od_distortion_performance_results(result_id_pairs,
         for artifact_id, identifier in result_id_pairs:
 
             artifact_id, __ = construct_artifact_id(artifact_id)
-            distortion_performance_result, __ = get_obj_det_distortion_perf_result(result_id=artifact_id,
-                                                                                   identifier=identifier,
-                                                                                   make_dir=False,
-                                                                                   run=run)
+            distortion_performance_result, __ = get_obj_det_distortion_perf_result(
+                result_id=artifact_id, identifier=identifier,
+                make_dir=False,
+                run=run,
+                distortions_ignore=distortions_ignore)
 
             if output_type == 'list':
                 performance_results.append(distortion_performance_result)

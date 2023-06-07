@@ -1,0 +1,34 @@
+---
+
+test_result_identifiers:
+
+  - [ '0113rlt-0060yolo-v8l-fr-ext_best_loss-0072tst-pseudo-sensor-low-pls-snr-r-scan:v0',
+      'medium-low snr, full range' ]
+  - [ '0104rlt-0060yolo-v8l-fr-ext_best_loss-0065tst-pseudo-sensor-low-snr-r-scan:v0',
+      'low snr, full range' ]
+
+  - [ '0112rlt-yolov8l-0072tst-pseudo-sensor-low-pls-snr-r-scan:v0',
+      'medium-low snr, pre-trained' ]
+  - [ '0101rlt-yolov8l-0065tst-pseudo-sensor-low-snr-r-scan:v0',
+      'low snr, pre-trained']
+
+overwrite: False
+manual_name: v8l-pt-fr-ext_pseudo-sensor_low-snr_low-pls-snr_r-scans
+
+flatten_axis_combinations: [[1, 2]]
+flatten_axes: null
+
+fit_keys: null
+
+plot_together: True
+y_limits: null
+
+show_plots: False
+basic_plots: True
+
+allow_differing_distortions: True
+
+distortions_ignore: ['noise']
+
+subfig_width: 6
+subfig_height: 6
