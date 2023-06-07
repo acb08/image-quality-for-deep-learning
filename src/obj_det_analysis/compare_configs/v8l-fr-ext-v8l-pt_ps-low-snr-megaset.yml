@@ -1,0 +1,30 @@
+---
+
+test_result_identifiers:
+
+  - ['0108rlt-0060yolo-v8l-fr-ext_best_loss-0068tst-pseudo-sensor-fr-low-snr-megaset:v0',
+     'full range trained']
+  - [ '0107rlt-yolov8l-0068tst-pseudo-sensor-fr-low-snr-megaset:v0',
+      'pre-trained' ]
+
+overwrite: False
+manual_name: v8l-fr-ext-v8l-pt_ps-low-snr_megasets
+
+flatten_axis_combinations: [[1, 2], [0, 2]]
+flatten_axes: [2]
+
+fit_keys: null
+
+plot_together: True
+y_limits: null
+
+show_plots: False
+basic_plots: True
+
+allow_differing_distortions: True
+
+distortions_ignore: ['noise']
+
+subfig_width: 6
+subfig_height: 6
+
