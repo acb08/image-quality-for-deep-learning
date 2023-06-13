@@ -10,7 +10,7 @@ from torchvision import transforms
 import matplotlib.pyplot as plt
 from src.analysis.plot import plot_2d
 from scipy import interpolate
-from src.utils.definitions import ROOT_DIR, REL_PATHS, WELL_DEPTH
+from src.utils.definitions import ROOT_DIR, REL_PATHS, BASELINE_HIGH_SIGNAL_WELL_DEPTH
 from pathlib import Path
 from src.utils.functions import id_from_tags
 import matplotlib
@@ -27,7 +27,7 @@ def initial_electrons_and_image(fill_fraction=0.5, shape=(128, 128), poisson_noi
 
     assert 1 >= fill_fraction >= 0
 
-    electrons = fill_fraction * WELL_DEPTH * np.ones(shape, dtype=np.float32)
+    electrons = fill_fraction * BASELINE_HIGH_SIGNAL_WELL_DEPTH * np.ones(shape, dtype=np.float32)
     if poisson_noise:
         electrons = apply_partial_poisson_distribution(electrons)
     image = electrons_to_image(electrons)

@@ -98,15 +98,22 @@ with open(Path(ROOT_DIR, REL_PATHS['project_config'], _project_config_filename),
 WANDB_PID = _config['PROJECT_ID']
 NATIVE_RESOLUTION = _config['NATIVE_RESOLUTION']  # kept in config file so can be used in multi-project functions
 
-BASELINE_READ_NOISE = 10
+BASELINE_READ_NOISE = 100
 BASELINE_DARK_CURRENT = 1
 
-WELL_DEPTH = 1_500
+BASELINE_HIGH_SIGNAL_WELL_DEPTH = 1_000
 
 PSEUDO_SENSOR_SIGNAL_FRACTIONS = {'low': 0.01,
-                                  'low_pls': 0.02,
-                                  'med': 0.1,
+                                  'low_pls': 0.2,
+                                  'med': 0.5,
                                   'high': 1}
+
+# fractions to consider:    0.0225 --> 0.15 (300 electron well), 166 electron max read noise
+#                           0.0625 --> 0.25 (500 electron well), 100 electron max dark noise
+#                           0.09 --> 0.3 (600 electron well), 83 electron max dark noise
+
+BASELINE_SIGMA_BLUR = 1
+BASELINE_AP = 1
 
 DISTORTION_RANGE = {
     'sat6': {

@@ -1,7 +1,7 @@
 import copy
 import numpy as np
 from PIL import Image
-from src.utils.definitions import WELL_DEPTH
+from src.utils.definitions import BASELINE_HIGH_SIGNAL_WELL_DEPTH, BASELINE_SIGMA_BLUR, BASELINE_AP
 
 FRAGILE_ANNOTATION_KEYS = ['area', 'segmentation']
 
@@ -45,7 +45,7 @@ def resize_bbox(res_frac, bbox):
     return bbox
 
 
-def image_to_electrons(image, well_depth=WELL_DEPTH):
+def image_to_electrons(image, well_depth=BASELINE_HIGH_SIGNAL_WELL_DEPTH):
 
     # assert type(image) == Image.Image
 
@@ -57,7 +57,7 @@ def image_to_electrons(image, well_depth=WELL_DEPTH):
     return electrons
 
 
-def electrons_to_image(electrons, well_depth=WELL_DEPTH):
+def electrons_to_image(electrons, well_depth=BASELINE_HIGH_SIGNAL_WELL_DEPTH):
 
     image = electrons / well_depth
     image = convert_to_uint8(image)
@@ -95,3 +95,8 @@ def apply_partial_poisson_distribution(signal, dc_fraction=0):
 
 def apply_poisson_distribution(signal):
     return np.random.poisson(signal)
+
+
+def relative_aperture(sigma_blur):
+    return (BASELINE_SIGMA_BLUR / sigma_blur) * BASELINE_AP
+

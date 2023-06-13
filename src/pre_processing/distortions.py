@@ -2,7 +2,7 @@ import random
 import numpy as np
 from torchvision import transforms
 from src.utils.definitions import DISTORTION_RANGE, NATIVE_RESOLUTION, DISTORTION_RANGE_90, \
-    COCO_OCT_DISTORTION_BOUNDS, COCO_MP_90, COCO_EP_90, WELL_DEPTH, PSEUDO_SENSOR_SIGNAL_FRACTIONS, \
+    COCO_OCT_DISTORTION_BOUNDS, COCO_MP_90, COCO_EP_90, BASELINE_HIGH_SIGNAL_WELL_DEPTH, PSEUDO_SENSOR_SIGNAL_FRACTIONS, \
     BASELINE_READ_NOISE, BASELINE_DARK_CURRENT, PSEUDO_SENOR_DISTORTION_RANGE
 from src.pre_processing.classes import VariableCOCOResize, VariableImageResize, PseudoSensor
 
@@ -10,25 +10,13 @@ RNG = np.random.default_rng()
 
 PSEUDO_SENSOR_KEYS = {'ps_low_snr', 'ps_low_pls_snr', 'ps_high_snr', 'ps_med_snr'}
 
-pseudo_sensor_low_snr = PseudoSensor(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['low'],
-                                     read_noise=BASELINE_READ_NOISE,
-                                     input_image_well_depth=WELL_DEPTH,
-                                     baseline_dark_current=BASELINE_DARK_CURRENT)
+pseudo_sensor_low_snr = PseudoSensor(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['low'])
 
-pseudo_sensor_low_pls_snr = PseudoSensor(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['low_pls'],
-                                         read_noise=BASELINE_READ_NOISE,
-                                         input_image_well_depth=WELL_DEPTH,
-                                         baseline_dark_current=BASELINE_DARK_CURRENT)
+pseudo_sensor_low_pls_snr = PseudoSensor(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['low_pls'])
 
-pseudo_sensor_med_snr = PseudoSensor(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['med'],
-                                     read_noise=BASELINE_READ_NOISE,
-                                     input_image_well_depth=WELL_DEPTH,
-                                     baseline_dark_current=BASELINE_DARK_CURRENT)
+pseudo_sensor_med_snr = PseudoSensor(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['med'])
 
-pseudo_sensor_high_snr = PseudoSensor(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['high'],
-                                      read_noise=BASELINE_READ_NOISE,
-                                      input_image_well_depth=WELL_DEPTH,
-                                      baseline_dark_current=BASELINE_DARK_CURRENT)
+pseudo_sensor_high_snr = PseudoSensor(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['high'])
 
 
 def get_kernel_size(std):

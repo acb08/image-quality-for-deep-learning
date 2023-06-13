@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 import copy
 import json
-from src.pre_processing.distortion_tools import update_annotations
+from src.pre_processing.distortion_tools import update_annotations  # relative_aperture
 from src.utils.functions import load_wandb_data_artifact, id_from_tags, get_config, \
     log_config
-from src.utils.definitions import REL_PATHS, STANDARD_DATASET_FILENAME, WANDB_PID, ROOT_DIR, WELL_DEPTH, \
-    PSEUDO_SENSOR_SIGNAL_FRACTIONS
+from src.utils.definitions import REL_PATHS, STANDARD_DATASET_FILENAME, WANDB_PID, ROOT_DIR, \
+    BASELINE_HIGH_SIGNAL_WELL_DEPTH, PSEUDO_SENSOR_SIGNAL_FRACTIONS
 from src.pre_processing.distortions import coco_tag_to_image_distortions, PSEUDO_SENSOR_KEYS
 import numpy as np
 from PIL import Image
@@ -98,8 +98,11 @@ def apply_distortions(image, distortion_functions, mapped_annotations, updated_i
 
         if hasattr(distortion_func, 'signal_fraction'):  # use noise functions that scale signal for res
             res_frac = distortion_data['res']
-            image, estimated_snr, distortion_type_flag, distortion_value = distortion_func(image, res_frac,
-                                                                                           signal_est_method='range')
+            sigma_blur = distortion_data['blur']
+            # relative_aperture_size = relative_aperture(blur)
+            relative_aperture_size = None
+            image, estimated_snr, distortion_type_flag, distortion_value = distortion_func(
+                image, res_frac, sigma_blur, signal_est_method='range')
             distortion_data['estimated_snr'] = estimated_snr
 
         else:
@@ -349,7 +352,7 @@ def distort_log_coco(config):
     using_pseudo_sensor = check_pseudo_sensor_use(distortion_tags)
     if using_pseudo_sensor:
         updates = {
-            'assumed_input_well_depth': WELL_DEPTH,
+            'assumed_input_well_depth': BASELINE_HIGH_SIGNAL_WELL_DEPTH,
             'pseudo_sensor_signal_fractions': PSEUDO_SENSOR_SIGNAL_FRACTIONS
         }
         config.update(updates)

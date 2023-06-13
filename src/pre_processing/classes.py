@@ -3,7 +3,9 @@ import numpy as np
 import torch
 from PIL import Image
 from torchvision import transforms
-from src.pre_processing.distortion_tools import image_to_electrons, electrons_to_image
+from src.pre_processing.distortion_tools import image_to_electrons, electrons_to_image, relative_aperture
+from src.utils.definitions import BASELINE_HIGH_SIGNAL_WELL_DEPTH, BASELINE_SIGMA_BLUR, BASELINE_READ_NOISE, \
+    BASELINE_DARK_CURRENT
 
 
 RNG = np.random.default_rng()
@@ -264,21 +266,16 @@ class PseudoSensor:
     decreases / pixel size increases, with signal scaling that is inversely proportional to the square of resolution
     fraction / directly proportional to pixel area ratio.
     """
-    def __init__(self, signal_fraction, read_noise, input_image_well_depth, baseline_dark_current):
+    def __init__(self, signal_fraction):
         """
 
         :param signal_fraction: float, scale factor input signal
-        :param read_noise:
-        :param input_image_well_depth:
-        :param baseline_dark_current:
         """
+
         self.signal_fraction = signal_fraction
-        self.read_noise = read_noise
-
-        self.min_well_depth = self.signal_fraction * input_image_well_depth
-        self.dark_current = baseline_dark_current / signal_fraction
-
-        self._assumed_input_well_depth = input_image_well_depth  # diagnostic
+        self.read_noise = BASELINE_READ_NOISE
+        self.well_depth = np.sqrt(self.signal_fraction) * BASELINE_HIGH_SIGNAL_WELL_DEPTH
+        self._assumed_input_well_depth = BASELINE_HIGH_SIGNAL_WELL_DEPTH  # diagnostic use only
 
     def apply_read_noise(self, electrons):
         noise = np.random.randn(*np.shape(electrons)) * self.read_noise
@@ -286,9 +283,13 @@ class PseudoSensor:
         electrons = electrons + noise
         return electrons
 
-    def apply_dark_current(self, electrons):
-        dark_electrons = RNG.poisson(lam=self.dark_current, size=np.shape(electrons))
+    @staticmethod
+    def apply_dark_current(electrons, mean_dark_count):
+        dark_electrons = RNG.poisson(lam=mean_dark_count, size=np.shape(electrons))
         return electrons + dark_electrons
+
+    def get_mean_dark_count(self, sigma_blur):
+        return sigma_blur ** 2 / np.sqrt(self.signal_fraction) * BASELINE_DARK_CURRENT
 
     def attenuate(self, electrons):
         return self.signal_fraction * electrons
@@ -296,6 +297,15 @@ class PseudoSensor:
     @staticmethod
     def scale_for_pix_size(value, res_frac):
         scale = (1 / res_frac) ** 2
+        return scale * value
+
+    @staticmethod
+    def scale_for_relative_aperture_size(value, relative_aperture_size):
+        """
+        Scales signal according to relative aperture diameter.  Assumes a baseline diameter of 1, with signal varying
+        with the square of aperture size (i.e. diameter)
+        """
+        scale = relative_aperture_size ** 2
         return scale * value
 
     @staticmethod
@@ -315,18 +325,25 @@ class PseudoSensor:
         quantization_variance = quantization_step ** 2 / 12
         return np.sqrt(quantization_variance)
 
-    def subtract_dark_offset(self, electrons):
+    @staticmethod
+    def subtract_dark_offset(electrons, mean_dark_count):
         """
         Effectively zero-centers the dark current Poisson distribution. Used to avoid normalization issues that could
         arise from significant dc bias in the images
         """
-        return electrons - self.dark_current
+        return electrons - mean_dark_count
 
-    def output_image_well_depth(self, res_frac):
+    def output_image_well_depth(self, res_frac, relative_aperture_size):
         """
         Scales well depth by the ratio of output pixel area to input pixel area
         """
-        return self.scale_for_pix_size(value=self.min_well_depth, res_frac=res_frac)
+        well_depth = self.scale_for_pix_size(value=self.well_depth, res_frac=res_frac)
+        well_depth = self.scale_for_relative_aperture_size(
+            value=well_depth, relative_aperture_size=relative_aperture_size)
+
+        assert np.abs(well_depth == self.well_depth * (relative_aperture_size / res_frac) ** 2) < 10
+
+        return well_depth
 
     @staticmethod
     def electron_noise_to_dn(noise_electrons, well_depth):
@@ -335,52 +352,54 @@ class PseudoSensor:
         noise_dn = int((2 ** 8 - 1) * normed_noise)
         return noise_dn
 
-    def __call__(self, image, res_frac, verbose=False, log_file=None, eps=0.01, signal_est_method='range'):
+    def __call__(self, image, res_frac, sigma_blur, signal_est_method='range', log_file=None, eps=0.01):
 
-        output_well_depth = self.output_image_well_depth(res_frac=res_frac)
+        pre_noise_electrons = image_to_electrons(image, well_depth=self.well_depth)
 
-        electrons = image_to_electrons(image, output_well_depth)
+        # _diagnostic _only
+        _relative_aperture_size = relative_aperture(sigma_blur=sigma_blur)
 
-        max_res_electrons = image_to_electrons(image, self.min_well_depth)
-        scaled_electrons = self.scale_for_pix_size(value=max_res_electrons, res_frac=res_frac)
+        signal_range_electrons = np.max(pre_noise_electrons) - np.min(pre_noise_electrons)  # very rudimentary
+        signal_mean_electrons = np.mean(pre_noise_electrons)
 
-        assert np.abs(np.mean(electrons - scaled_electrons)) < eps
+        mean_dark_count = self.get_mean_dark_count(sigma_blur=sigma_blur)
 
-        if verbose:
-            full_signal_electrons = image_to_electrons(image, self._assumed_input_well_depth)
-            initial_mean_electrons = np.mean(full_signal_electrons)
-            attenuated_electrons = self.attenuate(full_signal_electrons)
-            attenuated_mean = np.mean(attenuated_electrons)
-            mean_electrons = np.mean(electrons)
-
-            print('res_frac:', res_frac, file=log_file)
-            print('initial (input) mean electrons:', round(float(initial_mean_electrons), 0), file=log_file)
-            print('attenuated electrons / mean electrons:', round(float(attenuated_mean), 0), ' / ',
-                  round(float(mean_electrons), 0), file=log_file)
-            print('attenuated / initial mean electrons:', round(attenuated_mean / initial_mean_electrons, 4),
-                  file=log_file)
-
-        signal_range_electrons = np.max(electrons) - np.min(electrons)  # very rudimentary
-        signal_mean_electrons = np.mean(electrons)
-
-        noisy_electrons = self.apply_poisson_distribution(electrons)
+        noisy_electrons = self.apply_poisson_distribution(pre_noise_electrons)
         noisy_electrons = self.apply_read_noise(noisy_electrons)
-        noisy_electrons = self.apply_dark_current(noisy_electrons)
-        noisy_electrons = self.subtract_dark_offset(noisy_electrons)
-        noisy_electrons = self.clip_electrons(noisy_electrons, well_depth=output_well_depth)
+        noisy_electrons = self.apply_dark_current(noisy_electrons, mean_dark_count=mean_dark_count)
+        noisy_electrons = self.subtract_dark_offset(noisy_electrons, mean_dark_count=mean_dark_count)
+        noisy_electrons = self.clip_electrons(noisy_electrons, well_depth=self.well_depth)
 
-        electron_noise = np.std(noisy_electrons - electrons)
-        quantization_noise = self.quantization_noise(well_depth=output_well_depth)  # in units of electrons
-        approx_noise_electrons = np.sqrt(electron_noise ** 2 + quantization_noise ** 2)
+        measured_electron_noise = np.std(noisy_electrons - pre_noise_electrons)
+        quantization_noise = self.quantization_noise(well_depth=self.well_depth)  # in units of pre_noise_electrons
+        estimated_post_adc_noise_electrons = np.sqrt(measured_electron_noise ** 2 + quantization_noise ** 2)
 
-        signale_range_snr = signal_range_electrons / approx_noise_electrons
-        signal_mean_snr = signal_mean_electrons / approx_noise_electrons
+        signal_range_snr = signal_range_electrons / estimated_post_adc_noise_electrons
+        signal_mean_snr = signal_mean_electrons / estimated_post_adc_noise_electrons
+
+        if signal_est_method == 'range':
+            est_snr = signal_range_snr
+        elif signal_est_method == 'mean':
+            est_snr = signal_mean_snr
+        else:
+            raise ValueError("signal_est_method must be either 'range' or 'mean'")
+
+        analytical_electron_noise = np.sqrt(np.mean(pre_noise_electrons) + mean_dark_count + BASELINE_READ_NOISE ** 2)
+
+        diagnostic_data = {
+            'sigma_blur': sigma_blur,
+            'mean_dark_count': mean_dark_count,
+            'dark_est_std': np.sqrt(mean_dark_count),
+            'mean_pre_noise_electrons': np.mean(pre_noise_electrons),
+            'est_shot_noise': np.sqrt(np.mean(pre_noise_electrons)),
+            'analytical_noise_electrons': analytical_electron_noise,
+            'read_noise': BASELINE_READ_NOISE,
+            'measured_electron_noise': measured_electron_noise,
+            'estimated_post_adc_noise_electrons': estimated_post_adc_noise_electrons,
+            'well_depth': self.well_depth,
+            'relative_aperture_size': _relative_aperture_size
+        }
         
-        output_image = electrons_to_image(electrons=noisy_electrons, well_depth=output_well_depth)
+        output_image = electrons_to_image(electrons=noisy_electrons, well_depth=self.well_depth)
 
-        if verbose:
-            print('approx signal range snr:', signale_range_snr, file=log_file)
-            print('approx signal mean SNR:', signal_mean_snr, '\n', file=log_file)
-
-        return output_image, signale_range_snr, 'snr', signal_mean_snr
-
+        return output_image, est_snr, 'snr', diagnostic_data
