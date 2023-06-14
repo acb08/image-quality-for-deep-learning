@@ -1,0 +1,23 @@
+---
+
+train_dataset_id: '0004trn-np-rgb:v0'
+train_dataset_artifact_alias: latest
+
+starting_model_id: 'resnet18_pretrained'
+starting_model_artifact_alias: 'latest'
+
+crop_flag: False
+distortion_tags: ['rt_fr_pl_cp', 'bt_fr_pl_cp', 'nt_fr_pl_cp']
+descriptive_tags: ['rgb', 'cp']
+num_epochs: 10
+batch_size: 32
+num_workers: 16
+pin_memory: True
+optimizer: 'Adam'
+lr: 0.00005  # Adam default = 0.001
+loss_func: 'CrossEntropyLoss'
+description: 'train full range places rgb coco parallel densenet161 model'
+artifact_type: 'model'
+
+name_string: 'full_range_cp'  # set to null or comment out line to name model using distortion tags
+num_shards: 'all'
