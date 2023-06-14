@@ -3,7 +3,7 @@ import numpy as np
 from torchvision import transforms
 from src.utils.definitions import DISTORTION_RANGE, NATIVE_RESOLUTION, DISTORTION_RANGE_90, \
     COCO_OCT_DISTORTION_BOUNDS, COCO_MP_90, COCO_EP_90, BASELINE_HIGH_SIGNAL_WELL_DEPTH, PSEUDO_SENSOR_SIGNAL_FRACTIONS, \
-    BASELINE_READ_NOISE, BASELINE_DARK_CURRENT, PSEUDO_SENOR_DISTORTION_RANGE
+    BASELINE_READ_NOISE, BASELINE_DARK_CURRENT, PSEUDO_SYSTEM_DISTORTION_RANGE
 from src.pre_processing.classes import VariableCOCOResize, VariableImageResize, PseudoSensor
 
 RNG = np.random.default_rng()
@@ -451,7 +451,7 @@ def b_fr90_coco(img):
 
 def b_fr_ps_coco(img):
 
-    sigma_range = PSEUDO_SENOR_DISTORTION_RANGE['coco']['blur']
+    sigma_range = PSEUDO_SYSTEM_DISTORTION_RANGE['coco']['blur']
     std = np.random.choice(sigma_range)
 
     kernel_size = get_kernel_size(std)
@@ -701,7 +701,7 @@ def r_fr90_coco(img):
 
 def r_fr_ps_coco(img):
 
-    res_fractions = PSEUDO_SENOR_DISTORTION_RANGE['coco']['res']
+    res_fractions = PSEUDO_SYSTEM_DISTORTION_RANGE['coco']['res']
     res_frac = random.choice(res_fractions)
     img_out = VariableCOCOResize()(img, res_frac)
 

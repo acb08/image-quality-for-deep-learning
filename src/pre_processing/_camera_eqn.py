@@ -1,19 +1,29 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from src.utils.definitions import PSEUDO_SYSTEM_DISTORTION_RANGE
 
 
-def relative_camera_equation(fn0, sigma_blur, r):
-    f_num_scale_factor = (sigma_blur / r) ** 2
-    return (1 + 4 * fn0 ** 2) / (1 + 4 * fn0 ** 2 * f_num_scale_factor)
+def sensor_radiance_ratio(baseline_f_number, sigma_blur=None, r=None, scale_factor=None):
+    if scale_factor is None:
+        scale_factor = sigma_blur * r
+    scaled_f_number = scale_factor * baseline_f_number
+    return (1 + 4 * baseline_f_number ** 2) / (1 + 4 * scaled_f_number ** 2)
 
 
 if __name__ == '__main__':
 
-    _sigma_vals = np.arange(1, 6)
-    _r = np.linspace(0.1, 1, num=10)
-    _fn0_vals = np.arange(4) + 0.5
+    baseline_f_numbers = [0.75, 1, 1.25, 1.5]
+    scale_factors = np.linspace(0.2, 5, num=21)
+    abbrev_scale_factors = np.linspace(0.2, 5, num=7)
 
-    for _sigma_val in _sigma_vals:
-        for _fn0_val in _fn0_vals:
-            relative_irradiance = relative_camera_equation(_fn0_val, _sigma_val, _r)
+    plt.figure()
+    for f_number in baseline_f_numbers:
+        ratio = sensor_radiance_ratio(baseline_f_number=f_number,
+                                      scale_factor=scale_factors)
+
+        plt.plot(scale_factors, ratio, label=f'F0 = {round(f_number, 2)}')
+        plt.xlabel(r'f-number scale factor ($r \times \sigma$)')
+        plt.ylabel('radiance ratio')
+    plt.legend()
+    plt.show()
 
