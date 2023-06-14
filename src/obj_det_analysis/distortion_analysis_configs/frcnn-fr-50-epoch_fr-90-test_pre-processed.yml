@@ -1,0 +1,9 @@
+---
+
+result_id: 0118rlt-0070fasterrcnn-faster-rcnn-fr-50-epoch-0054tst-coco_fr90:v0
+identifier: Faster-RCNN full range trained, 50 epoch
+
+flatten_axis_combinations: default
+flatten_axes: default
+
+pre_processed_artifact: True
