@@ -1,6 +1,6 @@
 ---
 
-description: create full range pseudo-sensor high snr train dataset
+description: create full range pseudo-system high snr train dataset
 
 parent_dataset_id: train2017
 parent_artifact_alias: latest
@@ -19,4 +19,4 @@ datatype_key: np.uint8
 
 image_shape: null
 
-name_string: pseudo-sensor-fr-high-snr-train
+name_string: pseudo-system-fr-high-snr-train

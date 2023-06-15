@@ -1,6 +1,6 @@
 ---
 
-description: create full range pseudo-sensor low-plus snr train dataset
+description: create full range pseudo-system medium snr train dataset
 
 parent_dataset_id: train2017
 parent_artifact_alias: latest
@@ -9,7 +9,7 @@ parent_artifact_filename: standard  # standard functions as a flag to use defini
 num_images: all
 val_frac: 0.05
 
-distortion_tags: ['b_fr_ps_coco', 'r_fr_ps_coco', 'ps_low_pls_snr']
+distortion_tags: ['b_fr_ps_coco', 'r_fr_ps_coco', 'ps_med_snr']
 distortion_type_flags: ['blur', 'res', 'noise']  # specifies distortion_tags associated distortion types
 iterations: 1
 artifact_type: train_dataset
@@ -19,4 +19,4 @@ datatype_key: np.uint8
 
 image_shape: null
 
-name_string: pseudo-sensor-fr-low-pls-snr-train
+name_string: pseudo-system-fr-med-snr-train
