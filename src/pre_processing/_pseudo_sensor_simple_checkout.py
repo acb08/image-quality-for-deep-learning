@@ -5,7 +5,7 @@ from PIL import Image
 import numpy as np
 from pathlib import Path
 from src.utils.definitions import BASELINE_HIGH_SIGNAL_WELL_DEPTH, \
-    PSEUDO_SENSOR_SIGNAL_FRACTIONS, BASELINE_SIGMA_BLUR
+    PSEUDO_SENSOR_SIGNAL_FRACTIONS, BASELINE_SIGMA_BLUR, PSEUDO_SYS_CONFIGS_TO_LOG
 from src.pre_processing._pseudo_sensor_varied_snr_checkout import get_output_dir, estimate_snr, strip_plot_2d_array
 
 
@@ -21,11 +21,7 @@ def main(config):
     name_string = config['name_string']
 
     output_dir = get_output_dir(name_string=name_string, noise_function_tags=pseudo_sensor_tag)
-
-    config_additions = {'pseudo_sensor_signal_fractions': PSEUDO_SENSOR_SIGNAL_FRACTIONS,
-                        'well_depth': BASELINE_HIGH_SIGNAL_WELL_DEPTH,
-                        'baseline_sigma_blur': BASELINE_SIGMA_BLUR}
-    config.update(config_additions)
+    config.update(PSEUDO_SYS_CONFIGS_TO_LOG)
     log_config(output_dir=output_dir, config=config)
 
     digital_number = int((2 ** 8 - 1) * level)

@@ -1,9 +1,8 @@
 ---
 
-description: create full range pseudo-sensor high snr dataset
+description: create full range pseudo-system high snr dataset
 
 parent_dataset_id: val2017
-
 parent_artifact_alias: latest
 parent_artifact_filename: standard  # standard functions as a flag to use definitions.STANDARD_ARTIFACT_FILENAME
 
@@ -20,4 +19,4 @@ datatype_key: np.uint8
 
 image_shape: null
 
-name_string: pseudo-sensor-fr-high-snr-megaset
+name_string: pseudo-system-fr-high-snr-megaset

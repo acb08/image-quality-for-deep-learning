@@ -3,20 +3,16 @@ import numpy as np
 from torchvision import transforms
 from src.utils.definitions import DISTORTION_RANGE, NATIVE_RESOLUTION, DISTORTION_RANGE_90, \
     COCO_OCT_DISTORTION_BOUNDS, COCO_MP_90, COCO_EP_90, BASELINE_HIGH_SIGNAL_WELL_DEPTH, PSEUDO_SENSOR_SIGNAL_FRACTIONS, \
-    BASELINE_READ_NOISE, BASELINE_DARK_CURRENT, PSEUDO_SYSTEM_DISTORTION_RANGE
-from src.pre_processing.classes import VariableCOCOResize, VariableImageResize, PseudoSensor
+    BASELINE_READ_NOISE, BASELINE_DARK_COUNT, PSEUDO_SYSTEM_DISTORTION_RANGE
+from src.pre_processing.classes import VariableCOCOResize, VariableImageResize, PseudoSystem
 
 RNG = np.random.default_rng()
 
 PSEUDO_SENSOR_KEYS = {'ps_low_snr', 'ps_low_pls_snr', 'ps_high_snr', 'ps_med_snr'}
-
-pseudo_sensor_low_snr = PseudoSensor(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['low'])
-
-pseudo_sensor_low_pls_snr = PseudoSensor(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['low_pls'])
-
-pseudo_sensor_med_snr = PseudoSensor(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['med'])
-
-pseudo_sensor_high_snr = PseudoSensor(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['high'])
+pseudo_system_low_snr = PseudoSystem(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['low'])
+pseudo_system_low_pls_snr = PseudoSystem(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['low_pls'])
+pseudo_system_med_snr = PseudoSystem(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['med'])
+pseudo_system_high_snr = PseudoSystem(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['high'])
 
 
 def get_kernel_size(std):
@@ -644,6 +640,7 @@ def n_ep90_coco(img):
 
     return img_out, None, 'noise', lambda_poisson
 
+
 def r0_coco(img):
 
     res_frac = random.choice([0.4, 0.6, 0.7, 0.8, 0.9, 1])
@@ -1082,10 +1079,10 @@ coco_tag_to_image_distortions = {  # coco distortion functions return distortion
     'r_low_debug_coco': r_low_debug_coco,
     'b_large_debug_coco': b_large_debug_coco,
 
-    'ps_high_snr': pseudo_sensor_high_snr,
-    'ps_med_snr': pseudo_sensor_med_snr,
-    'ps_low_snr': pseudo_sensor_low_snr,
-    'ps_low_pls_snr': pseudo_sensor_low_pls_snr,
+    'ps_high_snr': pseudo_system_high_snr,
+    'ps_med_snr': pseudo_system_med_snr,
+    'ps_low_snr': pseudo_system_low_snr,
+    'ps_low_pls_snr': pseudo_system_low_pls_snr,
 
     'r_fr_ps_coco': r_fr_ps_coco,
     'b_fr_ps_coco': b_fr_ps_coco,

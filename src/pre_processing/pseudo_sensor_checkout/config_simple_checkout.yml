@@ -5,6 +5,6 @@ min_res: 0.1
 max_res: 1
 num_res_fractions: 10
 num_blur_stds: 5
-pseudo_sensor_tag: ps_high_snr
-name_string: simple_checkout_med_snr
+pseudo_sensor_tag: ps_low_snr
+name_string: simple_checkout_low_snr
 verbose: False

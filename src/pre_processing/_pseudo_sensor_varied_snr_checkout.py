@@ -3,7 +3,6 @@ import copy
 from src.pre_processing.distortions import coco_tag_to_image_distortions
 import argparse
 from src.utils.functions import get_config, log_config, id_from_tags
-from src.pre_processing.distortion_tools import relative_aperture
 from PIL import Image
 import numpy as np
 import random

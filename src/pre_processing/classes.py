@@ -3,9 +3,9 @@ import numpy as np
 import torch
 from PIL import Image
 from torchvision import transforms
-from src.pre_processing.distortion_tools import image_to_electrons, electrons_to_image, relative_aperture
+from src.pre_processing.distortion_tools import image_to_electrons, electrons_to_image
 from src.utils.definitions import BASELINE_HIGH_SIGNAL_WELL_DEPTH, BASELINE_SIGMA_BLUR, BASELINE_READ_NOISE, \
-    BASELINE_DARK_CURRENT
+    BASELINE_DARK_COUNT, BASELINE_F_NUM
 
 
 RNG = np.random.default_rng()
@@ -258,19 +258,11 @@ class PseudoSensorFixedWell:
         return image, None, 'noise', self.read_noise_value
 
 
-class PseudoSensor:
+class PseudoSystem:
     """
-    Simulates imaging in varied SNR regimes with variable resolution / pixel size. Globally scales input signal,
-    applies fixed read noise and dark current that is inversely proportional to signal scaling (i.e. the dark current
-    increases to account for longer integration times when signal is lower).  Scales signal up with when resolution
-    decreases / pixel size increases, with signal scaling that is inversely proportional to the square of resolution
-    fraction / directly proportional to pixel area ratio.
+    Simulates imaging in varied SNR regimes with variable aperture / focal length.
     """
     def __init__(self, signal_fraction):
-        """
-
-        :param signal_fraction: float, scale factor input signal
-        """
 
         self.signal_fraction = signal_fraction
         self.read_noise = BASELINE_READ_NOISE
@@ -288,25 +280,20 @@ class PseudoSensor:
         dark_electrons = RNG.poisson(lam=mean_dark_count, size=np.shape(electrons))
         return electrons + dark_electrons
 
-    def get_mean_dark_count(self, sigma_blur):
-        return sigma_blur ** 2 / np.sqrt(self.signal_fraction) * BASELINE_DARK_CURRENT
+    def get_mean_dark_count(self, sigma_blur, res_frac):
+        integration_time_scale_factor = self.get_integration_time_scale_factor(sigma_blur=sigma_blur,
+                                                                               res_frac=res_frac)
+        return integration_time_scale_factor * BASELINE_DARK_COUNT
 
-    def attenuate(self, electrons):
-        return self.signal_fraction * electrons
+    def get_integration_time_scale_factor(self, sigma_blur, res_frac):
+        f_num = self.get_scaled_f_number(sigma_blur=sigma_blur, res_frac=res_frac)
+        numerator = 1 + 4 * f_num ** 2
+        denominator = np.sqrt(self.signal_fraction) * (1 + 4 * BASELINE_F_NUM ** 2)
+        return numerator / denominator
 
     @staticmethod
-    def scale_for_pix_size(value, res_frac):
-        scale = (1 / res_frac) ** 2
-        return scale * value
-
-    @staticmethod
-    def scale_for_relative_aperture_size(value, relative_aperture_size):
-        """
-        Scales signal according to relative aperture diameter.  Assumes a baseline diameter of 1, with signal varying
-        with the square of aperture size (i.e. diameter)
-        """
-        scale = relative_aperture_size ** 2
-        return scale * value
+    def get_scaled_f_number(sigma_blur, res_frac):
+        return sigma_blur * res_frac * BASELINE_F_NUM
 
     @staticmethod
     def apply_poisson_distribution(signal):
@@ -333,18 +320,6 @@ class PseudoSensor:
         """
         return electrons - mean_dark_count
 
-    def output_image_well_depth(self, res_frac, relative_aperture_size):
-        """
-        Scales well depth by the ratio of output pixel area to input pixel area
-        """
-        well_depth = self.scale_for_pix_size(value=self.well_depth, res_frac=res_frac)
-        well_depth = self.scale_for_relative_aperture_size(
-            value=well_depth, relative_aperture_size=relative_aperture_size)
-
-        assert np.abs(well_depth == self.well_depth * (relative_aperture_size / res_frac) ** 2) < 10
-
-        return well_depth
-
     @staticmethod
     def electron_noise_to_dn(noise_electrons, well_depth):
         normed_noise = noise_electrons / well_depth
@@ -356,13 +331,10 @@ class PseudoSensor:
 
         pre_noise_electrons = image_to_electrons(image, well_depth=self.well_depth)
 
-        # _diagnostic _only
-        _relative_aperture_size = relative_aperture(sigma_blur=sigma_blur)
-
         signal_range_electrons = np.max(pre_noise_electrons) - np.min(pre_noise_electrons)  # very rudimentary
         signal_mean_electrons = np.mean(pre_noise_electrons)
 
-        mean_dark_count = self.get_mean_dark_count(sigma_blur=sigma_blur)
+        mean_dark_count = self.get_mean_dark_count(sigma_blur=sigma_blur, res_frac=res_frac)
 
         noisy_electrons = self.apply_poisson_distribution(pre_noise_electrons)
         noisy_electrons = self.apply_read_noise(noisy_electrons)
@@ -397,7 +369,6 @@ class PseudoSensor:
             'measured_electron_noise': measured_electron_noise,
             'estimated_post_adc_noise_electrons': estimated_post_adc_noise_electrons,
             'well_depth': self.well_depth,
-            'relative_aperture_size': _relative_aperture_size
         }
         
         output_image = electrons_to_image(electrons=noisy_electrons, well_depth=self.well_depth)

@@ -98,22 +98,24 @@ with open(Path(ROOT_DIR, REL_PATHS['project_config'], _project_config_filename),
 WANDB_PID = _config['PROJECT_ID']
 NATIVE_RESOLUTION = _config['NATIVE_RESOLUTION']  # kept in config file so can be used in multi-project functions
 
-BASELINE_READ_NOISE = 100
-BASELINE_DARK_CURRENT = 1
+BASELINE_READ_NOISE = 10
+BASELINE_DARK_COUNT = 5
 
-BASELINE_HIGH_SIGNAL_WELL_DEPTH = 1_000
+BASELINE_HIGH_SIGNAL_WELL_DEPTH = 2_000
 
-PSEUDO_SENSOR_SIGNAL_FRACTIONS = {'low': 0.01,
-                                  'low_pls': 0.2,
-                                  'med': 0.5,
+PSEUDO_SENSOR_SIGNAL_FRACTIONS = {'low': 0.0025,
+                                  'low_pls': 0.01,
+                                  'med': 0.25,
                                   'high': 1}
 
 # fractions to consider:    0.0225 --> 0.15 (300 electron well), 166 electron max read noise
 #                           0.0625 --> 0.25 (500 electron well), 100 electron max dark noise
 #                           0.09 --> 0.3 (600 electron well), 83 electron max dark noise
 
-BASELINE_SIGMA_BLUR = 1
-BASELINE_AP = 1
+BASELINE_SIGMA_BLUR = 1  # pixels
+_pseudo_system_central_wavelength = 0.55  # microns
+_pseudo_system_pixel_pitch = 1.5  # microns, fairly typical value for consumer (i.e. cellphone) camera
+BASELINE_F_NUM = round(BASELINE_SIGMA_BLUR * _pseudo_system_pixel_pitch / (0.42 * _pseudo_system_central_wavelength), 1)
 
 DISTORTION_RANGE = {
     'sat6': {
@@ -172,14 +174,27 @@ DISTORTION_RANGE_90 = {
     }
 }
 
-_COCO_PSEUDO_SENSOR_RES = (1, 0.2)
-_COCO_PSEUDO_SENSOR_BLUR = (BASELINE_SIGMA_BLUR, 5)
+_COCO_PSEUDO_SYSTEM_RES = (1, 0.2)
+_COCO_PSEUDO_SYSTEM_BLUR = (BASELINE_SIGMA_BLUR, 5)
 
 PSEUDO_SYSTEM_DISTORTION_RANGE = {
     'coco': {
-        'res': np.linspace(_COCO_PSEUDO_SENSOR_RES[1], _COCO_PSEUDO_SENSOR_RES[0], num=17),
-        'blur': np.linspace(_COCO_PSEUDO_SENSOR_BLUR[0], _COCO_PSEUDO_SENSOR_BLUR[1], num=9),
+        'res': np.linspace(_COCO_PSEUDO_SYSTEM_RES[1], _COCO_PSEUDO_SYSTEM_RES[0], num=17),
+        'blur': np.linspace(_COCO_PSEUDO_SYSTEM_BLUR[0], _COCO_PSEUDO_SYSTEM_BLUR[1], num=9),
     }
+}
+
+PSEUDO_SYS_CONFIGS_TO_LOG = {
+    'PSEUDO_SYSTEM_DISTORTION_RANGE': PSEUDO_SYSTEM_DISTORTION_RANGE,
+    'BASELINE_SIGMA_BLUR': BASELINE_SIGMA_BLUR,
+    'BASELINE_F_NUM': BASELINE_F_NUM,
+    'BASELINE_READ_NOISE': BASELINE_READ_NOISE,
+    'BASELINE_DARK_COUNT': BASELINE_DARK_COUNT,
+    'BASELINE_HIGH_SIGNAL_WELL_DEPTH': BASELINE_HIGH_SIGNAL_WELL_DEPTH,
+    'PSEUDO_SYSTEM_SIGNAL_FRACTIONS': PSEUDO_SENSOR_SIGNAL_FRACTIONS,
+    '_pseudo_system_central_wavelength': _pseudo_system_central_wavelength,
+    '_pseudo_system_pixel_pitch': _pseudo_system_pixel_pitch,
+
 }
 
 _check = {  # coco values specified rather than range to avoid extra function calls for each image

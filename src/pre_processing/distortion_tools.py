@@ -1,7 +1,7 @@
 import copy
 import numpy as np
 from PIL import Image
-from src.utils.definitions import BASELINE_HIGH_SIGNAL_WELL_DEPTH, BASELINE_SIGMA_BLUR, BASELINE_AP
+from src.utils.definitions import BASELINE_HIGH_SIGNAL_WELL_DEPTH
 
 FRAGILE_ANNOTATION_KEYS = ['area', 'segmentation']
 
@@ -97,6 +97,6 @@ def apply_poisson_distribution(signal):
     return np.random.poisson(signal)
 
 
-def relative_aperture(sigma_blur):
-    return (BASELINE_SIGMA_BLUR / sigma_blur) * BASELINE_AP
+# def relative_aperture(sigma_blur):
+#     return (BASELINE_SIGMA_BLUR / sigma_blur) * BASELINE_AP
 

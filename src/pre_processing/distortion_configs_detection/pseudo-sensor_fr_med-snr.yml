@@ -1,6 +1,6 @@
 ---
 
-description: create full range pseudo-sensor medium snr dataset
+description: create full range pseudo-system medium snr dataset
 
 parent_dataset_id: val2017
 
@@ -20,4 +20,4 @@ datatype_key: np.uint8
 
 image_shape: null
 
-name_string: pseudo-sensor-fr-med-snr-megaset
+name_string: pseudo-system-fr-med-snr-megaset
