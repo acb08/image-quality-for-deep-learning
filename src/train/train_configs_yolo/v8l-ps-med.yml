@@ -1,0 +1,18 @@
+---
+
+train_dataset_id: 0036trn-pseudo-system-fr-med-snr-train:v0
+train_dataset_artifact_alias: latest
+
+starting_model_id: 0060yolo-v8l-fr-ext_best_loss:v0
+starting_model_artifact_alias: latest
+distortion_tags: []
+
+num_epochs: 50
+batch_size: 8
+num_workers: 2
+
+description: training med-snr pseudo-system model
+artifact_type: model
+
+name_string: v8l-ps-med-snr-fr
+
