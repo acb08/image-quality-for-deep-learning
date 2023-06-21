@@ -2,8 +2,8 @@ import random
 import numpy as np
 from torchvision import transforms
 from src.utils.definitions import DISTORTION_RANGE, NATIVE_RESOLUTION, DISTORTION_RANGE_90, \
-    COCO_OCT_DISTORTION_BOUNDS, COCO_MP_90, COCO_EP_90, BASELINE_HIGH_SIGNAL_WELL_DEPTH, PSEUDO_SENSOR_SIGNAL_FRACTIONS, \
-    BASELINE_READ_NOISE, BASELINE_DARK_COUNT, PSEUDO_SYSTEM_DISTORTION_RANGE
+    COCO_OCT_DISTORTION_BOUNDS, COCO_MP_90, COCO_EP_90, PSEUDO_SENSOR_SIGNAL_FRACTIONS, PSEUDO_SYSTEM_DISTORTION_RANGE,\
+    BASELINE_SIGMA_BLUR
 from src.pre_processing.classes import VariableCOCOResize, VariableImageResize, PseudoSystem
 
 RNG = np.random.default_rng()
@@ -455,6 +455,32 @@ def b_fr_ps_coco(img):
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'blur', std
 
 
+def _b_ps0_coco(img):
+
+    std = BASELINE_SIGMA_BLUR
+    kernel_size = get_kernel_size(std)
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'blur', std
+
+
+def _b_ps1_coco(img):
+
+    sigma_range = PSEUDO_SYSTEM_DISTORTION_RANGE['coco']['blur']
+    std = np.mean([np.max(sigma_range), np.min(sigma_range)])
+    kernel_size = get_kernel_size(std)
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'blur', std
+
+
+def _b_ps2_coco(img):
+
+    sigma_range = PSEUDO_SYSTEM_DISTORTION_RANGE['coco']['blur']
+    std = np.max(sigma_range)
+    kernel_size = get_kernel_size(std)
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), None, 'blur', std
+
+
 def b_fr90_pl_cp(img):
 
     """
@@ -705,12 +731,30 @@ def r_fr_ps_coco(img):
     return img_out, None, 'res', res_frac
 
 
-def _r100_coco(img):
+def _r_ps0_coco(img):
     """
     For debugging
     """
 
     res_frac = 1
+    img_out = VariableCOCOResize()(img, res_frac)
+
+    return img_out, None, 'res', res_frac
+
+
+def _r_ps1_coco(img):
+
+    res_fractions = PSEUDO_SYSTEM_DISTORTION_RANGE['coco']['res']
+    res_frac = np.mean([np.min(res_fractions), np.max(res_fractions)])
+    img_out = VariableCOCOResize()(img, res_frac)
+
+    return img_out, None, 'res', res_frac
+
+
+def _r_ps2_coco(img):
+
+    res_fractions = PSEUDO_SYSTEM_DISTORTION_RANGE['coco']['res']
+    res_frac = np.min(res_fractions)
     img_out = VariableCOCOResize()(img, res_frac)
 
     return img_out, None, 'res', res_frac
@@ -1087,7 +1131,13 @@ coco_tag_to_image_distortions = {  # coco distortion functions return distortion
     'r_fr_ps_coco': r_fr_ps_coco,
     'b_fr_ps_coco': b_fr_ps_coco,
 
-    '_r100_coco': _r100_coco,
+    '_b_ps0_coco': _b_ps0_coco,
+    '_b_ps1_coco': _b_ps1_coco,
+    '_b_ps2_coco': _b_ps2_coco,
+
+    '_r_ps0_coco': _r_ps0_coco,
+    '_r_ps1_coco': _r_ps1_coco,
+    '_r_ps2_coco': _r_ps2_coco,
 }
 
 

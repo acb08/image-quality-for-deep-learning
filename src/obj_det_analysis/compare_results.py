@@ -33,12 +33,17 @@ def main(config):
     distortions_ignore = ()
     if 'distortions_ignore' in config.keys():
         distortions_ignore = config['distortions_ignore']
+    if 'pre_processed_indices' in config.keys():
+        pre_processed_indices = config['pre_processed_indices']
+    else:
+        pre_processed_indices = None
 
     all_results = []
 
     distortion_performance_results = get_multiple_od_distortion_performance_results(
         result_id_pairs=test_result_identifiers,
-        distortions_ignore=distortions_ignore
+        distortions_ignore=distortions_ignore,
+        pre_processed_indices=pre_processed_indices
     )
     flatten_axes = flatten_axes_from_cfg(config)
     flatten_axis_combinations = flatten_axis_combinations_from_cfg(config)

@@ -1,0 +1,24 @@
+---
+
+test_result_identifiers:
+  - [ '0118rlt-0070fasterrcnn-faster-rcnn-fr-50-epoch-0054tst-coco_fr90:v0',
+      'fr-50-epoch' ]
+  - [ '0059rlt-0057fasterrcnn-faster-rcnn-fr_best_loss-0054tst-coco_fr90:v0',
+      '10 epoch' ]
+  - [ '0066rlt-0059fasterrcnn-faster-rcnn-fr-ext_best_loss-0054tst-coco_fr90:v0',
+      'training-restarted' ]
+
+
+
+overwrite: False
+manual_name: frcnn-fr-compare
+flatten_axis_combinations: default # [[0, 1], [0, 2], [1, 2]]
+flatten_axes: default
+
+plot_together: True
+y_limits: null
+
+fit_keys: null
+
+pre_processed_indices: [0, 1, 2]
+

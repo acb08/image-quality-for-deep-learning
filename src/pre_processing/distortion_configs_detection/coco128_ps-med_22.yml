@@ -1,0 +1,24 @@
+---
+
+description: pseudo-sensor demo images
+
+parent_dataset_id: coco128
+parent_artifact_alias: latest
+parent_artifact_filename: standard  # standard functions as a flag to use definitions.STANDARD_ARTIFACT_FILENAME
+
+num_images: all
+val_frac: null
+
+distortion_tags: [ '_b_ps2_coco', '_r_ps2_coco', 'ps_med_snr']
+distortion_type_flags: ['res', 'blur', 'noise']  # specifies distortion_tags associated distortion types
+iterations: 1
+artifact_type: demo_dataset
+#dataset_split_key: test  # used to mirror 'train'/'val' split in data structure
+artifact_filename: standard
+datatype_key: np.uint8
+
+image_shape: null
+
+keep_image_id: True
+
+name_string: coco_ps_med_22
