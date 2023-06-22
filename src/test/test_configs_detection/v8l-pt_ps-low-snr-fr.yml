@@ -1,6 +1,6 @@
 ---
 
-description: test of v8l-pt on pseudo-system high-snr full range dataset
+description: test of v8l-pt on pseudo-system low-snr full range dataset
 
 test_dataset_id: 0079tst-pseudo-system-fr-low-snr-megaset:v0
 test_dataset_artifact_alias: latest
