@@ -15,21 +15,27 @@ def make_plot_strip(config):
     output_dir = config['output_dir']
     base_directory_idx = config['base_directory_idx']
 
+    if 'extension' in config.keys():
+        extension = config['extension']
+    else:
+        extension = 'png'
+
     parent_dir = Path(definitions.ROOT_DIR, parent_dir)
 
     input_dirs = [Path(parent_dir, sub_dir) for sub_dir in input_sub_dirs]
     output_dir = Path(definitions.ROOT_DIR, parent_dir, output_dir)
     if not output_dir.is_dir():
-        Path.mkdir(output_dir, exist_ok=True)
+        Path.mkdir(output_dir, exist_ok=True, parents=True)
 
-    demo_view.make_image_strips_multi_dir(input_dirs, output_dir, base_directory_idx=base_directory_idx)
+    demo_view.make_image_strips_multi_dir(input_dirs, output_dir, base_directory_idx=base_directory_idx,
+                                          extension=extension)
 
     functions.log_config(output_dir, config)
 
 
 if __name__ == '__main__':
 
-    config_filename = 'coco128-original-mp90-ep90.yml'
+    config_filename = 'ps-low_2x_illustrated.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_filename, help='config filename to be used')

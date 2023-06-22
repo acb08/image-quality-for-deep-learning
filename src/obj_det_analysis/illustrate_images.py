@@ -79,12 +79,27 @@ def abridged_dataset_transfer(start_directory, target_directory, pop_keys=('res'
 
 if __name__ == '__main__':
 
-    _parent_directory = r'/home/acb6595/coco/datasets/demo/0002demo-coco_mp90_img-chain-stages/images/test'
-    _sub_dirs = ['res', 'blur', 'noise']
-    _transfer_abridge_dataset = True
+    _parent_directory = r'/home/acb6595/coco/datasets/demo'
 
-    for _sub_dir in _sub_dirs:
-        _directory = Path(_parent_directory, _sub_dir)
-        if _transfer_abridge_dataset:
-            abridged_dataset_transfer(_parent_directory, _directory)
+    # _sub_dirs = ['res', 'blur', 'noise']
+    # _transfer_abridge_dataset = True
+    #
+    # for _sub_dir in _sub_dirs:
+    #     _directory = Path(_parent_directory, _sub_dir)
+    #     if _transfer_abridge_dataset:
+    #         abridged_dataset_transfer(_parent_directory, _directory)
+    #     illustrate(_directory)
+
+    _directories = list(Path(_parent_directory).iterdir())
+
+    _sub_directories = [_directory.parts[-1] for _directory in _directories]
+    _sub_directories = [_sub_dir for _sub_dir in _sub_directories if str(_sub_dir[:4]).isnumeric()]
+    _sub_directories = [_sub_dir for _sub_dir in _sub_directories if int(_sub_dir[:4]) >= 7]
+
+    _path_extension = 'images/test'
+
+    for _sub_dir in _sub_directories:
+
+        _directory = Path(_parent_directory, _sub_dir, _path_extension)
         illustrate(_directory)
+

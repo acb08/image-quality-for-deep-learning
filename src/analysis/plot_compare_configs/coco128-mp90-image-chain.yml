@@ -9,3 +9,4 @@ input_sub_dirs:
 
 output_dir: demo/compare/mp90-image-chain
 base_directory_idx: -1 # determines which directory is used to generate the master filename list
+

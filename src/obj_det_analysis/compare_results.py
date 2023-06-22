@@ -270,7 +270,7 @@ def main(config):
 
 if __name__ == '__main__':
 
-    config_name = 'v8l-fr-ext-m2_composite-res-4-1.yml'
+    config_name = 'ps-high-fr_v8l-pt_v8l-ps-high-fr.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_name, help='config filename to be used')
