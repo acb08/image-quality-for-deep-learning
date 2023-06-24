@@ -1,0 +1,24 @@
+---
+
+test_result_identifiers:
+
+  - ['0119rlt-0000yolo-v8l-ps-high-snr-fr_best_loss-0078tst-pseudo-system-fr-high-snr-megaset:v0',
+     'high snr']
+  - ['0121rlt-0000yolo-v8l-ps-low-snr-fr_best_loss-0079tst-pseudo-system-fr-low-snr-megaset:v0',
+     'low snr']
+
+overwrite: True
+
+manual_name: ps-low-fr_ps-high-fr
+
+show_plots: False
+plot_together: True
+flatten_axis_combinations: [[0, 2], [1, 2]]
+flatten_axes: [2]
+
+fit_keys: null
+
+log_average_performances: True
+
+allow_differing_distortions: True
+distortions_ignore: ['noise']
