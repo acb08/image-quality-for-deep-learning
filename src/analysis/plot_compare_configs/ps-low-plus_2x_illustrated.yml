@@ -1,0 +1,11 @@
+---
+
+parent_dir: datasets
+input_sub_dirs:
+  - demo/0023demo-coco_ps_low_pls_20/images/test/illustrated
+  - demo/0024demo-coco_ps_low_pls_21/images/test/illustrated
+  - demo/0025demo-coco_ps_low_pls_22/images/test/illustrated
+
+output_dir: demo/ps-compare/illustrated/low-pls-2x
+base_directory_idx: -1 # determines which directory is used to generate the master filename list
+extension: jpg
