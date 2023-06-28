@@ -5,3 +5,7 @@ identifier: v8l-fr-ext_m1
 
 flatten_axis_combinations: default
 flatten_axes: default
+
+basic_plots: True
+
+fit_keys: null
