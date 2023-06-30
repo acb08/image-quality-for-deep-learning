@@ -1,0 +1,20 @@
+---
+
+test_result_identifiers:
+
+  - ['0126rlt-fasterrcnn_resnet50_fpn-0054tst-coco_fr90:v0',
+     'Raster-RCNN pre-trained']
+  - ['0025rlt-yolov8l-0054tst-coco_fr90:v0',
+     'YOLOv8l pre-trained']
+
+
+overwrite: False
+manual_name: v8l-pt-frcnn-pt-fr90
+flatten_axis_combinations: default # [[0, 1], [0, 2], [1, 2]]
+flatten_axes: default
+
+plot_together: True
+y_limits: null
+
+show_plots: False
+

@@ -10,4 +10,4 @@ pre_processed_artifact: True
 
 fit_keys: null
 
-basic_plots: False
+basic_plots: True

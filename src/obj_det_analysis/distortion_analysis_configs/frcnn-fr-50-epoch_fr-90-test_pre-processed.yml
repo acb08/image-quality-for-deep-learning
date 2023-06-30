@@ -7,3 +7,6 @@ flatten_axis_combinations: default
 flatten_axes: default
 
 pre_processed_artifact: True
+
+basic_plots: True
+fit_keys: null
