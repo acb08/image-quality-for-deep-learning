@@ -5,7 +5,7 @@ from src.pre_processing.distortion_tools import update_annotations  # relative_a
 from src.utils.functions import load_wandb_data_artifact, id_from_tags, get_config, \
     log_config
 from src.utils.definitions import REL_PATHS, STANDARD_DATASET_FILENAME, WANDB_PID, ROOT_DIR, \
-    BASELINE_HIGH_SIGNAL_WELL_DEPTH, PSEUDO_SENSOR_SIGNAL_FRACTIONS, PSEUDO_SYS_CONFIGS_TO_LOG
+    BASELINE_HIGH_SIGNAL_WELL_DEPTH, PSEUDO_SENSOR_SIGNAL_FRACTIONS, PSEUDO_SYS_CONFIGS_TO_LOG, HOST
 from src.pre_processing.distortions import coco_tag_to_image_distortions, PSEUDO_SENSOR_KEYS
 import numpy as np
 from PIL import Image
@@ -360,6 +360,8 @@ def distort_log_coco(config):
         save_each_distortion_stage = config['save_each_distortion_stage']
     else:
         save_each_distortion_stage = False
+
+    config['host'] = HOST
 
     # dataset_split_keys, dataset_sub_dirs = directory_sub_structure(artifact_type)
 
