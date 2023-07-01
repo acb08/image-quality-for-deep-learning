@@ -1,0 +1,18 @@
+---
+
+train_dataset_id: 0023trn-coco_fr_train
+train_dataset_artifact_alias: latest
+
+starting_model_id: yolov8n
+starting_model_artifact_alias: latest
+distortion_tags: []
+
+num_epochs: 50
+batch_size: 8
+num_workers: 4
+
+description: training yolov8n full range model to compare with larger models
+artifact_type: model
+
+name_string: v8n-fr-ext
+
