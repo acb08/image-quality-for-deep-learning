@@ -20,6 +20,8 @@ def get_multiple_od_distortion_performance_results(result_id_pairs,
 
     if pre_processed_indices is None:
         pre_processed_indices = ()
+    elif pre_processed_indices == 'all':
+        pre_processed_indices = tuple(range(len(result_id_pairs)))
 
     with wandb.init(project=WANDB_PID, job_type='analyze_test_result') as run:
 

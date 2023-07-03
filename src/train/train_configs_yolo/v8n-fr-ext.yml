@@ -1,6 +1,6 @@
 ---
 
-train_dataset_id: 0023trn-coco_fr_train
+train_dataset_id: 0038trn-coco_fr_train_rebuild:v0
 train_dataset_artifact_alias: latest
 
 starting_model_id: yolov8n

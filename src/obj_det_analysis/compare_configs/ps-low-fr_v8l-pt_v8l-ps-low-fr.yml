@@ -3,9 +3,9 @@
 test_result_identifiers:
 
   - ['0121rlt-0000yolo-v8l-ps-low-snr-fr_best_loss-0079tst-pseudo-system-fr-low-snr-megaset:v0',
-     'v8l-ps-full-range']
+     'full range trained']
   - ['0122rlt-yolov8l-0079tst-pseudo-system-fr-low-snr-megaset:v0',
-     'v8l-pre-trained' ]
+     'pre-trained' ]
 
 overwrite: True
 
