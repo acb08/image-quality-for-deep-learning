@@ -1,0 +1,36 @@
+---
+
+test_result_identifiers:
+
+  - ['0119rlt-0000yolo-v8l-ps-high-snr-fr_best_loss-0078tst-pseudo-system-fr-high-snr-megaset:v0',
+     'v8l-ps-high-fr_ps-high-fr']
+  - ['0120rlt-yolov8l-0078tst-pseudo-system-fr-high-snr-megaset:v0',
+     'v8l-pt_ps-high-fr' ]
+
+  - ['0125rlt-0000yolo-v8l-ps-med-snr-fr_best_loss-0082tst-pseudo-system-fr-med-snr-megaset:v0',
+     'v8l-ps-med-fr_ps-med-fr']
+  - ['0127rlt-yolov8l-0082tst-pseudo-system-fr-med-snr-megaset:v0',
+     'v8l-pt_ps-med-fr']
+
+  - ['0123rlt-0003yolo-v8l-ps-low-pls-snr-fr_best_loss-0081tst-pseudo-system-fr-low-pls-snr-megaset:v0',
+     'v8l-ps-low-pls-fr_ps-low-pls-fr']
+  - ['0124rlt-yolov8l-0081tst-pseudo-system-fr-low-pls-snr-megaset:v0',
+     'v8l-pt_ps-low-pls-fr']
+
+  - ['0121rlt-0000yolo-v8l-ps-low-snr-fr_best_loss-0079tst-pseudo-system-fr-low-snr-megaset:v0',
+     'v8l-ps-low-fr_ps-low-fr']
+  - ['0122rlt-yolov8l-0079tst-pseudo-system-fr-low-snr-megaset:v0',
+     'v8l-pt_ps-low-pls-snr-fr']
+
+overwrite: True
+manual_name: ps-all
+show_plots: False
+plot_together: True
+flatten_axis_combinations: [[0, 2], [1, 2]]
+flatten_axes: null
+
+log_average_performances: True
+
+allow_differing_distortions: True
+
+distortions_ignore: ['noise']

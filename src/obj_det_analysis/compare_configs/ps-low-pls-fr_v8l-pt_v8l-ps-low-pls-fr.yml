@@ -1,0 +1,24 @@
+---
+
+test_result_identifiers:
+
+  - ['0123rlt-0003yolo-v8l-ps-low-pls-snr-fr_best_loss-0081tst-pseudo-system-fr-low-pls-snr-megaset:v0',
+     'full range trained']
+  - ['0124rlt-yolov8l-0081tst-pseudo-system-fr-low-pls-snr-megaset:v0',
+     'pre-trained']
+
+overwrite: True
+
+manual_name: ps-low-pls-fr_v8l-pt_v8l-ps-low-pls-fr
+
+show_plots: False
+plot_together: True
+flatten_axis_combinations: [[0, 2], [1, 2]]
+flatten_axes: [2]
+
+fit_keys: null
+
+log_average_performances: True
+
+allow_differing_distortions: True
+distortions_ignore: ['noise']

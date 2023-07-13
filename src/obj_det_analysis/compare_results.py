@@ -107,9 +107,14 @@ def main(config):
 
     performance_dict_3d = {}
 
-    res_vals = None
-    blur_vals = None
-    noise_vals = None
+    if allow_differing_distortions:
+        res_vals = {}
+        blur_vals = {}
+        noise_vals = {}
+    else:
+        res_vals = None
+        blur_vals = None
+        noise_vals = None
 
     if fit_keys is not None:
         fitting_arrays = {}
@@ -133,17 +138,24 @@ def main(config):
 
         if res_vals is None:
             res_vals = _res_vals
+        elif type(res_vals) == dict:
+            res_vals[key] = _res_vals
+        else:
+            assert np.array_equal(_res_vals, res_vals)
 
         if blur_vals is None:
             blur_vals = _blur_vals
+        elif type(blur_vals) == dict:
+            blur_vals[key] = _blur_vals
+        else:
+            assert np.array_equal(_blur_vals, blur_vals)
 
         if noise_vals is None:
             noise_vals = _noise_vals
-
-        if not allow_differing_distortions:
-            assert np.array_equal(noise_vals, _noise_vals)
-            assert np.array_equal(blur_vals, _blur_vals)
-            assert np.array_equal(_res_vals, res_vals)
+        elif type(noise_vals) == dict:
+            noise_vals[key] = _noise_vals
+        else:
+            assert np.array_equal(_noise_vals, noise_vals)
 
     if flatten_axis_combinations is not None:
         plot_1d_from_3d(perf_dict_3d=performance_dict_3d,
@@ -270,7 +282,7 @@ def main(config):
 
 if __name__ == '__main__':
 
-    config_name = 'ps-high-fr_v8l-pt_v8l-ps-high-fr.yml'
+    config_name = 'ps-low-fr_ps-high-fr.yml'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', default=config_name, help='config filename to be used')

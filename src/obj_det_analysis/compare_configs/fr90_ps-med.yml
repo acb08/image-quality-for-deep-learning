@@ -1,0 +1,23 @@
+---
+
+test_result_identifiers:
+
+
+  - ['0060rlt-0060yolo-v8l-fr-ext_best_loss-0054tst-coco_fr90:v0',
+     'original full range']
+  - ['0125rlt-0000yolo-v8l-ps-med-snr-fr_best_loss-0082tst-pseudo-system-fr-med-snr-megaset:v0',
+     'v8l-ps-med-fr_ps-med-fr']
+
+overwrite: True
+manual_name: ps-med-original-fr90
+show_plots: False
+plot_together: True
+flatten_axis_combinations: [[0, 2], [1, 2]]
+flatten_axes: [2]
+
+log_average_performances: True
+fit_keys: null
+
+allow_differing_distortions: True
+
+distortions_ignore: ['noise']

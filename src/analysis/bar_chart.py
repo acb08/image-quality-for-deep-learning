@@ -39,7 +39,8 @@ def grouped_bar_chart(data, group_labels, ylabel='mean accuracy', xlabel=None, g
                       bar_width_frac=0.85,
                       edge_color='black', line_width=1, output_dir=None, x_scale=1,
                       figsize=(8, 8 / 1.33), label_threshold=None, include_bar_labels=True, rotation=45,
-                      include_legend=True, bar_hatching=True):
+                      include_legend=True, bar_hatching=True,
+                      ylim=None):
 
     x = np.arange(len(group_labels)) * x_scale
     num_items = len(data)
@@ -76,6 +77,8 @@ def grouped_bar_chart(data, group_labels, ylabel='mean accuracy', xlabel=None, g
     ax.set_ylabel(ylabel, size=FONT_SIZE)
     ax.set_xlabel(xlabel, size=FONT_SIZE)
     ax.set_xticks(x, group_labels, rotation=rotation, size=FONT_SIZE)
+    if ylim is not None:
+        ax.set_ylim(ylim[0], ylim[1])
 
     if include_legend:
         ax.legend(loc='upper right')
@@ -335,6 +338,10 @@ def main(run_config):
         bar_hatching = run_config['bar_hatching']
     else:
         bar_hatching = False
+    if 'ylim' in run_config.keys():
+        ylim = run_config['ylim']
+    else:
+        ylim = None
 
     output_dir = get_output_dir(data, overwrite=overwrite,
                                 manual_name=manual_name)
@@ -353,7 +360,8 @@ def main(run_config):
                       include_bar_labels=include_bar_labels,
                       rotation=rotation,
                       include_legend=include_legend,
-                      bar_hatching=bar_hatching
+                      bar_hatching=bar_hatching,
+                      ylim=ylim
                       )
 
     log_config(output_dir, run_config)

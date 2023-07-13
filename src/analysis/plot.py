@@ -106,7 +106,7 @@ AXIS_LABELS = {
 }
 
 SCATTER_PLOT_MARKERS = ['.', 'v', '2', 'P', 's', 'd', 'X', 'h']
-COLORS = ['b', 'g', 'c', 'm', 'y', 'r', 'k']
+COLORS = ['b', 'g', 'c', 'm', 'y', 'r', 'k', 'tab:orange']
 
 AXIS_FONTSIZE = 14
 LEGEND_FONTSIZE = 12
@@ -283,20 +283,29 @@ def wire_plot(x, y, z,
               show_plots=False,
               z_limits=None):
 
-    xx, yy = np.meshgrid(x, y, indexing=indexing)
     fig = plt.figure()
     ax = plt.axes(projection='3d', azim=az, elev=el)
 
     if isinstance(z, dict):
         color_list = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
         for i, key in enumerate(z):
+
+            if isinstance(x, dict):
+                assert isinstance(y, dict)
+                xx, yy = np.meshgrid(x[key], y[key], indexing=indexing)
+            else:
+                xx, yy = np.meshgrid(x, y, indexing=indexing)
+
             if isinstance(alpha, list):
                 alpha_plot = alpha[i]
             else:
                 alpha_plot = alpha
+
             ax.plot_wireframe(xx, yy, z[key], label=str(key), color=color_list[i], alpha=alpha_plot)
         ax.legend()
+
     else:
+        xx, yy = np.meshgrid(x, y, indexing=indexing)
         ax.plot_wireframe(xx, yy, z, alpha=alpha)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
@@ -688,8 +697,12 @@ def plot_1d_performance(x, performance_dict, distortion_id,
             legend_loc = 'best'
 
     for i, key in enumerate(performance_dict):
-        ax.plot(x, performance_dict[key], color=COLORS[i])
-        ax.scatter(x, performance_dict[key], label=key, c=COLORS[i], marker=SCATTER_PLOT_MARKERS[i])
+        if type(x) == dict:
+            x_plot = x[key]
+        else:
+            x_plot = x
+        ax.plot(x_plot, performance_dict[key], color=COLORS[i])
+        ax.scatter(x_plot, performance_dict[key], label=key, c=COLORS[i], marker=SCATTER_PLOT_MARKERS[i])
     ax.set_xlabel(xlabel, fontsize=axis_fontsize)
     ax.set_ylabel(ylabel, fontsize=axis_fontsize)
     if y_lim_bottom is not None or y_lim_top is not None:
@@ -774,6 +787,8 @@ def compare_2d_mean_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res',
         if f1 is not None:
             f0_2d, axis0, axis1 = flatten(f0, x_vals, y_vals, z_vals, flatten_axis=flatten_axis)
             f1_2d, __, __ = flatten(f1, x_vals, y_vals, z_vals, flatten_axis=flatten_axis)
+            # assert np.array_equal(axis0, _axis0)
+            # assert np.array_equal(axis1, _axis1)
 
             views_2d = {
                 data_labels[0]: f0_2d,
@@ -791,8 +806,10 @@ def compare_2d_mean_views(f0, f1, x_vals, y_vals, z_vals, distortion_ids=('res',
             for key, data3d in f0.items():
 
                 f_2d, _axis0, _axis1 = flatten(data3d, x_vals, y_vals, z_vals, flatten_axis=flatten_axis)
+
                 if axis0 is not None and axis1 is not None:
-                    assert (axis0, axis1) == (_axis0, _axis1)
+                    assert np.array_equal(axis0, _axis0)
+                    assert np.array_equal(axis1, _axis1)
                 axis0, axis1 = _axis0, _axis1
 
                 views_2d[key] = f_2d
@@ -901,15 +918,27 @@ def plot_1d_from_3d(perf_dict_3d, x_vals, y_vals, z_vals, distortion_ids=('res',
     for i, flatten_axes in enumerate(flatten_axis_combinations):
         axis = None
         axis_label = None
-        prev_axis = None
+        # prev_axis = None
         for key, perf_3d in perf_dict_3d.items():
+
+            # if type(x_vals) == dict:
+            #     assert type(y_vals) == dict
+            #     assert type(z_vals) == dict
+            #     x_plot = x_vals[key]
+            #     y_plot = y_vals[key]
+            #     z_plot = z_vals[key]
+            # else:
+            #     x_plot = x_vals
+            #     y_plot = y_vals
+            #     z_plot = z_vals
+
             f0_1d, axis = flatten_2x(perf_3d, x_vals, y_vals, z_vals, flatten_axes=flatten_axes)
             axis_label = keep_1_of_3(a=distortion_ids, discard_indices=flatten_axes)
-            axis_check = keep_1_of_3(a=x_vals, b=y_vals, c=z_vals, discard_indices=flatten_axes)
-            assert np.array_equal(axis, axis_check)
-            if prev_axis is not None:
-                assert np.array_equal(axis, prev_axis)
-            prev_axis = axis
+            # axis_check = keep_1_of_3(a=x_vals, b=y_vals, c=z_vals, discard_indices=flatten_axes)
+            # assert np.array_equal(axis, axis_check)
+            # if prev_axis is not None:
+            #     assert np.array_equal(axis, prev_axis)
+            # prev_axis = axis
 
             performance_dict_1d[key] = f0_1d
 

@@ -27,3 +27,5 @@ label_threshold: null
 include_bar_labels: False
 rotation: 0
 include_legend: True
+
+ylim: [0, 2]

@@ -1,0 +1,31 @@
+---
+
+test_result_identifiers:
+
+#  - ['0119rlt-0000yolo-v8l-ps-high-snr-fr_best_loss-0078tst-pseudo-system-fr-high-snr-megaset:v0',
+#     'pseudo-system high snr full range']
+
+  - [ '0119rlt-0000yolo-v8l-ps-high-snr-fr_best_loss-0078tst-pseudo-system-fr-high-snr-megaset:v0',
+      'pseudo-system high SNR' ]
+  - [ '0125rlt-0000yolo-v8l-ps-med-snr-fr_best_loss-0082tst-pseudo-system-fr-med-snr-megaset:v0',
+      'pseudo-system medium SNR' ]
+  - [ '0123rlt-0003yolo-v8l-ps-low-pls-snr-fr_best_loss-0081tst-pseudo-system-fr-low-pls-snr-megaset:v0',
+      'pseudo-system medium-low SNR' ]
+  - [ '0121rlt-0000yolo-v8l-ps-low-snr-fr_best_loss-0079tst-pseudo-system-fr-low-snr-megaset:v0',
+      'pseudo-system low SNR' ]
+  - ['0060rlt-0060yolo-v8l-fr-ext_best_loss-0054tst-coco_fr90:v0',
+     'original full range']
+
+overwrite: True
+manual_name: ps-all-original-fr90
+show_plots: False
+plot_together: False
+flatten_axis_combinations: [[0, 2], [1, 2]]
+flatten_axes: null #[2]
+
+log_average_performances: True
+fit_keys: null
+
+allow_differing_distortions: True
+
+distortions_ignore: ['noise']

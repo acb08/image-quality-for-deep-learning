@@ -1,0 +1,28 @@
+---
+
+test_result_identifiers:
+
+  - ['0119rlt-0000yolo-v8l-ps-high-snr-fr_best_loss-0078tst-pseudo-system-fr-high-snr-megaset:v0',
+     'high SNR' ]
+
+  - ['0125rlt-0000yolo-v8l-ps-med-snr-fr_best_loss-0082tst-pseudo-system-fr-med-snr-megaset:v0',
+     'med SNR']
+
+  - ['0123rlt-0003yolo-v8l-ps-low-pls-snr-fr_best_loss-0081tst-pseudo-system-fr-low-pls-snr-megaset:v0',
+     'medium-low SNR']
+
+  - ['0121rlt-0000yolo-v8l-ps-low-snr-fr_best_loss-0079tst-pseudo-system-fr-low-snr-megaset:v0',
+     'low SNR']
+
+overwrite: True
+manual_name: ps-all-full-range-trained
+show_plots: False
+plot_together: True
+flatten_axis_combinations: [[0, 2], [1, 2]]
+flatten_axes: [2]
+
+log_average_performances: True
+
+allow_differing_distortions: True
+
+distortions_ignore: ['noise']
