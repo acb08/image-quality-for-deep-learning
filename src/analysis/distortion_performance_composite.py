@@ -31,6 +31,7 @@ class CompositePerformanceResult(object):
         self.assign_by_octant_only = assign_by_octant_only
         self.eval_result_ids = performance_eval_result_ids
         self.distortion_ids = distortion_ids
+        self.ignore_vc_hashes = True
 
         self.performance_prediction_results = get_multiple_model_distortion_performance_results(
             self.performance_prediction_result_ids, self.distortion_ids, make_dir=False, output_type='dict'

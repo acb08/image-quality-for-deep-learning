@@ -1,6 +1,7 @@
 """
 Calculates the Akaike information criterion (AIC) for a fit to evaluate the performance of a model
 """
+import copy
 
 from scipy.stats import binom
 import numpy as np
@@ -9,6 +10,10 @@ from src.analysis.binomial_simulation import run_binomial_accuracy_experiment
 
 
 def akaike_info_criterion(acc, n_trials, acc_predicted, num_parameters, distribution='binomial'):
+
+    acc_predicted = copy.deepcopy(acc_predicted)
+    eps = 1e-3
+    acc_predicted = np.clip(acc_predicted, eps, (1 - eps))  # to avoid numerical instabilities with log likelihood
 
     if distribution == 'binomial':
 
