@@ -72,5 +72,11 @@
 #result_id: 0207rlt-densenet161_pretrained-0020tst-pl-rgb-fr90-cp-megaset_noise:v0
 #identifier: DN161-pretrained-rgb-cp
 
-result_id: 0208rlt-0038densenet161-full_range_cp_best_loss-0020tst-pl-rgb-fr90-cp-megaset_noise:v0
-identifier: DN161-fr-cp-rgb-cp
+#result_id: 0208rlt-0038densenet161-full_range_cp_best_loss-0020tst-pl-rgb-fr90-cp-megaset_noise:v0
+#identifier: DN161-fr-cp-rgb-cp
+
+result_id: 0210rlt-0039densenet161-full_range_cp_ext_best_loss-0021tst-pl-rgb-fr90-cp-megaset-20x_noise:v0
+identifier: DN161-fr-cp_rgb-cp-20x
+
+#result_id: 0209rlt-0040resnet18-full_range_cp_best_loss-0021tst-pl-rgb-fr90-cp-megaset-20x_noise:v0
+#identifier: RN18-fr-cp_rgb-cp-20x

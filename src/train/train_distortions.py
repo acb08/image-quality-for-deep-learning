@@ -516,9 +516,25 @@ def nt_fr_pl_cp():
 
     Intended to be used in dataloader via Transforms.compose().
     """
+
+    raise NotImplementedError('this function used wrong noise class - replaced by nt_fr_pl_cp_fixed()')
+
     sigma_poisson_range = DISTORTION_RANGE['coco']['noise']
     clamp = True
+
     return VariablePoissonNoiseChannelReplicated(sigma_poisson_range, clamp)
+
+
+def nt_fr_pl_cp_fixed():
+    """
+    returns a custom transform that adds zero-centered, channel-replicated Poisson noise from the sat6 nose range scaled
+    by 1 /255 and clamps the final output tensor to fall on [0, 1], where output_tensor = input_tensor + Poisson noise.
+
+    Intended to be used in dataloader via Transforms.compose().
+    """
+    sigma_poisson_range = DISTORTION_RANGE['coco']['noise']
+    clamp = True
+    return VariablePoissonNoiseIndependentChannel(sigma_poisson_range, clamp)
 
 
 def nt_0_pl():
@@ -648,5 +664,7 @@ tag_to_transform = {
     'rt_fr_pl_cp': rt_fr_pl_cp,
     'bt_fr_pl_cp': bt_fr_pl_cp,
     'nt_fr_pl_cp': nt_fr_pl_cp,
+
+    'nt_fr_pl_cp_fixed': nt_fr_pl_cp_fixed,
 
 }
