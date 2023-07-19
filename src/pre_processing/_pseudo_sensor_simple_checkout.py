@@ -44,13 +44,12 @@ def main(config):
         for j, res_frac in enumerate(res_fractions):
             sim_image, sensor_est_snr, __, diagnostic_data = pseudo_sensor(image=image,
                                                                            res_frac=res_frac,
-                                                                           sigma_blur=blur_std,
-                                                                           signal_est_method='mean')
+                                                                           sigma_blur=blur_std)
 
             snr = float(estimate_snr(sim_image))
             std = float(np.std(sim_image))
             mean = float(np.mean(sim_image))
-            sensor_estimated_snr = float(sensor_est_snr)
+            sensor_estimated_snr = float(sensor_est_snr['signal_mean_snr'])
 
             for key, val in diagnostic_data.items():
                 if key not in diagnostic_arrays.keys():

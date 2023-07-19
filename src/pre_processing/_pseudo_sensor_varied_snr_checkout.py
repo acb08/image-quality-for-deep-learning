@@ -13,15 +13,17 @@ from src.utils.definitions import REL_PATHS, ROOT_DIR, BASELINE_HIGH_SIGNAL_WELL
 
 MARKERS = {
     'ps_low_snr': '.',
-    'ps_low_pls_snr': '+',
-    'ps_med_snr': 'v',
+    'ps_med_low_snr': '+',
+    'ps_med_snr_v2': 'v',
+    'ps_med_high_snr': 'x',
     'ps_high_snr': '2'
 }
 
 LABELS = {
     'ps_low_snr': 'low snr',
-    'ps_low_pls_snr': 'low-plus snr',
-    'ps_med_snr': 'mid snr',
+    'ps_med_low_snr': 'med-low snr',
+    'ps_med_snr_v2': 'med snr',
+    'ps_med_high_snr': 'med-high snr',
     'ps_high_snr': 'high snr'
 }
 
@@ -98,6 +100,12 @@ def strip_plot_2d_array(array, ax0_vals, ax1_vals, ax0_label, ax1_label,
         plt.show()
 
 
+def snr_hist(snrs, output_dir, filename):
+    plt.figure()
+    plt.hist(snrs)
+    plt.savefig(Path(output_dir, filename))
+
+
 def main(config):
 
     """
@@ -150,6 +158,9 @@ def main(config):
             sensor_estimated_snrs = {key: [] for key in noise_functions.keys()}
             res_fraction_used = []
 
+            all_image_measured_snrs = []
+            all_sensor_estimated_snrs = []
+
             for j in range(iterations):
 
                 deterministic = False
@@ -166,13 +177,15 @@ def main(config):
                 for tag, func in noise_functions.items():
                     sim_image, sensor_estimated_snr, __, diagnostic_data = func(image=image, res_frac=res_frac,
                                                                                 sigma_blur=sigma_blur,
-                                                                                log_file=log_file,
-                                                                                signal_est_method='mean',
+                                                                                log_file=log_file
                                                                                 )
                     snr = float(estimate_snr(sim_image))
                     std = float(np.std(sim_image))
                     mean = float(np.mean(sim_image))
-                    sensor_estimated_snr = float(sensor_estimated_snr)
+                    sensor_estimated_snr = float(sensor_estimated_snr['signal_mean_snr'])
+
+                    all_image_measured_snrs.append(snr)
+                    all_sensor_estimated_snrs.append(sensor_estimated_snr)
 
                     image_measured_snrs[tag].append(snr)
                     stds[tag].append(std)

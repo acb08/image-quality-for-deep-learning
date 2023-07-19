@@ -10,8 +10,9 @@ RNG = np.random.default_rng()
 
 PSEUDO_SENSOR_KEYS = {'ps_low_snr', 'ps_low_pls_snr', 'ps_high_snr', 'ps_med_snr'}
 pseudo_system_low_snr = PseudoSystem(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['low'])
-pseudo_system_low_pls_snr = PseudoSystem(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['low_pls'])
-pseudo_system_med_snr = PseudoSystem(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['med'])
+pseudo_system_med_low_snr = PseudoSystem(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['med_low'])
+pseudo_system_med_snr_v2 = PseudoSystem(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['med'])
+pseudo_system_med_high_snr = PseudoSystem(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['med_high'])
 pseudo_system_high_snr = PseudoSystem(signal_fraction=PSEUDO_SENSOR_SIGNAL_FRACTIONS['high'])
 
 
@@ -1124,9 +1125,10 @@ coco_tag_to_image_distortions = {  # coco distortion functions return distortion
     'b_large_debug_coco': b_large_debug_coco,
 
     'ps_high_snr': pseudo_system_high_snr,
-    'ps_med_snr': pseudo_system_med_snr,
+    'ps_med_high_snr': pseudo_system_med_high_snr,
+    'ps_med_snr_v2': pseudo_system_med_snr_v2,
+    'ps_med_low_snr': pseudo_system_med_low_snr,
     'ps_low_snr': pseudo_system_low_snr,
-    'ps_low_pls_snr': pseudo_system_low_pls_snr,
 
     'r_fr_ps_coco': r_fr_ps_coco,
     'b_fr_ps_coco': b_fr_ps_coco,

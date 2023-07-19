@@ -100,7 +100,7 @@ def apply_distortions(image, distortion_functions, mapped_annotations, updated_i
             res_frac = distortion_data['res']
             sigma_blur = distortion_data['blur']
             image, estimated_snr, distortion_type_flag, distortion_value = distortion_func(
-                image, res_frac, sigma_blur, signal_est_method='range')
+                image, res_frac, sigma_blur)
             distortion_data['estimated_snr'] = estimated_snr
 
         else:

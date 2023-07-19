@@ -103,9 +103,17 @@ BASELINE_DARK_COUNT = 5
 
 BASELINE_HIGH_SIGNAL_WELL_DEPTH = 2_000
 
+# PSEUDO_SENSOR_SIGNAL_FRACTIONS naming convention at time of dissertation
+# PSEUDO_SENSOR_SIGNAL_FRACTIONS = {'low': 0.0025,      # --> called Low SNR in dissertation table 6.1
+#                                   'low_pls': 0.01,    # --> Medium-low SNR, table 6.1
+#                                   'med': 0.25,        # --> Medium SNR, table 6.1
+#                                   'high': 1}          # --> High SNR, table 6.1
+
+# updated naming convention, intended to make more sense with five signal levels
 PSEUDO_SENSOR_SIGNAL_FRACTIONS = {'low': 0.0025,
-                                  'low_pls': 0.01,
-                                  'med': 0.25,
+                                  'med_low': 0.01,  # previously low_pls
+                                  'med': 0.04,  # new since dissertation
+                                  'med_high': 0.25,  # previously med
                                   'high': 1}
 
 # fractions to consider:    0.0225 --> 0.15 (300 electron well), 166 electron max read noise

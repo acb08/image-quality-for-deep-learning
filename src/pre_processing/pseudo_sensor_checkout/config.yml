@@ -5,7 +5,7 @@ min_res: 0.1
 max_res: 1
 num_res_fractions: 10
 num_blur_stds: 5
-noise_function_tags: ['ps_low_snr', 'ps_low_pls_snr', 'ps_med_snr', 'ps_high_snr']
+noise_function_tags: ['ps_low_snr', 'ps_med_low_snr', 'ps_med_snr_v2', 'ps_med_high_snr', 'ps_high_snr']
 #noise_function_tags: ['ps_high_snr']
 iterations: 200
 name_string: null

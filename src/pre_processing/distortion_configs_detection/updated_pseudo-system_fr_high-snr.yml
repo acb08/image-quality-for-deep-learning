@@ -1,0 +1,23 @@
+---
+
+description: create full range pseudo-system dataset
+
+parent_dataset_id: val2017
+iterations: 100
+artifact_type: test_dataset
+
+parent_artifact_alias: latest
+parent_artifact_filename: standard  # standard functions as a flag to use definitions.STANDARD_ARTIFACT_FILENAME
+
+num_images: all
+val_frac: null
+
+distortion_tags: ['b_fr_ps_coco', 'r_fr_ps_coco', 'ps_high_snr']
+distortion_type_flags: ['blur', 'res', 'noise']  # specifies distortion_tags associated distortion types
+#dataset_split_key: test  # used to mirror 'train'/'val' split in data structure
+artifact_filename: standard
+datatype_key: np.uint8
+
+image_shape: null
+
+name_string: ps-fr-high-megaset
