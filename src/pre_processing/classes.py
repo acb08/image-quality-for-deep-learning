@@ -327,7 +327,8 @@ class PseudoSystem:
         noise_dn = int((2 ** 8 - 1) * normed_noise)
         return noise_dn
 
-    def __call__(self, image, res_frac, sigma_blur, signal_est_method='range', log_file=None, eps=0.01):
+    def __call__(self, image, res_frac, sigma_blur,
+                 log_file=None, eps=0.01):
 
         pre_noise_electrons = image_to_electrons(image, well_depth=self.well_depth)
 
@@ -349,12 +350,15 @@ class PseudoSystem:
         signal_range_snr = signal_range_electrons / estimated_post_adc_noise_electrons
         signal_mean_snr = signal_mean_electrons / estimated_post_adc_noise_electrons
 
-        if signal_est_method == 'range':
-            est_snr = signal_range_snr
-        elif signal_est_method == 'mean':
-            est_snr = signal_mean_snr
-        else:
-            raise ValueError("signal_est_method must be either 'range' or 'mean'")
+        est_snr = {'signal_range_snr': signal_range_snr,
+                   'signal_mean_snr': signal_mean_snr}
+
+        # if signal_est_method == 'range':
+        #     est_snr = signal_range_snr
+        # elif signal_est_method == 'mean':
+        #     est_snr = signal_mean_snr
+        # else:
+        #     raise ValueError("signal_est_method must be either 'range' or 'mean'")
 
         analytical_electron_noise = np.sqrt(np.mean(pre_noise_electrons) + mean_dark_count + BASELINE_READ_NOISE ** 2)
 

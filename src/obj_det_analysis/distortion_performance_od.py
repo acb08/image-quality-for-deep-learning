@@ -182,7 +182,7 @@ if __name__ == '__main__':
 
     _REPORT_TIME = True
 
-    ide_config_name = 'v8l-fr-ext_ps-high-snr-r-scan.yml'
+    ide_config_name = 'v8l-ps-low-pls-fr_ps-low-pls-fr.yml'
 
     if ide_config_name is None:
         config_name = 'distortion_analysis_config.yml'
