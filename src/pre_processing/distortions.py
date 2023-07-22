@@ -497,6 +497,26 @@ def b_fr90_pl_cp(img):
     return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
 
 
+def b_scan_pl_cp(img):
+
+    """
+    Places365 equivalent of coco blur transform b_scan_coco_v2() to be used in generating Places365 RGB
+    comparison test dataset
+    """
+
+    # ************ pulled from b_scan_coco_v2()**************
+    sigma_min, sigma_max = 0.5, 10
+    sigma_range = np.linspace(sigma_min, sigma_max, num=11, endpoint=True)
+    std = np.random.choice(sigma_range)
+
+    kernel_size = int(5 * std)
+    if kernel_size % 2 == 0:
+        kernel_size += 1
+    # *******************************************************
+
+    return transforms.GaussianBlur(kernel_size=kernel_size, sigma=std)(img), 'std', std
+
+
 _MP90_COCO_KERNEL_SIZE = get_kernel_size(COCO_MP_90['blur'])
 
 
@@ -646,6 +666,20 @@ def n_fr90_pl_cp(img):
     return img_out, 'lambda_poisson', lambda_poisson
 
 
+def n_scan_pl_cp(img):
+
+    sigma_min, sigma_max = 0, 100
+    step = 10
+    sigma_vals = step * np.arange(int(sigma_max / step) + 1)
+    sigma_poisson = np.random.choice(sigma_vals)
+    lambda_poisson = int(sigma_poisson ** 2)  # convert from np.int64 to regular int for json serialization
+    img_out = _add_zero_centered_poisson_noise(img, lambda_poisson)
+
+    img_out = np.asarray(img_out, dtype=np.uint8)
+
+    return img_out, 'lambda_poisson', lambda_poisson
+
+
 def n_mp90_coco(img):
 
     sigma_poisson = COCO_MP_90['noise']
@@ -771,6 +805,22 @@ def r_fr90_pl_cp():
     max_size = 256
 
     res_fractions = DISTORTION_RANGE_90['coco']['res']
+    sizes = [int(res_frac * max_size) for res_frac in res_fractions]
+
+    transform = VariableImageResize(sizes)
+
+    return transform
+
+
+def r_scan_pl_cp():
+
+    """
+    Places365 equivalent of coco res-scan transform r_scan_coco_v2() to be used in generating Places365 RGB comparison
+    resolution scan
+    """
+
+    max_size = 256
+    res_fractions = [0.05, 0.1, 0.2, 0.3, 0.4, 0.6, 0.7, 0.8, 0.9, 1]  # pulled from r_scan_coco_v2()
     sizes = [int(res_frac * max_size) for res_frac in res_fractions]
 
     transform = VariableImageResize(sizes)
@@ -1076,6 +1126,10 @@ tag_to_image_distortion = {
     'r_fr90_pl_cp': r_fr90_pl_cp,
     'b_fr90_pl_cp': b_fr90_pl_cp,
     'n_fr90_pl_cp': n_fr90_pl_cp,
+
+    'r_scan_pl_cp': r_scan_pl_cp,
+    'b_scan_pl_cp': b_scan_pl_cp,
+    'n_scan_pl_cp': n_scan_pl_cp,
 }
 
 
