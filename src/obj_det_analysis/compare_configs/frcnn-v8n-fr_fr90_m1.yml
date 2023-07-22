@@ -1,0 +1,22 @@
+---
+
+test_result_identifiers:
+
+  - ['0128rlt-0000yolo-v8n-fr-ext_best_loss-0054tst-coco_fr90:v0',
+     'YOLOv8n full range trained']
+  - ['0059rlt-0057fasterrcnn-faster-rcnn-fr_best_loss-0054tst-coco_fr90:v0',
+     'Faster-RCNN full range trained']
+
+
+overwrite: False
+manual_name: frcnn-yolov8n_fr90-m1
+flatten_axis_combinations: default # [[0, 1], [0, 2], [1, 2]]
+flatten_axes: default
+
+plot_together: True
+y_limits: null
+
+fit_keys: default
+
+pre_processed_indices: [1]
+
