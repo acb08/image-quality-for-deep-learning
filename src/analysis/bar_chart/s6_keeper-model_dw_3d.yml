@@ -10,7 +10,7 @@ fit_keys: [
 
 composite_result_id: 'oct-models-fr90-mega-1-mega-2'
 analysis_type: '3d'
-target_keys: 'all'
+target_keys: ['res', 'blur', 'noise']
 traverse_keys: ['3d']
 group_labels: ['Power law', 'Exponential', 'GIQE-3', 'GIQE-5']
 
