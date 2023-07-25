@@ -3,11 +3,12 @@
 result_id: 0123rlt-0003yolo-v8l-ps-low-pls-snr-fr_best_loss-0081tst-pseudo-system-fr-low-pls-snr-megaset:v0
 identifier: v8l-ps-low-pls-fr_ps-low-pls-fr
 
-flatten_axis_combinations: [[0, 2], [1, 2]]
-flatten_axes: [2]
+flatten_axis_combinations: default #[[0, 2], [1, 2]]
+flatten_axes: default #[2]
 
 basic_plots: True
 
 fit_keys: null
 
-distortions_ignore: ['noise']
+distortions_ignore: []
+special_extract_distortions: ['noise']

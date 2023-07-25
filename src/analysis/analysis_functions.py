@@ -284,7 +284,7 @@ def build_3d_field(x, y, z, f, data_dump=False,
     if z_limits:
         z_values = _prune(z_values, z_limits)
 
-    f_means = np.zeros((len(x_values), len(y_values), len(z_values)))  # note: to re-create a similar array with
+    f_means = np.nan * np.ones((len(x_values), len(y_values), len(z_values)))  # note: to re-create similar array with
     # np.meshgrid, we need to specify indexing='ij' indexing rather than the default 'xy' cartesian indexing
 
     parameter_array = []  # for use in curve fits
@@ -299,10 +299,14 @@ def build_3d_field(x, y, z, f, data_dump=False,
                 xy_inds = np.intersect1d(x_inds, y_inds)
                 xyz_inds = np.intersect1d(xy_inds, z_inds)
 
-                full_extract[(x_val, y_val, z_val)] = f[xyz_inds]
-                f_means[i, j, k] = np.mean(f[xyz_inds])
-                parameter_array.append([x_val, y_val, z_val])
-                performance_array.append(f_means[i, j, k])
+                if len(xyz_inds) > 0:
+                    full_extract[(x_val, y_val, z_val)] = f[xyz_inds]
+                    f_means[i, j, k] = np.mean(f[xyz_inds])
+                    parameter_array.append([x_val, y_val, z_val])
+                    performance_array.append(f_means[i, j, k])
+
+                else:
+                    print(f'fyi: {x_val, y_val, z_val} at indices ({i, j, k}) empty')
 
     if data_dump:
         parameter_array = np.asarray(parameter_array, dtype=np.float32)
@@ -387,7 +391,7 @@ def flatten(f, x_vals, y_vals, z_vals, flatten_axis=0):
     if flatten_axis not in range(3):
         raise ValueError
 
-    f_2d = np.mean(f, axis=flatten_axis)
+    f_2d = np.nanmean(f, axis=flatten_axis)
     remaining_axes = keep_2_of_3(a=x_vals, b=y_vals, c=z_vals, discard_idx=flatten_axis)
 
     return f_2d, remaining_axes[0], remaining_axes[1]

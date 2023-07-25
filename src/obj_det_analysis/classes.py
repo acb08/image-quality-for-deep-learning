@@ -7,14 +7,14 @@ from src.utils import detection_functions
 from src.utils.shared_methods import _archive_processed_props, _check_extract_processed_props, \
     _get_processed_instance_props_path
 from src.utils.vc import get_map_hash_mash
-from src.obj_det_analysis.analysis_tools import get_instance_hash
+from src.obj_det_analysis.analysis_tools import get_instance_hash, electrons_to_dn
 
 
 class ModelDistortionPerformanceResultOD:
 
     def __init__(self, dataset, result, convert_to_std, result_id, identifier=None, load_local=False,
                  manual_distortion_type_flags=None, report_time=False, force_recalculate=False,
-                 distortions_ignore=()):
+                 distortions_ignore=(), special_extract_distortions=()):
 
         self.convert_to_std = convert_to_std
         self.result_id = result_id
@@ -29,7 +29,9 @@ class ModelDistortionPerformanceResultOD:
         self._force_recalculate = force_recalculate
         self.ignore_vc_hashes = False
         self.recalculation_completed = False  # allows double checking that recalculation has been performed
-        self.distortions_ignore = distortions_ignore
+        self._distortions_ignore = tuple(distortions_ignore)
+        self._special_extract_distortions = tuple(special_extract_distortions)
+        self._distortions_ignore = self._distortions_ignore + self._special_extract_distortions
         self.vc_hash_mash = get_map_hash_mash()
 
         self.distortion_tags = dataset['distortion_tags']
@@ -110,11 +112,29 @@ class ModelDistortionPerformanceResultOD:
         distortions = {}
         try:
             for flag in self.distortion_type_flags:
-                if flag not in self.distortions_ignore:
+                if flag not in self._distortions_ignore:
                     distortions[flag] = np.asarray([image[flag] for image in images])
         except TypeError:  # occurs when distortion_type_flags is None (i.e. on dataset without distortions)
             pass
+
+        for flag in self._special_extract_distortions:
+            if flag == 'noise':
+                distortions[flag] = self.extract_pseudo_system_noise(images=images)
+            else:
+                raise NotImplementedError
+
         return distortions
+
+    @staticmethod
+    def extract_pseudo_system_noise(images, round_to_nearest=5):
+
+        noise_electrons = np.asarray([image['snr']['estimated_post_adc_noise_electrons'] for image in images])
+        well_depths = np.asarray([image['snr']['well_depth'] for image in images])
+        noise = electrons_to_dn(noise_electrons, well_depths)
+
+        noise = np.around(noise / round_to_nearest, 0) * round_to_nearest
+
+        return noise
 
     def map_images_to_dist_pts(self):
 
@@ -233,6 +253,8 @@ class ModelDistortionPerformanceResultOD:
         performance_array = []  # for use in svd
         full_extract = {}
 
+        nan_count = 0
+
         for i, res_val in enumerate(res_values):
             for j, blur_val in enumerate(blur_values):
                 for k, noise_val in enumerate(noise_values):
@@ -240,17 +262,25 @@ class ModelDistortionPerformanceResultOD:
                     dist_pt = (res_val, blur_val, noise_val)
                     mini_result = parsed_mini_results[dist_pt]
 
-                    processed_results = calculate_aggregate_results(outputs=mini_result['outputs'],
-                                                                    targets=mini_result['targets'],
-                                                                    return_diagnostic_details=details,
-                                                                    make_plots=make_plots)
+                    if len(mini_result['targets']) > 0:
 
-                    class_labels, class_avg_precision_vals, recall, precision, precision_smoothed = processed_results
-                    mean_avg_precision = np.mean(class_avg_precision_vals)
-                    map3d[i, j, k] = mean_avg_precision
-                    parameter_array.append([res_val, blur_val, noise_val])
-                    performance_array.append(mean_avg_precision)
-                    full_extract[dist_pt] = processed_results
+                        processed_results = calculate_aggregate_results(outputs=mini_result['outputs'],
+                                                                        targets=mini_result['targets'],
+                                                                        return_diagnostic_details=details,
+                                                                        make_plots=make_plots)
+
+                        class_labels, class_avg_precision_vals, recall, precision, precision_smoothed = processed_results
+                        mean_avg_precision = np.mean(class_avg_precision_vals)
+                        map3d[i, j, k] = mean_avg_precision
+                        parameter_array.append([res_val, blur_val, noise_val])
+                        performance_array.append(mean_avg_precision)
+                        full_extract[dist_pt] = processed_results
+                    else:
+                        map3d[i, j, k] = np.NaN
+                        full_extract[dist_pt] = 'empty'
+                        nan_count += 1
+
+        print('empty distortion point total: ', nan_count)
 
         parameter_array = np.asarray(parameter_array, dtype=np.float32)
         performance_array = np.atleast_2d(np.asarray(performance_array, dtype=np.float32)).T

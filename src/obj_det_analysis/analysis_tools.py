@@ -843,6 +843,20 @@ def combine_results(single_image_results):
     return result, total_boxes
 
 
+def electrons_to_dn(electrons, well_depth):
+
+    well_fraction = electrons / well_depth
+    dn = (2 ** 8 - 1) * well_fraction
+
+    try:
+        assert 0 <= dn <= 255
+    except ValueError:
+        assert 0 <= min(dn)
+        assert 255 >= max(dn)
+
+    return dn
+
+
 def sort_by_label(data):
 
     boxes = np.asarray(data['boxes'])

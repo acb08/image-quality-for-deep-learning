@@ -15,7 +15,8 @@ def get_obj_det_distortion_perf_result(result_id=None, identifier=None, config=N
                                        distortion_ids=('res', 'blur', 'noise'), make_dir=True, run=None,
                                        report_time=False,
                                        pre_processed_artifact=False,
-                                       distortions_ignore=()):
+                                       distortions_ignore=(),
+                                       special_extract_distortions=()):
 
     if not result_id and not identifier:
         result_id = config['result_id']
@@ -26,6 +27,8 @@ def get_obj_det_distortion_perf_result(result_id=None, identifier=None, config=N
             pre_processed_artifact = config['pre_processed_artifact']
         if 'distortions_ignore' in config.keys():
             distortions_ignore = tuple(config['distortions_ignore'])
+        if 'special_extract_distortions' in config.keys():
+            special_extract_distortions = config['special_extract_distortions']
 
     output_dir = Path(definitions.ROOT_DIR, definitions.REL_PATHS['analysis'], result_id)
     if make_dir and not output_dir.is_dir():
@@ -56,7 +59,8 @@ def get_obj_det_distortion_perf_result(result_id=None, identifier=None, config=N
         result_id=result_id,
         identifier=identifier,
         report_time=report_time,
-        distortions_ignore=distortions_ignore
+        distortions_ignore=distortions_ignore,
+        special_extract_distortions=special_extract_distortions
         )
 
     return distortion_performance_result, output_dir

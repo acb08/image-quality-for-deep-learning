@@ -57,7 +57,9 @@ def image_to_electrons(image, well_depth=BASELINE_HIGH_SIGNAL_WELL_DEPTH):
     return electrons
 
 
-def electrons_to_image(electrons, well_depth=BASELINE_HIGH_SIGNAL_WELL_DEPTH):
+def electrons_to_image(electrons, well_depth=None):
+
+    # changed well_depth to None to make sure we nothing is erroneously using the default value
 
     image = electrons / well_depth
     image = convert_to_uint8(image)
