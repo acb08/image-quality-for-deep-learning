@@ -1,10 +1,11 @@
 ---
 
 test_result_identifiers:
+  - [ '0212rlt-resnet18_pretrained-0022tst-pl-rgb-b-scan-cp_blur:v0',
+        'pre-trained' ]
   - [ '0215rlt-0042resnet18-full_range_cp_nfx_ext_best_loss-0022tst-pl-rgb-b-scan-cp_blur:v0',
         'full range trained' ]
-  - ['0212rlt-resnet18_pretrained-0022tst-pl-rgb-b-scan-cp_blur:v0',
-     'pre-trained']
+
 
 distortion_id: blur
 manual_name: rn18-cp-blur-scans

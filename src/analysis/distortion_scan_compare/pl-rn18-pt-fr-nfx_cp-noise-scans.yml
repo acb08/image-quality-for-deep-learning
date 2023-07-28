@@ -1,10 +1,11 @@
 ---
 
 test_result_identifiers:
-  - [ '0216rlt-0042resnet18-full_range_cp_nfx_ext_best_loss-0023tst-pl-rgb-n-scan-cp_noise:v0',
-        'full range trained' ]
   - ['0213rlt-resnet18_pretrained-0023tst-pl-rgb-n-scan-cp_noise:v0',
      'pre-trained']
+  - [ '0216rlt-0042resnet18-full_range_cp_nfx_ext_best_loss-0023tst-pl-rgb-n-scan-cp_noise:v0',
+      'full range trained' ]
+
 
 # if a second set of test result identifiers is included here, inter-set results are cross correlated, whereas passing
 # only a single set of identifiers results in intra-set correlations being calculated.  In other words, passing a single
