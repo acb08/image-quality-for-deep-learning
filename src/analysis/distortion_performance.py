@@ -41,6 +41,8 @@ class DistortedDataset(object):
         self.noise = None
         self.scaled_blur = None
 
+        self.ignore_vc_hashes = True  # used for forward compatibility
+
         for i, distortion_id in enumerate(self.distortion_ids):
             distortion = self._distortion_data[i]
             if distortion_id == 'res':
@@ -613,6 +615,13 @@ if __name__ == '__main__':
 
     _model_distortion_performance, _output_dir = get_model_distortion_performance_result(config=run_config)
 
+    _fit_keys = [
+        'exp_b0n0',
+        'pl_b0n0',
+        'giqe3_b2n2',
+        'giqe5_b2n2',
+    ]
+
     with open(Path(_output_dir, 'result_log.txt'), 'w') as output_file:
         analyze_perf_1d(_model_distortion_performance, log_file=output_file, directory=_output_dir, per_class=False,
                         distortion_ids=('res', 'blur', 'scaled_blur', 'noise'))
@@ -621,4 +630,10 @@ if __name__ == '__main__':
         analyze_perf_2d(_model_distortion_performance, log_file=output_file, directory=_output_dir)
         analyze_perf_2d(_model_distortion_performance, log_file=output_file, directory=_output_dir,
                         distortion_ids=('scaled_blur', 'noise'), distortion_combinations=((0, 1),))
-        analyze_perf_3d(_model_distortion_performance, log_file=output_file, directory=_output_dir)
+
+        for _fit_key in _fit_keys:
+            _sub_dir = Path(_output_dir, _fit_key)
+            if not _sub_dir.is_dir():
+                Path.mkdir(_sub_dir)
+            analyze_perf_3d(_model_distortion_performance, log_file=output_file, directory=_sub_dir,
+                            fit_key=_fit_key)
