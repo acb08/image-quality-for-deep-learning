@@ -1,0 +1,16 @@
+---
+
+test_result_identifiers:
+  - [ '0215rlt-0042resnet18-full_range_cp_nfx_ext_best_loss-0022tst-pl-rgb-b-scan-cp_blur:v0',
+        'full range trained' ]
+  - ['0212rlt-resnet18_pretrained-0022tst-pl-rgb-b-scan-cp_blur:v0',
+     'pre-trained']
+
+distortion_id: blur
+manual_name: rn18-cp-blur-scans
+
+#analyze_3d: False
+#analyze_pairwise: False  # no summary log without pairwise analysis
+#plot_together_2d: False
+#plot_together_1d: True
+

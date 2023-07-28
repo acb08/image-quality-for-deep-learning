@@ -1,0 +1,22 @@
+---
+
+test_result_identifiers:
+  - ['0217rlt-0042resnet18-full_range_cp_nfx_ext_best_loss-0021tst-pl-rgb-fr90-cp-megaset-20x_noise:v0',
+     'full range' ]
+  - ['',
+     'pre-trained']
+
+# if a second set of test result identifiers is included here, inter-set results are cross correlated, whereas passing
+# only a single set of identifiers results in intra-set correlations being calculated.  In other words, passing a single
+# set results in a symmetric correlation matrix, whereas passing different sets will result in an asymmetric table
+different_test_result_identifiers: null
+
+#composite_performance_result_config_id: pl_oct_composite_fr90_mega1_mega2_comp.yml
+
+overwrite: False
+manual_name: rn18-pt-rn18-fr-cp-nfx_fr90-cp
+analyze_3d: False
+analyze_pairwise: True  # no summary log without pairwise analysis
+plot_together_2d: True
+plot_together_1d: True
+
