@@ -6,7 +6,7 @@ descriptive_tags:
 test_dataset_id: 0021tst-pl-rgb-fr90-cp-megaset-20x_noise:v0
 test_dataset_artifact_alias: latest
 
-model_artifact_id:
+model_artifact_id: 0042resnet18-full_range_cp_nfx_ext_best_loss:v0
 model_artifact_alias: latest
 
 batch_size: 32
