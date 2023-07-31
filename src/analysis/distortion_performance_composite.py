@@ -744,7 +744,8 @@ if __name__ == '__main__':
                                                     show_plots=show_plots,
                                                     show_1d_plots=show_1d_plots,
                                                     show_scatter_plots=show_scatter_plots,
-                                                    plot_fit_slices=plot_fit_slices)
+                                                    plot_fit_slices=plot_fit_slices,
+                                                    )
                 performance_fit_summary[_fit_key] = fit_summary_stats
 
             performance_fit_summary_text_dump(performance_fit_summary, file=output_file,

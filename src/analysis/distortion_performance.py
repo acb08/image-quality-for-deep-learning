@@ -369,7 +369,7 @@ def analyze_perf_3d(model_performance,
                          data_labels=('measured (eval)', 'fit'), directory=directory,
                          result_id='mean_1d_eval',
                          show_plots=show_1d_plots,
-                         plot_together=False)
+                         plot_together=True)
 
     else:
         print('per_3d = perf_3d_eval for ', str(model_performance))
