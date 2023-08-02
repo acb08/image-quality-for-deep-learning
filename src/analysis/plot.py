@@ -1108,22 +1108,3 @@ def dual_sorted_linear_scatter(prediction_0, result_0, prediction_1, result_1, d
     if show_plots:
         fig.show()
 
-
-if __name__ == '__main__':
-
-    # _res_vals = np.linspace(0.1, 1, num=10)
-    # _blur_vals = np.linspace(0.1, 5, num=20)
-    # _noise_vals = np.arange(40) * 2
-    #
-    # _f0 = np.random.rand(len(_res_vals), len(_blur_vals), len(_noise_vals))
-    # _f1 = np.random.rand(len(_res_vals), len(_blur_vals), len(_noise_vals))
-    #
-    # residual_color_plot(_f0, _f1, _res_vals, _blur_vals, _noise_vals)
-
-    _x = np.linspace(0, 1, num=50)
-    _y = np.copy(_x)
-    _z = np.copy(_x)
-
-    _xx, _yy, _zz = np.meshgrid(_x, _y, _z)
-    _f = np.sqrt(_xx**2 + _yy + _zz)
-    plot_isosurf(_f, _x, _y, _z, levels=[0.3, 0.5, 0.7], az_el_combinations='iso_default')

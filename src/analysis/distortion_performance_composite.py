@@ -604,7 +604,8 @@ def log_uid(directory, uid):
 if __name__ == '__main__':
 
     # config_filename = 's6_oct_fr90_composite_config.yml'
-    config_filename = 'pl_oct_composite_fr90_mega1_mega2.yml'
+    # config_filename = 'pl_oct_composite_fr90_mega1_mega2.yml'
+    config_filename = 'rn18-cp.yml'
 
     analyze_1d = True
     analyze_2d = True
@@ -669,11 +670,11 @@ if __name__ == '__main__':
         #
         # 'giqe3_b2n0',
         # 'giqe3_b2n1',
-        # 'giqe3_b2n2',
+        'giqe3_b2n2',
 
         # 'giqe3_b3n0',
         # 'giqe3_b3n1',
-        'giqe3_b3n2',
+        # 'giqe3_b3n2',
         #
         # 'giqe3_b4n0',
         # 'giqe3_b4n1',
