@@ -334,7 +334,8 @@ def analyze_perf_3d(model_performance,
                     show_plots=False,
                     show_scatter_plots=True,
                     show_1d_plots=True,
-                    plot_fit_slices=False):
+                    plot_fit_slices=False,
+                    plot_together=True):
 
     x_id, y_id, z_id = distortion_ids
     (x_values, y_values, z_values, perf_3d, perf_3d_eval, fit_3d, perf_3d_simulated, eval_fit_correlation,
@@ -361,7 +362,8 @@ def analyze_perf_3d(model_performance,
     compare_1d_views(perf_3d, fit_3d, x_values, y_values, z_values, distortion_ids=distortion_ids,
                      data_labels=('measured (predict)', 'fit'), directory=directory,
                      result_id='mean_1d_predict',
-                     show_plots=show_1d_plots)
+                     show_plots=show_1d_plots,
+                     plot_together=plot_together)
 
     if not np.array_equal(perf_3d, perf_3d_eval):
 
@@ -369,7 +371,7 @@ def analyze_perf_3d(model_performance,
                          data_labels=('measured (eval)', 'fit'), directory=directory,
                          result_id='mean_1d_eval',
                          show_plots=show_1d_plots,
-                         plot_together=True)
+                         plot_together=plot_together)
 
     else:
         print('per_3d = perf_3d_eval for ', str(model_performance))

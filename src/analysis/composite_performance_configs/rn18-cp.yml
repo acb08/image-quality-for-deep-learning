@@ -9,3 +9,5 @@ performance_prediction_result_ids:
 
 performance_eval_result_ids:
   - 0219rlt-0042resnet18-full_range_cp_nfx_ext_best_loss-0024tst-pl-rgb-fr90-cp-megaset-20x_m2_noise:v0
+
+plot_together: False

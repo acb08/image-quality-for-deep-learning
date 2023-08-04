@@ -714,6 +714,11 @@ if __name__ == '__main__':
     args_passed = parser.parse_args()
     run_config = get_config(args_passed)
 
+    if 'plot_together' in run_config.keys():
+        plot_together = run_config['plot_together']
+    else:
+        plot_together = True
+
     _composite_performance, _output_dir = get_composite_performance_result(config=run_config)
 
     if analyze_1d:
@@ -746,7 +751,7 @@ if __name__ == '__main__':
                                                     show_1d_plots=show_1d_plots,
                                                     show_scatter_plots=show_scatter_plots,
                                                     plot_fit_slices=plot_fit_slices,
-                                                    )
+                                                    plot_together=plot_together)
                 performance_fit_summary[_fit_key] = fit_summary_stats
 
             performance_fit_summary_text_dump(performance_fit_summary, file=output_file,
