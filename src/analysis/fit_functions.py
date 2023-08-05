@@ -6,6 +6,7 @@ from src.utils.definitions import NATIVE_NOISE_ESTIMATE
 
 
 LORENTZ_TERMS = (0.2630388847587775, -0.4590111280646474)  # correction for Gaussian to account for pixel xfer function
+EST_NATIVE_BLUR = 2.1
 
 
 def _n1(n):
@@ -917,6 +918,22 @@ def giqe5_b2n2(params, distortion_vector):
     return _giqe5(res, rer, noise, params)
 
 
+def giqe5_b2n2_nbf(params, distortion_vector):
+
+    # fixes value of c4 coefficient at the approximate "native blur" value found in COCO and Places365 grayscale fits
+
+    c0, c1, c2, c3, c5, c6 = params  # keeping parameter names consistent with v6
+    c4 = None  # included because _giqe5() expected 7 parameters when it unpacks the params tuple
+    _giqe5_params = (c0, c1, c2, c3, c4, c5, c6)  # just avoids letting
+
+    res, blur, noise = distortion_vector[:, 0], distortion_vector[:, 1], distortion_vector[:, 2]
+
+    rer = _rer2(blur, res, EST_NATIVE_BLUR)
+    noise = _n2(noise)
+
+    return _giqe5(res, rer, noise, _giqe5_params)
+
+
 def giqe5_b3n0(params, distortion_vector):
     c0, c1, c2, c3, c4, c5, c6 = params  # keeping parameter names consistent with v6
     res, blur, noise = distortion_vector[:, 0], distortion_vector[:, 1], distortion_vector[:, 2]
@@ -1074,6 +1091,13 @@ fit_functions = {
     'giqe5_b2n0': (giqe5_b2n0, (_c0, _c1, 0.1, -0.1, 2, -0.1, -0.01)),
     'giqe5_b2n1': (giqe5_b2n1, (_c0, _c1, 0.1, -0.1, 2, -0.1, -0.01)),
     'giqe5_b2n2': (giqe5_b2n2, (_c0, _c1, 0.1, -0.1, 2, -0.1, -0.01)),
+
+    'giqe5_b2n2_nbf': (giqe5_b2n2_nbf, (_c0, _c1, 0.1, -0.1, -0.1, -0.01)),
+
+    # 'giqe5_b2n2': (giqe5_b2n2, (_c0, _c1, 0.12, -0.03, 1.5, -0.05, -0.001)),  # starting point tweak to try to make
+    # Places365 RGB find a fit that makes more sense
+
+    # 0.512 −0.385 0.139 −0.0319 1.88 −0.0841 −2.25 × 10−4
 
     # 'giqe5_b3n0': (giqe5_b3n2, (-0.5, 0.3, 0.1, -0.1, 2, -0.1, -0.01)), # before the log(1/r) update
     # 'giqe5_b3n1': (giqe5_b3n1, (-0.5, 0.3, 0.1, -0.1, 2, -0.1, -0.01)),

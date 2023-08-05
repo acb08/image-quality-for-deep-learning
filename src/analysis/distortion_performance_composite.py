@@ -688,6 +688,8 @@ if __name__ == '__main__':
         # 'giqe5_b2n1',
         'giqe5_b2n2',
 
+        'giqe5_b2n2_nbf',
+
         # 'giqe5_b3n0',
         # 'giqe5_b3n1',
         # 'giqe5_b3n2',
